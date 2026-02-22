@@ -428,10 +428,17 @@
                             </div>
                             <div class="form-full"><div class="form-group"><label>Offer Description</label><textarea id="offerDesc" class="form-control" rows="2"></textarea></div></div>
 
-                            <h4 style="margin: 20px 0 10px; color: var(--primary-color);">Welcome Popup</h4>
+                            <h4 style="margin: 20px 0 10px; color: var(--primary-color);">Opening Ad Banner (Welcome Popup)</h4>
                             <div class="form-row">
                                 <div class="form-group"><label>Welcome Title</label><input type="text" id="welcomeTitle" class="form-control"></div>
                                 <div class="form-group"><label>Welcome Description</label><textarea id="welcomeDesc" class="form-control" rows="2"></textarea></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Background Image URL</label><input type="text" id="welcomeBgUrl" class="form-control" placeholder="Full-screen image URL"></div>
+                                <div class="form-group"><label>Action Button Text</label><input type="text" id="welcomeActionBtn" class="form-control" placeholder="e.g., Shop Now"></div>
+                            </div>
+                            <div class="form-full">
+                                <div class="form-group"><label>Action Button Link</label><input type="text" id="welcomeActionLink" class="form-control" placeholder="URL to redirect"></div>
                             </div>
                             
                             <h4 style="margin: 20px 0 10px; color: var(--primary-color);">Delivery Charge</h4>
@@ -624,7 +631,7 @@
                     <div class="form-group"><label for="popUpActionButtonName">Action Button Name</label><input type="text" id="popUpActionButtonName" class="form-control"></div>
                     <div class="form-group"><label for="popUpActionButtonLink">Action Button Link (URL)</label><input type="text" id="popUpActionButtonLink" class="form-control"></div>
                 </div>
-                <div class="form-group"><label for="popUpBannerLogo">Banner Image URL</label><input type="text" id="popUpBannerLogo" class="form-control"></div>
+                <div class="form-group"><label for="popUpBannerLogo">Pop-up Background/Image URL</label><input type="text" id="popUpBannerLogo" class="form-control"></div>
                 <div class="form-row">
                     <button type="submit" class="btn btn-primary">Save Pop Up</button>
                     <button type="button" class="btn" onclick="closeModal('popUpModal')" style="background-color: var(--light-gray); color: var(--dark-color);">Cancel</button>
@@ -647,7 +654,7 @@
     </div>
 
     <script>
-        // Firebase Configuration (Same as user file)
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyD5p-7Cgep9aGf6omMXDH8LOTy0C76jJaQ",
             authDomain: "e-commerce-shop-24.firebaseapp.com",
@@ -657,7 +664,9 @@
             appId: "1:1000897291264:web:4f1e78554c3e69d310a4e5",
             measurementId: "G-MCFXRFDFT5"
         };
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const db = firebase.firestore();
         const auth = firebase.auth();
 
@@ -829,6 +838,9 @@
                     document.getElementById('offerDesc').value = data.offerDesc || '';
                     document.getElementById('welcomeTitle').value = data.welcomeTitle || '';
                     document.getElementById('welcomeDesc').value = data.welcomeDesc || '';
+                    document.getElementById('welcomeBgUrl').value = data.welcomeBgUrl || '';
+                    document.getElementById('welcomeActionBtn').value = data.welcomeActionBtn || '';
+                    document.getElementById('welcomeActionLink').value = data.welcomeActionLink || '';
                     document.getElementById('deliveryInside').value = data.deliveryInside || 0;
                     document.getElementById('deliveryOutside').value = data.deliveryOutside || 0;
                     document.getElementById('footerPhone').value = data.footerPhone || '';
@@ -861,7 +873,7 @@
             } catch(e) { console.error(e); }
         }
 
-        async function loadCategories() {
+        function loadCategories() {
             db.collection('categories').onSnapshot(snap => {
                 adminCategories = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
                 populateCategoriesTable();
@@ -869,7 +881,7 @@
             });
         }
 
-        async function loadProducts() {
+        function loadProducts() {
             db.collection('products').onSnapshot(snap => {
                 adminProducts = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
                 populateProductsTable();
@@ -877,7 +889,7 @@
             });
         }
 
-        async function loadOrders() {
+        function loadOrders() {
             db.collection('orders').onSnapshot(snap => {
                 adminOrders = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
                 populateOrdersTable();
@@ -886,7 +898,7 @@
             });
         }
 
-        async function loadCustomers() {
+        function loadCustomers() {
             db.collection('users').onSnapshot(snap => {
                 adminCustomers = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
                 populateCustomersTable();
@@ -894,14 +906,14 @@
             });
         }
 
-        async function loadOffers() {
+        function loadOffers() {
             db.collection('offers').onSnapshot(snap => {
                 adminOffers = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
                 populateOffersTable();
             });
         }
 
-        async function loadPopups() {
+        function loadPopups() {
             db.collection('popups').onSnapshot(snap => {
                 adminPopups = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
                 populatePopUpsTable();
@@ -1035,7 +1047,7 @@
             adminPopups.forEach(p => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td><img src="${p.bannerLogo || p.image || ''}" width="40"></td>
+                    <td><img src="${p.bannerLogo || p.image || ''}" width="40" style="object-fit:cover;"></td>
                     <td>${p.name}</td>
                     <td>${p.section}</td>
                     <td>${p.actionButton ? p.actionButtonName : 'N/A'}</td>
@@ -1139,6 +1151,7 @@
             };
             await db.collection('offers').add(payload);
             closeModal('offerModal');
+            alert("Offer Created!");
         }
 
         async function handlePopUpSubmit(e) {
@@ -1154,8 +1167,10 @@
             };
             if(isEditingPopUp && editingPopUpId) {
                 await db.collection('popups').doc(editingPopUpId).update(payload);
+                alert("Pop Up Updated!");
             } else {
                 await db.collection('popups').add(payload);
+                alert("Pop Up Saved!");
             }
             closeModal('popUpModal');
         }
@@ -1172,6 +1187,9 @@
                 offerDesc: document.getElementById('offerDesc').value,
                 welcomeTitle: document.getElementById('welcomeTitle').value,
                 welcomeDesc: document.getElementById('welcomeDesc').value,
+                welcomeBgUrl: document.getElementById('welcomeBgUrl').value,
+                welcomeActionBtn: document.getElementById('welcomeActionBtn').value,
+                welcomeActionLink: document.getElementById('welcomeActionLink').value,
                 deliveryInside: parseFloat(document.getElementById('deliveryInside').value),
                 deliveryOutside: parseFloat(document.getElementById('deliveryOutside').value),
                 footerPhone: document.getElementById('footerPhone').value,
@@ -1181,7 +1199,7 @@
                 footerCopyright: document.getElementById('footerCopyright').value
             };
             await db.collection('settings').doc('general').set(payload, {merge:true});
-            alert('General Settings Saved!');
+            alert('General Settings Saved Successfully!');
         }
 
         async function saveSlidesAndSocials(e) {
@@ -1215,7 +1233,7 @@
             });
 
             await batch.commit();
-            alert('Hero Slides & Socials Saved!');
+            alert('Hero Slides & Socials Saved Successfully!');
         }
 
         // Edit & Delete
@@ -1268,11 +1286,14 @@
             if(!p) return;
             document.getElementById('popUpName').value = p.name;
             document.getElementById('popUpSection').value = p.section;
-            document.getElementById('popUpActionButtonToggle').checked = p.actionButton;
+            document.getElementById('popUpActionButtonToggle').checked = p.actionButton || false;
             togglePopUpActionButton();
             if(p.actionButton) {
-                document.getElementById('popUpActionButtonName').value = p.actionButtonName;
-                document.getElementById('popUpActionButtonLink').value = p.actionButtonLink;
+                document.getElementById('popUpActionButtonName').value = p.actionButtonName || '';
+                document.getElementById('popUpActionButtonLink').value = p.actionButtonLink || '';
+            } else {
+                document.getElementById('popUpActionButtonName').value = '';
+                document.getElementById('popUpActionButtonLink').value = '';
             }
             document.getElementById('popUpBannerLogo').value = p.bannerLogo || p.image || '';
             isEditingPopUp = true; editingPopUpId = id;
@@ -1317,16 +1338,17 @@
                 seoTagsContainer.insertBefore(el, seoInput);
             });
         }
+        window.removeTag = function(index) { adminSeoKeywords.splice(index, 1); renderTags(); }
         function resetSEO() { adminSeoKeywords = []; renderTags(); }
         
-        function toggleSizeColor() {
+        window.toggleSizeColor = function() {
             const sec = document.getElementById('sizeColorSection');
             if(document.getElementById('sizeColorToggle').checked) {
                 sec.classList.remove('hidden');
                 if(document.getElementById('sizeColorContainer').children.length === 0) addSizeColorField();
             } else sec.classList.add('hidden');
         }
-        function togglePopUpActionButton() {
+        window.togglePopUpActionButton = function() {
             if (document.getElementById('popUpActionButtonToggle').checked) document.getElementById('popUpActionButtonFields').classList.remove('hidden');
             else document.getElementById('popUpActionButtonFields').classList.add('hidden');
         }
@@ -1336,8 +1358,9 @@
         window.closeModal = function(id) { 
             document.getElementById(id).classList.remove('show'); 
             if(id === 'productModal') { isEditingProduct = false; editingProductId = null; }
+            if(id === 'popUpModal') { isEditingPopUp = false; editingPopUpId = null; }
         };
-        function switchOrderTab(status, btn) {
+        window.switchOrderTab = function(status, btn) {
             currentOrderFilter = status;
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -1354,7 +1377,7 @@
             document.getElementById(`${target}Page`).classList.remove('hidden');
             if(window.innerWidth <= 768) sidebar.classList.remove('active');
         }
-        function refreshOrders() { populateOrdersTable(); alert('Orders refreshed!'); }
+        window.refreshOrders = function() { populateOrdersTable(); alert('Orders refreshed!'); }
         window.viewOrderDetails = function(id) {
             const o = adminOrders.find(x => x.id === id);
             if(!o) return;
