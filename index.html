@@ -1,3 +1,6 @@
+আপনার দেওয়া রিকোয়ারমেন্ট অনুযায়ী `user.html` ফাইলে পরিবর্তন করা হয়েছে। নিচে সম্পূর্ণ মডিফাইড `user.html` দেওয়া হলো:
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -144,8 +147,8 @@
         .address-management { margin-bottom: 20px; }
         .address-management .form-group { display: flex; align-items: center; gap: 15px; }
         #shippingInfoForm.hidden { display: none; }
-        .payment-methods { display: flex; gap: 20px; margin: 20px 0; }
-        .payment-method { flex: 1; text-align: center; padding: 15px; border: 2px solid #e5e7eb; border-radius: 4px; cursor: pointer; transition: var(--transition); }
+        .payment-methods { display: flex; flex-wrap: wrap; gap: 20px; margin: 20px 0; }
+        .payment-method { flex: 1; min-width: 150px; text-align: center; padding: 15px; border: 2px solid #e5e7eb; border-radius: 4px; cursor: pointer; transition: var(--transition); }
         .payment-method:hover { border-color: var(--primary); }
         .payment-method.active { border-color: var(--primary); background-color: rgba(37, 99, 235, 0.05); }
         .auth-container { max-width: 450px; margin: 60px auto; background: white; padding: 40px; border-radius: 8px; box-shadow: var(--shadow); }
@@ -279,9 +282,6 @@
         .welcome-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.8); z-index: 3000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.4s ease; }
         .welcome-overlay.active { display: flex; opacity: 1; }
         .welcome-box { width: 100vw; height: 100vh; max-width: 100%; border-radius: 0; padding: 0; background: url('https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=2070&auto=format&fit=crop') center/cover no-repeat; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; transform: scale(1); }
-        .ad-content { background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 12px; text-align: center; max-width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.2); backdrop-filter: blur(5px); }
-        .ad-content h2 { font-size: 2.2rem; margin-bottom: 15px; color: var(--dark); }
-        .ad-content p { font-size: 1.1rem; color: #444; margin-bottom: 0; }
         .ad-close-btn { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.6); color: white; border: none; padding: 8px 15px; border-radius: 20px; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; z-index: 10; font-family: 'Poppins', sans-serif; transition: var(--transition); backdrop-filter: blur(5px); }
         .ad-close-btn:hover { background: rgba(0,0,0,0.8); }
 
@@ -639,10 +639,6 @@
                                     <i class="fas fa-money-bill-wave fa-2x"></i>
                                     <p>Cash on Delivery</p>
                                 </div>
-                                <div class="payment-method" data-method="online">
-                                    <i class="fas fa-credit-card fa-2x"></i>
-                                    <p>Online Payment</p>
-                                </div>
                             </div>
                             
                             <button type="submit" class="btn btn-primary btn-block" style="width: 100%; padding: 15px;">Place Order</button>
@@ -931,11 +927,7 @@
             <button class="ad-close-btn" id="closeWelcomeOverlay">
                 Close <span id="adCountdown">5</span>s <i class="fas fa-times"></i>
             </button>
-            <div class="ad-content">
-                <img id="welcomeLogo" src="" alt="Logo" style="max-height: 60px; margin-bottom: 20px;">
-                <h2 id="welcomeTitle">Welcome to our shop!</h2>
-                <p id="welcomeDesc">Get the best deals today.</p>
-            </div>
+            <a href="#" id="welcomeActionBtn" class="btn btn-primary" style="position: absolute; bottom: 40px; padding: 12px 30px; font-size: 1.1rem; border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: none; z-index: 10; text-decoration: none;">Action Button</a>
         </div>
     </div>
 
@@ -1027,7 +1019,7 @@
         const cartCount = document.querySelector('.cart-count');
         const checkoutBtn = document.getElementById('checkoutBtn');
         const checkoutForm = document.getElementById('checkoutForm');
-        const paymentMethods = document.querySelectorAll('.payment-method');
+        let paymentMethods = document.querySelectorAll('.payment-method');
         const menuToggle = document.getElementById('menuToggle');
         const mobileMenu = document.getElementById('mobileMenu');
         const shopNowBtn = document.querySelector('.btn-shop');
@@ -1086,12 +1078,8 @@
                     document.getElementById('pageTitle').textContent = data.siteName || 'Online Shop';
                     document.getElementById('headerLogo').src = data.logoUrl || '';
                     document.getElementById('footerLogo').src = data.logoUrl || '';
-                    document.getElementById('welcomeLogo').src = data.logoUrl || '';
                     document.getElementById('heroTitle').textContent = data.heroTitle || '';
                     document.getElementById('heroDesc').textContent = data.heroDesc || '';
-                    document.getElementById('offerTitle').textContent = data.offerTitle || '';
-                    document.getElementById('offerSubtitle').textContent = data.offerSubtitle || '';
-                    document.getElementById('offerDesc').textContent = data.offerDesc || '';
                     document.getElementById('deliveryInsideTk').textContent = `৳${data.deliveryInside || 0}`;
                     document.getElementById('deliveryOutsideTk').textContent = `৳${data.deliveryOutside || 0}`;
                     document.getElementById('footerAboutText').textContent = data.footerAbout || '';
@@ -1099,8 +1087,60 @@
                     document.getElementById('footerPhone').textContent = data.footerPhone || '';
                     document.getElementById('footerEmail').textContent = data.footerEmail || '';
                     document.getElementById('footerCopyright').innerHTML = data.footerCopyright || '';
-                    document.getElementById('welcomeTitle').textContent = data.welcomeTitle || 'Welcome!';
-                    document.getElementById('welcomeDesc').textContent = data.welcomeDesc || 'Enjoy your shopping.';
+                }
+
+                // Offers Loader (Active Offer fetched dynamically from offers collection)
+                const offersSnap = await db.collection('offers').limit(1).get();
+                if (!offersSnap.empty) {
+                    const offerData = offersSnap.docs[0].data();
+                    document.getElementById('offerTitle').textContent = offerData.offerTitle || offerData.name || '';
+                    document.getElementById('offerSubtitle').textContent = offerData.offerSubtitle || '';
+                    document.getElementById('offerDesc').textContent = offerData.offerDesc || '';
+                }
+
+                // Popups Loader (Banner Logo and Action Button integration from Admin)
+                const popupsSnap = await db.collection('popups').where('section', '==', 'opening').limit(1).get();
+                if (!popupsSnap.empty) {
+                    const popupData = popupsSnap.docs[0].data();
+                    const welcomeBox = document.querySelector('.welcome-box');
+                    if(popupData.bannerLogo) {
+                        welcomeBox.style.background = `url('${popupData.bannerLogo}') center/cover no-repeat`;
+                    }
+                    const welcomeActionBtn = document.getElementById('welcomeActionBtn');
+                    if(popupData.actionButton && popupData.actionButtonName && popupData.actionButtonLink) {
+                        welcomeActionBtn.textContent = popupData.actionButtonName;
+                        welcomeActionBtn.href = popupData.actionButtonLink;
+                        welcomeActionBtn.style.display = 'inline-block';
+                    } else {
+                        welcomeActionBtn.style.display = 'none';
+                    }
+                }
+
+                // Payment Gateways Loader (Fetch Gateways from Admin)
+                const gatewaysSnap = await db.collection('paymentGateways').get();
+                if (!gatewaysSnap.empty) {
+                    const pmContainer = document.querySelector('.payment-methods');
+                    let pmHtml = `
+                    <div class="payment-method active" data-method="cod">
+                        <i class="fas fa-money-bill-wave fa-2x"></i>
+                        <p>Cash on Delivery</p>
+                    </div>`;
+                    gatewaysSnap.forEach(doc => {
+                        const gateway = doc.data();
+                        pmHtml += `
+                        <div class="payment-method" data-method="${gateway.name}" data-link="${gateway.link}">
+                            <img src="${gateway.logo}" style="width: 32px; height: 32px; object-fit: contain; margin-bottom: 5px; border-radius: 4px;">
+                            <p>${gateway.name}</p>
+                        </div>`;
+                    });
+                    pmContainer.innerHTML = pmHtml;
+                    
+                    // Re-attach listeners for dynamically created payment methods
+                    paymentMethods = document.querySelectorAll('.payment-method');
+                    paymentMethods.forEach(method => method.addEventListener('click', function() {
+                        document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('active'));
+                        this.classList.add('active');
+                    }));
                 }
 
                 // Categories Loader
@@ -1409,7 +1449,7 @@
                 const price = product.variants && product.variants.length > 0 ? product.variants[0].price : (product.price || 0);
                 const discountBadge = product.discount ? `<div class="discount-badge">${product.discount}% OFF</div>` : '';
                 productCard.innerHTML = `
-                    <div class="product-img"><img src="${product.images[0]}" alt="${product.name}">${discountBadge}</div>
+                    <div class="product-img"><img src="${product.images && product.images.length > 0 ? product.images[0] : ''}" alt="${product.name}">${discountBadge}</div>
                     <div class="product-info">
                         <h3>${product.name}</h3>
                         <div class="price">
@@ -1462,7 +1502,7 @@
                 const price = product.variants && product.variants.length > 0 ? product.variants[0].price : (product.price || 0);
                 card.innerHTML = `
                     <div class="suggested-product-img">
-                        <img src="${product.images[0]}" alt="${product.name}">
+                        <img src="${product.images && product.images.length > 0 ? product.images[0] : ''}" alt="${product.name}">
                     </div>
                     <div class="suggested-product-info">
                         <h4>${product.name}</h4>
@@ -1504,21 +1544,23 @@
             detailDesc.textContent = currentProduct.description;
             detailRating.innerHTML = `${getStarRating(currentProduct.rating || 5)} <span>(${currentProduct.rating || 5})</span>`;
             detailQty.value = 1;
-            detailMainImg.src = currentProduct.images[0];
+            detailMainImg.src = currentProduct.images && currentProduct.images.length > 0 ? currentProduct.images[0] : '';
             detailThumbnails.innerHTML = '';
             
-            currentProduct.images.forEach((imgSrc, index) => {
-                const thumb = document.createElement('img');
-                thumb.src = imgSrc;
-                thumb.className = `thumbnail ${index === 0 ? 'active' : ''}`;
-                thumb.onclick = () => {
-                    if (imageSliderInterval) clearInterval(imageSliderInterval);
-                    detailMainImg.src = imgSrc;
-                    document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
-                    thumb.classList.add('active');
-                };
-                detailThumbnails.appendChild(thumb);
-            });
+            if(currentProduct.images) {
+                currentProduct.images.forEach((imgSrc, index) => {
+                    const thumb = document.createElement('img');
+                    thumb.src = imgSrc;
+                    thumb.className = `thumbnail ${index === 0 ? 'active' : ''}`;
+                    thumb.onclick = () => {
+                        if (imageSliderInterval) clearInterval(imageSliderInterval);
+                        detailMainImg.src = imgSrc;
+                        document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+                        thumb.classList.add('active');
+                    };
+                    detailThumbnails.appendChild(thumb);
+                });
+            }
             
             renderVariantSelectors(currentProduct, detailVariantSelectors);
             renderSuggestedProducts(currentProduct);
@@ -1526,7 +1568,7 @@
             let currentImageIndex = 0;
             const thumbnails = detailThumbnails.querySelectorAll('.thumbnail');
             if (imageSliderInterval) clearInterval(imageSliderInterval);
-            if(currentProduct.images.length > 1) {
+            if(currentProduct.images && currentProduct.images.length > 1) {
                 imageSliderInterval = setInterval(() => {
                     currentImageIndex = (currentImageIndex + 1) % currentProduct.images.length;
                     detailMainImg.src = currentProduct.images[currentImageIndex];
@@ -1543,10 +1585,10 @@
             const colors = [...new Set(product.variants.map(v => v.color))];
             const sizes = [...new Set(product.variants.map(v => v.size))];
 
-            if (colors.length > 0 && colors[0] !== null) {
+            if (colors.length > 0 && colors[0] !== null && colors[0] !== undefined) {
                 container.innerHTML += createSelectorHTML('Color', colors, 'color');
             }
-            if (sizes.length > 0 && sizes[0] !== 'N/A') {
+            if (sizes.length > 0 && sizes[0] !== 'N/A' && sizes[0] !== undefined) {
                 container.innerHTML += createSelectorHTML('Size', sizes, 'size');
             }
 
@@ -1609,7 +1651,7 @@
         
         function toggleOptionsPanel(show) {
             if (show) {
-                panelProductInfo.querySelector('img').src = currentProduct.images[0];
+                panelProductInfo.querySelector('img').src = currentProduct.images && currentProduct.images.length > 0 ? currentProduct.images[0] : '';
                 panelProductInfo.querySelector('h4').textContent = currentProduct.name;
                 const price = selectedVariant ? selectedVariant.price : (currentProduct.variants.length > 0 ? currentProduct.variants[0].price : (currentProduct.price || 0));
                 panelProductInfo.querySelector('.current-price').textContent = `৳${price.toFixed(2)}`;
@@ -1650,7 +1692,7 @@
                     cartId: cartId,
                     name: itemName, 
                     price: itemPrice, 
-                    image: product.images[0], 
+                    image: product.images && product.images.length > 0 ? product.images[0] : '', 
                     quantity: quantity,
                     variant: variant,
                     selected: true 
@@ -1881,7 +1923,7 @@
             const promoProduct = products[Math.floor(Math.random() * products.length)];
             const price = promoProduct.variants && promoProduct.variants.length > 0 ? promoProduct.variants[0].price : (promoProduct.price || 0);
             
-            document.getElementById('promoPopupImg').src = promoProduct.images[0];
+            document.getElementById('promoPopupImg').src = promoProduct.images && promoProduct.images.length > 0 ? promoProduct.images[0] : '';
             document.getElementById('promoPopupName').textContent = promoProduct.name;
             document.getElementById('promoPopupPrice').textContent = `৳${price.toFixed(2)}`;
             document.getElementById('promoPopupOldPrice').textContent = `৳${promoProduct.originalPrice ? promoProduct.originalPrice.toFixed(2) : '0.00'}`;
@@ -1906,6 +1948,22 @@
             }
         }
 
+        function attachCategoryListeners() {
+            document.querySelectorAll('.category-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const category = card.dataset.category;
+                    navigateTo('home');
+                    setTimeout(() => { 
+                        const shopSection = document.getElementById('shop');
+                        shopSection.scrollIntoView({ behavior: 'smooth' });
+                        document.getElementById('shopTitle').textContent = `Products in: ${category.charAt(0).toUpperCase() + category.slice(1)}`;
+                        currentlyDisplayedProducts = products.filter(p => p.category === category);
+                        applyFilterAndRender(currentlyDisplayedProducts, 'default', productGrid);
+                    }, 600);
+                });
+            });
+        }
+
         function setupEventListeners() {
             // Full Screen Ad Banner Timer Logic
             let adTimer;
@@ -1919,6 +1977,10 @@
             }
 
             document.getElementById('closeWelcomeOverlay').addEventListener('click', closeAdBanner);
+            document.getElementById('welcomeActionBtn').addEventListener('click', () => {
+                welcomeOverlay.classList.remove('active');
+                clearInterval(adTimer);
+            });
             
             welcomeOverlay.classList.add('active');
             timeLeft = 5;
@@ -2002,20 +2064,19 @@
                 });
             });
             
-            paymentMethods.forEach(method => method.addEventListener('click', function() {
-                paymentMethods.forEach(m => m.classList.remove('active'));
-                this.classList.add('active');
-            }));
-            
-            checkoutForm.addEventListener('submit', function(e) {
+            checkoutForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 const saveAddress = document.getElementById('saveAddressCheck').checked;
                 
+                const customerName = document.getElementById('name').value;
+                const customerPhone = document.getElementById('phone').value;
+                const customerAddress = document.getElementById('address').value;
+                
                 if (saveAddress) {
                     const newAddr = {
-                        name: document.getElementById('name').value,
-                        phone: document.getElementById('phone').value,
-                        address: document.getElementById('address').value
+                        name: customerName,
+                        phone: customerPhone,
+                        address: customerAddress
                     };
                     if (!savedAddresses.some(a => a.address === newAddr.address)) {
                          savedAddresses.push(newAddr);
@@ -2032,14 +2093,19 @@
                 const orderNo = Math.floor(Math.random() * 1000000000000) + 1000000000000;
                 const dateObj = new Date();
                 const date = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + dateObj.toLocaleTimeString('en-GB', { hour12: false });
-                const paymentMethodText = document.querySelector('.payment-method.active p').textContent;
+                
+                const paymentMethodEl = document.querySelector('.payment-method.active');
+                const paymentMethodText = paymentMethodEl ? paymentMethodEl.querySelector('p').textContent : 'Cash on Delivery';
+                const paymentLink = paymentMethodEl ? paymentMethodEl.dataset.link : null;
                 
                 let subtotal = 0;
                 let itemsHtml = '';
+                let productNames = [];
                 
                 selectedItems.forEach(item => {
                     subtotal += item.price * item.quantity;
                     const variantText = item.variant ? (item.variant.color || item.variant.size || '') : '';
+                    productNames.push(`${item.name} (x${item.quantity})`);
                     itemsHtml += `
                         <div class="od-item">
                             <img src="${item.image}" alt="">
@@ -2055,9 +2121,29 @@
                     `;
                 });
                 
-                const shippingFee = 60; // Mock Value, update dynamically if needed
+                const deliveryInside = parseFloat(document.getElementById('deliveryInsideTk').textContent.replace('৳', '')) || 60;
+                const shippingFee = deliveryInside; // Defaulting to inside city for preview
                 const codFee = paymentMethodText.includes('Cash') ? 20 : 0;
                 const total = subtotal + shippingFee + codFee;
+
+                // Firestone Order Insertion Match admin.html structure
+                try {
+                    await db.collection('orders').doc(orderNo.toString()).set({
+                        customer: customerName,
+                        phone: customerPhone,
+                        address: customerAddress,
+                        products: productNames.join(', '),
+                        amount: total,
+                        payment: paymentMethodText,
+                        status: 'Pending',
+                        date: date,
+                        userId: currentUser ? auth.currentUser?.uid : null
+                    });
+                } catch(error) {
+                    console.error("Order Failed: ", error);
+                    showCustomAlert('Error', 'Failed to place order.');
+                    return;
+                }
                 
                 document.getElementById('odBody').innerHTML = itemsHtml;
                 document.getElementById('odSubtotal').textContent = `৳ ${subtotal.toFixed(0)}`;
@@ -2076,6 +2162,10 @@
                 updateCartCount();
                 renderCartItems();
                 this.reset();
+
+                if (paymentLink && paymentLink !== 'undefined') {
+                    window.open(paymentLink, '_blank');
+                }
             });
 
             // Order Details Actions
@@ -2215,21 +2305,6 @@
                     }
                 });
             });
-            
-            document.querySelectorAll('.category-card').forEach(card => {
-                card.addEventListener('click', () => {
-                    const category = card.dataset.category;
-                    navigateTo('home');
-                    setTimeout(() => { 
-                        const shopSection = document.getElementById('shop');
-                        shopSection.scrollIntoView({ behavior: 'smooth' });
-                        document.getElementById('shopTitle').textContent = `Products in: ${category.charAt(0).toUpperCase() + category.slice(1)}`;
-                        currentlyDisplayedProducts = products.filter(p => p.category === category);
-                        applyFilterAndRender(currentlyDisplayedProducts, 'default', productGrid);
-                    }, 600);
-                });
-            });
-
 
             menuToggle.addEventListener('click', () => { menuToggle.classList.toggle('active'); mobileMenu.classList.toggle('active'); });
             shopNowBtn.addEventListener('click', () => { document.getElementById('shop').scrollIntoView({ behavior: 'smooth' }); });
@@ -2284,6 +2359,7 @@
                 setTimeout(() => { searchSuggestionsList.innerHTML = ''; }, 200);
             });
 
+
             detailMainImg.addEventListener('click', () => {
                 lightbox.style.display = 'flex';
                 lightboxImg.src = detailMainImg.src;
@@ -2296,6 +2372,7 @@
 
             closeLightbox.addEventListener('click', closeAndResetLightbox);
             lightbox.addEventListener('click', (e) => { if(e.target === lightbox) { closeAndResetLightbox(); } });
+            
             lightboxImg.addEventListener('click', (e) => { e.stopPropagation(); lightboxImg.classList.toggle('zoomed'); });
 
             document.querySelectorAll('.password-toggle-icon').forEach(icon => {
@@ -2311,7 +2388,8 @@
 
         function startOfferTimer() {
             const endDate = new Date();
-            endDate.setDate(endDate.getDate() + 3); 
+            endDate.setDate(endDate.getDate() + 3);
+            
             const timerInterval = setInterval(updateTimer, 1000);
 
             function updateTimer() {
@@ -2338,3 +2416,4 @@
     </script>
 </body>
 </html>
+```
