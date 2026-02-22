@@ -86,6 +86,20 @@
         .menu-item { padding: 12px 20px; display: flex; align-items: center; color: var(--gray-color); transition: all var(--transition-speed); border-left: 3px solid transparent; position: relative; }
         .menu-item:hover, .menu-item.active { background-color: rgba(67, 97, 238, 0.1); color: var(--primary-color); border-left-color: var(--primary-color); }
         .menu-item i { margin-right: 10px; font-size: 18px; width: 24px; text-align: center; }
+        
+        .menu-header {
+            padding: 15px 20px 5px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--gray-color);
+            letter-spacing: 1px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            margin-top: 5px;
+        }
+        .sidebar-menu > li:first-child.menu-header { border-top: none; margin-top: 0; }
+        .dark-mode .menu-header { border-top-color: rgba(255,255,255,0.05); }
+
         .main-content { flex: 1; margin-left: var(--sidebar-width); transition: margin-left var(--transition-speed); display: flex; flex-direction: column; width: calc(100% - var(--sidebar-width)); }
         .topbar { height: var(--topbar-height); background-color: var(--light-color); padding: 0 25px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--card-shadow); position: sticky; top: 0; z-index: 1000; }
         .topbar-left { display: flex; align-items: center; }
@@ -124,6 +138,13 @@
         .form-full { margin-bottom: 20px; }
         .form-section { background-color: var(--light-color); border-radius: 12px; padding: 25px; box-shadow: var(--card-shadow); margin-bottom: 30px; }
         textarea.form-control { min-height: 120px; resize: vertical; }
+        
+        /* Dynamic List Styles with Headers & Borders */
+        .dynamic-list-wrapper { border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 15px; background: var(--light-color); }
+        .dynamic-list-header { display: flex; gap: 10px; font-size: 13px; font-weight: 600; color: var(--gray-color); border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 8px; margin-bottom: 10px; }
+        .dark-mode .dynamic-list-wrapper { border-color: rgba(255,255,255,0.1); }
+        .dark-mode .dynamic-list-header { border-bottom-color: rgba(255,255,255,0.1); }
+        
         .dynamic-list { display: flex; flex-direction: column; gap: 10px; }
         .dynamic-item { display: flex; gap: 10px; align-items: center; }
         .btn-icon-add, .btn-icon-remove { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: white; flex-shrink: 0; }
@@ -190,14 +211,24 @@
                 <button class="close-sidebar"><i class="fas fa-times"></i></button>
             </div>
             <ul class="sidebar-menu">
+                <li class="menu-header">Main</li>
                 <li><a href="#" class="menu-item active" data-page="dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+                
+                <li class="menu-header">Catalog</li>
                 <li><a href="#" class="menu-item" data-page="products"><i class="fas fa-box"></i> Products</a></li>
                 <li><a href="#" class="menu-item" data-page="categories"><i class="fas fa-tags"></i> Categories</a></li>
+                
+                <li class="menu-header">Sales</li>
                 <li><a href="#" class="menu-item notification-dot" data-page="orders" id="menuOrdersLink"><i class="fas fa-shopping-cart"></i> Orders</a></li>
                 <li><a href="#" class="menu-item" data-page="customers"><i class="fas fa-users"></i> Customers</a></li>
+                
+                <li class="menu-header">Marketing</li>
                 <li><a href="#" class="menu-item" data-page="offers"><i class="fas fa-percent"></i> Offers</a></li>
                 <li><a href="#" class="menu-item" data-page="popup"><i class="fas fa-window-restore"></i> Pop Ups</a></li>
+                
+                <li class="menu-header">System</li>
                 <li><a href="#" class="menu-item" data-page="settings"><i class="fas fa-cog"></i> Settings</a></li>
+                <li><a href="#" class="menu-item" data-page="payment"><i class="fas fa-credit-card"></i> Payment Gateways</a></li>
                 <li><a href="#" id="logoutBtn" class="menu-item"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </aside>
@@ -405,6 +436,26 @@
                         </table>
                     </div>
                 </div>
+                
+                <div id="paymentPage" class="page-content hidden">
+                    <div class="table-header">
+                        <h3 class="table-title">Payment Gateways</h3>
+                        <button class="btn-add" id="addGatewayBtn">Add Gateway</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Logo</th>
+                                    <th>Gateway Name</th>
+                                    <th>Page Link</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gatewaysTable"></tbody>
+                        </table>
+                    </div>
+                </div>
 
                 <div id="settingsPage" class="page-content hidden">
                     <div class="form-section">
@@ -419,26 +470,6 @@
                             <div class="form-row">
                                 <div class="form-group"><label>Hero Title</label><input type="text" id="heroTitle" class="form-control"></div>
                                 <div class="form-group"><label>Hero Description</label><textarea id="heroDesc" class="form-control" rows="2"></textarea></div>
-                            </div>
-
-                            <h4 style="margin: 20px 0 10px; color: var(--primary-color);">Offer Banner Section (Homepage)</h4>
-                            <div class="form-row">
-                                <div class="form-group"><label>Offer Title</label><input type="text" id="offerTitle" class="form-control"></div>
-                                <div class="form-group"><label>Offer Subtitle</label><input type="text" id="offerSubtitle" class="form-control"></div>
-                            </div>
-                            <div class="form-full"><div class="form-group"><label>Offer Description</label><textarea id="offerDesc" class="form-control" rows="2"></textarea></div></div>
-
-                            <h4 style="margin: 20px 0 10px; color: var(--primary-color);">Opening Ad Banner (Welcome Popup)</h4>
-                            <div class="form-row">
-                                <div class="form-group"><label>Welcome Title</label><input type="text" id="welcomeTitle" class="form-control"></div>
-                                <div class="form-group"><label>Welcome Description</label><textarea id="welcomeDesc" class="form-control" rows="2"></textarea></div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group"><label>Background Image URL</label><input type="text" id="welcomeBgUrl" class="form-control" placeholder="Full-screen image URL"></div>
-                                <div class="form-group"><label>Action Button Text</label><input type="text" id="welcomeActionBtn" class="form-control" placeholder="e.g., Shop Now"></div>
-                            </div>
-                            <div class="form-full">
-                                <div class="form-group"><label>Action Button Link</label><input type="text" id="welcomeActionLink" class="form-control" placeholder="URL to redirect"></div>
                             </div>
                             
                             <h4 style="margin: 20px 0 10px; color: var(--primary-color);">Delivery Charge</h4>
@@ -463,13 +494,15 @@
                     <div class="form-section">
                         <h3 class="section-title" style="margin-bottom: 20px; font-weight: 600;">Hero Slides & Social Links</h3>
                         <form id="appearanceSettingsForm">
-                            <div class="form-full">
-                                <label>Hero Banner Images/Iframes <button type="button" class="btn-icon-add" onclick="addBannerField()" style="display:inline-flex; width:20px; height:20px; margin-left:5px;">+</button></label>
+                            <div class="form-full dynamic-list-wrapper">
+                                <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">Hero Banner Images/Iframes <button type="button" class="btn-icon-add" onclick="addBannerField()">+</button></label>
+                                <div class="dynamic-list-header"><span style="flex:1;">Type</span><span style="flex:3;">URL Source</span><span style="width:30px; text-align:center;">Action</span></div>
                                 <div id="bannerContainer" class="dynamic-list"></div>
                             </div>
 
-                            <div class="form-full">
-                                <label>Social Links <button type="button" class="btn-icon-add" onclick="addSocialField()" style="display:inline-flex; width:20px; height:20px; margin-left:5px;">+</button></label>
+                            <div class="form-full dynamic-list-wrapper">
+                                <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">Social Links <button type="button" class="btn-icon-add" onclick="addSocialField()">+</button></label>
+                                <div class="dynamic-list-header"><span style="flex:1;">Icon Class</span><span style="flex:2;">Link URL</span><span style="width:30px; text-align:center;">Action</span></div>
                                 <div id="socialsContainer" class="dynamic-list"></div>
                             </div>
 
@@ -481,6 +514,7 @@
         </main>
     </div>
 
+    <!-- Modals -->
     <div id="productModal" class="modal">
         <div class="modal-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px;">
@@ -501,10 +535,13 @@
                         </select>
                     </div>
                 </div>
-                <div class="form-full">
-                    <label>Product Images <button type="button" class="btn-icon-add" onclick="addMediaField()" style="display:inline-flex; width:20px; height:20px; margin-left:5px;">+</button></label>
+                
+                <div class="form-full dynamic-list-wrapper">
+                    <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">Product Images <button type="button" class="btn-icon-add" onclick="addMediaField()">+</button></label>
+                    <div class="dynamic-list-header"><span style="flex:1;">Image URL</span><span style="width:30px; text-align:center;">Action</span></div>
                     <div id="mediaContainer" class="dynamic-list"></div>
                 </div>
+
                 <div class="form-row">
                     <div class="form-group">
                         <label for="productOriginalPrice">Original Price (৳)</label>
@@ -537,6 +574,7 @@
                         </div>
                     </div>
                 </div>
+                
                 <div class="form-full">
                     <div style="display: flex; align-items: center; margin-bottom: 15px;">
                         <label class="switch">
@@ -545,11 +583,13 @@
                         </label>
                         <span style="font-weight: 500;">Product Variants (Color/Size)</span>
                     </div>
-                    <div id="sizeColorSection" class="hidden" style="background: rgba(0,0,0,0.02); padding: 15px; border-radius: 8px;">
-                        <label style="display:block; margin-bottom:10px;">Options <button type="button" class="btn-icon-add" onclick="addSizeColorField()" style="display:inline-flex; width:20px; height:20px; margin-left:5px;">+</button></label>
+                    <div id="sizeColorSection" class="hidden dynamic-list-wrapper">
+                        <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">Options <button type="button" class="btn-icon-add" onclick="addSizeColorField()">+</button></label>
+                        <div class="dynamic-list-header"><span style="flex:2;">Color, Size</span><span style="flex:1;">Price (৳)</span><span style="width:30px; text-align:center;">Action</span></div>
                         <div id="sizeColorContainer" class="dynamic-list"></div>
                     </div>
                 </div>
+
                 <div class="form-group">
                     <label for="productStatus">Status</label>
                     <select id="productStatus" class="form-control" required>
@@ -596,6 +636,15 @@
             </div>
             <form id="offerForm">
                 <div class="form-group"><label for="offerName">Offer Name</label><input type="text" id="offerName" class="form-control" required></div>
+                
+                <h4 style="margin: 15px 0 10px; font-size: 15px; color: var(--primary-color);">Offer Banner Settings</h4>
+                <div class="form-row">
+                    <div class="form-group"><label for="offerTitle">Offer Title</label><input type="text" id="offerTitle" class="form-control"></div>
+                    <div class="form-group"><label for="offerSubtitle">Offer Subtitle</label><input type="text" id="offerSubtitle" class="form-control"></div>
+                </div>
+                <div class="form-full"><div class="form-group"><label for="offerDesc">Offer Description</label><textarea id="offerDesc" class="form-control" rows="2"></textarea></div></div>
+
+                <h4 style="margin: 15px 0 10px; font-size: 15px; color: var(--primary-color);">Offer Details</h4>
                 <div class="form-row">
                     <div class="form-group"><label for="offerDiscount">Discount (%)</label><input type="number" id="offerDiscount" class="form-control" required></div>
                     <div class="form-group">
@@ -605,7 +654,7 @@
                 </div>
                 <div class="form-group"><label for="offerExpiry">Expiry Date</label><input type="date" id="offerExpiry" class="form-control" required></div>
                 <div class="form-row">
-                    <button type="submit" class="btn btn-primary">Create Offer</button>
+                    <button type="submit" class="btn btn-primary">Save Offer</button>
                     <button type="button" class="btn" onclick="closeModal('offerModal')" style="background-color: var(--light-gray); color: var(--dark-color);">Cancel</button>
                 </div>
             </form>
@@ -619,22 +668,58 @@
                 <button class="close-modal-btn" onclick="closeModal('popUpModal')" style="background: none; font-size: 20px;"><i class="fas fa-times"></i></button>
             </div>
             <form id="popUpForm">
-                <div class="form-group"><label for="popUpName">Pop Up Name</label><input type="text" id="popUpName" class="form-control" required></div>
-                <div class="form-group"><label for="popUpSection">Display Section</label><select id="popUpSection" class="form-control" required><option value="opening">Opening Page</option><option value="random-product">Random Product Pages</option></select></div>
+                <div class="form-group">
+                    <label for="popUpSection">Display Section</label>
+                    <select id="popUpSection" class="form-control" required onchange="togglePopUpFields()">
+                        <option value="opening">Opening Page</option>
+                        <option value="random-product">Random Product Pages</option>
+                    </select>
+                </div>
+                
+                <div class="form-group hidden" id="popUpNameField">
+                    <label for="popUpName">Pop Up Name</label>
+                    <input type="text" id="popUpName" class="form-control" placeholder="Enter pop up name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="popUpBannerLogo">Pop-up Background/Image URL</label>
+                    <input type="text" id="popUpBannerLogo" class="form-control" required>
+                </div>
+                
                 <div class="form-group">
                     <div style="display: flex; align-items: center; margin-bottom: 10px;">
                         <label class="switch"><input type="checkbox" id="popUpActionButtonToggle" onchange="togglePopUpActionButton()"><span class="slider"></span></label>
                         <span style="font-weight: 500;">Enable Action Button</span>
                     </div>
                 </div>
+                
                 <div id="popUpActionButtonFields" class="hidden">
                     <div class="form-group"><label for="popUpActionButtonName">Action Button Name</label><input type="text" id="popUpActionButtonName" class="form-control"></div>
                     <div class="form-group"><label for="popUpActionButtonLink">Action Button Link (URL)</label><input type="text" id="popUpActionButtonLink" class="form-control"></div>
                 </div>
-                <div class="form-group"><label for="popUpBannerLogo">Pop-up Background/Image URL</label><input type="text" id="popUpBannerLogo" class="form-control"></div>
-                <div class="form-row">
+
+                <div class="form-row" style="margin-top: 20px;">
                     <button type="submit" class="btn btn-primary">Save Pop Up</button>
                     <button type="button" class="btn" onclick="closeModal('popUpModal')" style="background-color: var(--light-gray); color: var(--dark-color);">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="gatewayModal" class="modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px;">
+                <h3 id="gatewayModalTitle" style="font-size: 20px;">Add Payment Gateway</h3>
+                <button class="close-modal-btn" onclick="closeModal('gatewayModal')" style="background: none; font-size: 20px;"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="gatewayForm">
+                <div class="form-group"><label for="gatewayLogo">Logo URL (1:1 Ratio)</label><input type="url" id="gatewayLogo" class="form-control" required></div>
+                <div class="form-group"><label for="gatewayName">Gateway Name</label><input type="text" id="gatewayName" class="form-control" required></div>
+                <div class="form-group"><label for="gatewayLink">Page Link (URL)</label><input type="url" id="gatewayLink" class="form-control" required></div>
+                
+                <div class="form-row" style="margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">Save Gateway</button>
+                    <button type="button" class="btn" onclick="closeModal('gatewayModal')" style="background-color: var(--light-gray); color: var(--dark-color);">Cancel</button>
                 </div>
             </form>
         </div>
@@ -677,12 +762,15 @@
         let adminCustomers = [];
         let adminOffers = [];
         let adminPopups = [];
+        let adminGateways = [];
         let adminSeoKeywords = [];
 
         let isEditingProduct = false;
         let editingProductId = null;
         let isEditingPopUp = false;
         let editingPopUpId = null;
+        let isEditingGateway = false;
+        let editingGatewayId = null;
         let hasNewOrders = false;
         let currentOrderFilter = 'Pending';
 
@@ -707,6 +795,7 @@
         const customersTable = document.getElementById('customersTable');
         const offersTable = document.getElementById('offersTable');
         const popUpsTable = document.getElementById('popUpsTable');
+        const gatewaysTable = document.getElementById('gatewaysTable');
         const recentOrdersTable = document.getElementById('recentOrdersTable');
         const productCategorySelect = document.getElementById('productCategory');
         const offerCategorySelect = document.getElementById('offerCategory');
@@ -715,6 +804,7 @@
         const categoryForm = document.getElementById('categoryForm');
         const offerForm = document.getElementById('offerForm');
         const popUpForm = document.getElementById('popUpForm');
+        const gatewayForm = document.getElementById('gatewayForm');
         const generalSettingsForm = document.getElementById('generalSettingsForm');
         const appearanceSettingsForm = document.getElementById('appearanceSettingsForm');
 
@@ -730,8 +820,31 @@
             }
         });
 
+        window.togglePopUpFields = function() {
+            const section = document.getElementById('popUpSection').value;
+            const nameField = document.getElementById('popUpNameField');
+            const nameInput = document.getElementById('popUpName');
+            if (section === 'random-product') {
+                nameField.classList.remove('hidden');
+                nameInput.required = true;
+            } else {
+                nameField.classList.add('hidden');
+                nameInput.required = false;
+                nameInput.value = '';
+            }
+        };
+
         // Initialize UI Events
         document.addEventListener('DOMContentLoaded', function() {
+            // Close sidebar on outside click
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth <= 768 && sidebar.classList.contains('active')) {
+                    if (!sidebar.contains(e.target) && !document.getElementById('toggleSidebarBtn').contains(e.target)) {
+                        sidebar.classList.remove('active');
+                    }
+                }
+            });
+
             loginForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 const email = document.getElementById('adminEmail').value;
@@ -794,8 +907,18 @@
                 document.getElementById('popUpModalTitle').textContent = 'Add New Pop Up';
                 document.querySelector('#popUpForm button[type="submit"]').textContent = 'Save Pop Up';
                 popUpForm.reset();
+                document.getElementById('popUpSection').value = 'opening';
+                togglePopUpFields();
                 document.getElementById('popUpActionButtonFields').classList.add('hidden');
                 openModal('popUpModal');
+            });
+            
+            document.getElementById('addGatewayBtn').addEventListener('click', () => {
+                isEditingGateway = false;
+                document.getElementById('gatewayModalTitle').textContent = 'Add Payment Gateway';
+                document.querySelector('#gatewayForm button[type="submit"]').textContent = 'Save Gateway';
+                gatewayForm.reset();
+                openModal('gatewayModal');
             });
 
             document.querySelector('.view-all-orders').addEventListener('click', (e) => {
@@ -809,6 +932,7 @@
             categoryForm.addEventListener('submit', handleCategorySubmit);
             offerForm.addEventListener('submit', handleOfferSubmit);
             popUpForm.addEventListener('submit', handlePopUpSubmit);
+            gatewayForm.addEventListener('submit', handleGatewaySubmit);
             generalSettingsForm.addEventListener('submit', saveGeneralSettings);
             appearanceSettingsForm.addEventListener('submit', saveSlidesAndSocials);
         });
@@ -822,6 +946,7 @@
             loadCustomers();
             loadOffers();
             loadPopups();
+            loadGateways();
         }
 
         async function loadSettings() {
@@ -833,14 +958,6 @@
                     document.getElementById('logoUrl').value = data.logoUrl || '';
                     document.getElementById('heroTitle').value = data.heroTitle || '';
                     document.getElementById('heroDesc').value = data.heroDesc || '';
-                    document.getElementById('offerTitle').value = data.offerTitle || '';
-                    document.getElementById('offerSubtitle').value = data.offerSubtitle || '';
-                    document.getElementById('offerDesc').value = data.offerDesc || '';
-                    document.getElementById('welcomeTitle').value = data.welcomeTitle || '';
-                    document.getElementById('welcomeDesc').value = data.welcomeDesc || '';
-                    document.getElementById('welcomeBgUrl').value = data.welcomeBgUrl || '';
-                    document.getElementById('welcomeActionBtn').value = data.welcomeActionBtn || '';
-                    document.getElementById('welcomeActionLink').value = data.welcomeActionLink || '';
                     document.getElementById('deliveryInside').value = data.deliveryInside || 0;
                     document.getElementById('deliveryOutside').value = data.deliveryOutside || 0;
                     document.getElementById('footerPhone').value = data.footerPhone || '';
@@ -917,6 +1034,13 @@
             db.collection('popups').onSnapshot(snap => {
                 adminPopups = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
                 populatePopUpsTable();
+            });
+        }
+
+        function loadGateways() {
+            db.collection('paymentGateways').onSnapshot(snap => {
+                adminGateways = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                populateGatewaysTable();
             });
         }
 
@@ -1048,8 +1172,8 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td><img src="${p.bannerLogo || p.image || ''}" width="40" style="object-fit:cover;"></td>
-                    <td>${p.name}</td>
-                    <td>${p.section}</td>
+                    <td>${p.section === 'random-product' ? (p.name || 'N/A') : 'Opening Ad'}</td>
+                    <td>${p.section === 'opening' ? 'Opening Page' : 'Random Product'}</td>
                     <td>${p.actionButton ? p.actionButtonName : 'N/A'}</td>
                     <td><span class="status status-active">Active</span></td>
                     <td>
@@ -1058,6 +1182,23 @@
                     </td>
                 `;
                 popUpsTable.appendChild(row);
+            });
+        }
+
+        function populateGatewaysTable() {
+            gatewaysTable.innerHTML = '';
+            adminGateways.forEach(g => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><img src="${g.logo}" width="40" height="40" style="object-fit:cover; border-radius:8px;"></td>
+                    <td>${g.name}</td>
+                    <td><a href="${g.link}" target="_blank" style="color:var(--primary-color); text-decoration:underline;">View Link</a></td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="editGateway('${g.id}')">Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteGateway('${g.id}')">Delete</button>
+                    </td>
+                `;
+                gatewaysTable.appendChild(row);
             });
         }
 
@@ -1147,7 +1288,10 @@
                 name: document.getElementById('offerName').value,
                 discount: parseInt(document.getElementById('offerDiscount').value),
                 category: document.getElementById('offerCategory').value || 'All Categories',
-                expiry: document.getElementById('offerExpiry').value
+                expiry: document.getElementById('offerExpiry').value,
+                offerTitle: document.getElementById('offerTitle').value,
+                offerSubtitle: document.getElementById('offerSubtitle').value,
+                offerDesc: document.getElementById('offerDesc').value
             };
             await db.collection('offers').add(payload);
             closeModal('offerModal');
@@ -1156,14 +1300,15 @@
 
         async function handlePopUpSubmit(e) {
             e.preventDefault();
+            const section = document.getElementById('popUpSection').value;
             const actionButton = document.getElementById('popUpActionButtonToggle').checked;
             const payload = {
-                name: document.getElementById('popUpName').value,
-                section: document.getElementById('popUpSection').value,
+                section: section,
+                name: section === 'random-product' ? document.getElementById('popUpName').value : '',
+                bannerLogo: document.getElementById('popUpBannerLogo').value,
                 actionButton: actionButton,
                 actionButtonName: actionButton ? document.getElementById('popUpActionButtonName').value : '',
-                actionButtonLink: actionButton ? document.getElementById('popUpActionButtonLink').value : '',
-                bannerLogo: document.getElementById('popUpBannerLogo').value
+                actionButtonLink: actionButton ? document.getElementById('popUpActionButtonLink').value : ''
             };
             if(isEditingPopUp && editingPopUpId) {
                 await db.collection('popups').doc(editingPopUpId).update(payload);
@@ -1175,6 +1320,23 @@
             closeModal('popUpModal');
         }
 
+        async function handleGatewaySubmit(e) {
+            e.preventDefault();
+            const payload = {
+                logo: document.getElementById('gatewayLogo').value,
+                name: document.getElementById('gatewayName').value,
+                link: document.getElementById('gatewayLink').value
+            };
+            if(isEditingGateway && editingGatewayId) {
+                await db.collection('paymentGateways').doc(editingGatewayId).update(payload);
+                alert("Gateway Updated!");
+            } else {
+                await db.collection('paymentGateways').add(payload);
+                alert("Gateway Saved!");
+            }
+            closeModal('gatewayModal');
+        }
+
         async function saveGeneralSettings(e) {
             e.preventDefault();
             const payload = {
@@ -1182,14 +1344,6 @@
                 logoUrl: document.getElementById('logoUrl').value,
                 heroTitle: document.getElementById('heroTitle').value,
                 heroDesc: document.getElementById('heroDesc').value,
-                offerTitle: document.getElementById('offerTitle').value,
-                offerSubtitle: document.getElementById('offerSubtitle').value,
-                offerDesc: document.getElementById('offerDesc').value,
-                welcomeTitle: document.getElementById('welcomeTitle').value,
-                welcomeDesc: document.getElementById('welcomeDesc').value,
-                welcomeBgUrl: document.getElementById('welcomeBgUrl').value,
-                welcomeActionBtn: document.getElementById('welcomeActionBtn').value,
-                welcomeActionLink: document.getElementById('welcomeActionLink').value,
                 deliveryInside: parseFloat(document.getElementById('deliveryInside').value),
                 deliveryOutside: parseFloat(document.getElementById('deliveryOutside').value),
                 footerPhone: document.getElementById('footerPhone').value,
@@ -1204,7 +1358,6 @@
 
         async function saveSlidesAndSocials(e) {
             e.preventDefault();
-            // Clear old slides & socials (simplest way is to fetch, delete all, then add new, or use a batch)
             const slideDocs = await db.collection('heroSlides').get();
             const socialDocs = await db.collection('socials').get();
             
@@ -1284,8 +1437,12 @@
         window.editPopUp = function(id) {
             const p = adminPopups.find(x => x.id === id);
             if(!p) return;
-            document.getElementById('popUpName').value = p.name;
+            
             document.getElementById('popUpSection').value = p.section;
+            togglePopUpFields();
+            if(p.section === 'random-product') document.getElementById('popUpName').value = p.name || '';
+            
+            document.getElementById('popUpBannerLogo').value = p.bannerLogo || p.image || '';
             document.getElementById('popUpActionButtonToggle').checked = p.actionButton || false;
             togglePopUpActionButton();
             if(p.actionButton) {
@@ -1295,10 +1452,25 @@
                 document.getElementById('popUpActionButtonName').value = '';
                 document.getElementById('popUpActionButtonLink').value = '';
             }
-            document.getElementById('popUpBannerLogo').value = p.bannerLogo || p.image || '';
+            
             isEditingPopUp = true; editingPopUpId = id;
             document.getElementById('popUpModalTitle').textContent = 'Edit Pop Up';
             openModal('popUpModal');
+        };
+
+        window.editGateway = function(id) {
+            const g = adminGateways.find(x => x.id === id);
+            if(!g) return;
+            document.getElementById('gatewayLogo').value = g.logo || '';
+            document.getElementById('gatewayName').value = g.name || '';
+            document.getElementById('gatewayLink').value = g.link || '';
+            isEditingGateway = true; editingGatewayId = id;
+            document.getElementById('gatewayModalTitle').textContent = 'Edit Payment Gateway';
+            openModal('gatewayModal');
+        };
+
+        window.deleteGateway = function(id) {
+            if(confirm("Delete this Payment Gateway?")) db.collection('paymentGateways').doc(id).delete();
         };
 
         function updateOrderStatus(id, status) {
@@ -1307,16 +1479,16 @@
 
         // Dynamic Field Generators
         window.addMediaField = function() {
-            document.getElementById('mediaContainer').innerHTML += `<div class="dynamic-item"><input type="text" class="form-control product-media-input" placeholder="Image URL"><button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button></div>`;
+            document.getElementById('mediaContainer').innerHTML += `<div class="dynamic-item"><input type="text" class="form-control product-media-input" placeholder="Image URL" style="flex:1;"><button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button></div>`;
         };
         window.addSizeColorField = function() {
             document.getElementById('sizeColorContainer').innerHTML += `<div class="dynamic-item"><input type="text" class="form-control" placeholder="Color, Size" style="flex: 2;"><input type="number" class="form-control" placeholder="Price" style="flex: 1;"><button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button></div>`;
         };
         window.addBannerField = function(src="", type="image", id="") {
-            document.getElementById('bannerContainer').innerHTML += `<div class="dynamic-item" data-id="${id}"><select class="form-control banner-type" style="flex:1;"><option value="image" ${type==='image'?'selected':''}>Image</option><option value="iframe" ${type==='iframe'?'selected':''}>Iframe</option></select><input type="text" class="form-control banner-url" placeholder="URL" value="${src}" style="flex:3;"><button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button></div>`;
+            document.getElementById('bannerContainer').innerHTML += `<div class="dynamic-item" data-id="${id}"><select class="form-control banner-type" style="flex:1;"><option value="image" ${type==='image'?'selected':''}>Image</option><option value="iframe" ${type==='iframe'?'selected':''}>Iframe</option></select><input type="text" class="form-control banner-url" placeholder="URL Source" value="${src}" style="flex:3;"><button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button></div>`;
         };
         window.addSocialField = function(icon="", url="", id="") {
-            document.getElementById('socialsContainer').innerHTML += `<div class="dynamic-item" data-id="${id}"><input type="text" class="form-control social-icon-input" placeholder="Icon (e.g. fab fa-facebook)" value="${icon}" style="flex:1;"><input type="text" class="form-control social-url" placeholder="URL link" value="${url}" style="flex:2;"><button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button></div>`;
+            document.getElementById('socialsContainer').innerHTML += `<div class="dynamic-item" data-id="${id}"><input type="text" class="form-control social-icon-input" placeholder="Icon (e.g. fab fa-facebook)" value="${icon}" style="flex:1;"><input type="text" class="form-control social-url" placeholder="Link URL" value="${url}" style="flex:2;"><button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button></div>`;
         };
         
         function handleSeoInput(e) {
@@ -1359,6 +1531,7 @@
             document.getElementById(id).classList.remove('show'); 
             if(id === 'productModal') { isEditingProduct = false; editingProductId = null; }
             if(id === 'popUpModal') { isEditingPopUp = false; editingPopUpId = null; }
+            if(id === 'gatewayModal') { isEditingGateway = false; editingGatewayId = null; }
         };
         window.switchOrderTab = function(status, btn) {
             currentOrderFilter = status;
