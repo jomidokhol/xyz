@@ -333,7 +333,7 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Icon</th>
+                                    <th>Icon / Image</th>
                                     <th>Name</th>
                                     <th>Products</th>
                                     <th>Actions</th>
@@ -448,7 +448,7 @@
                                 <tr>
                                     <th>Logo</th>
                                     <th>Gateway Name</th>
-                                    <th>Page Link</th>
+                                    <th>Page Link / Plugin URL</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -594,6 +594,15 @@
                     </div>
                 </div>
 
+                <div class="form-full">
+                    <div class="form-group">
+                        <label>Allowed Payment Gateways</label>
+                        <div id="productGatewaysContainer" style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: var(--light-color);">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label for="productStatus">Status</label>
                     <select id="productStatus" class="form-control" required>
@@ -613,7 +622,7 @@
     <div id="categoryModal" class="modal">
         <div class="modal-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px;">
-                <h3 style="font-size: 20px;">Add New Category</h3>
+                <h3 id="categoryModalTitle" style="font-size: 20px;">Add New Category</h3>
                 <button class="close-modal-btn" onclick="closeModal('categoryModal')" style="background: none; font-size: 20px;"><i class="fas fa-times"></i></button>
             </div>
             <form id="categoryForm">
@@ -621,11 +630,26 @@
                     <label for="categoryName">Category Name</label>
                     <input type="text" id="categoryName" class="form-control" placeholder="e.g. Covers" required>
                 </div>
+                
                 <div class="form-group">
-                    <label for="categoryIcon">Category Icon Class (FontAwesome)</label>
-                    <input type="text" id="categoryIcon" class="form-control" placeholder="e.g. fas fa-mobile-alt" required>
+                    <label>Category Icon / Image</label>
+                    <div style="display: flex; gap: 15px; margin-bottom: 10px; font-size: 14px;">
+                        <label><input type="radio" name="catMediaType" value="icon" checked onchange="toggleCategoryMedia()"> FontAwesome Icon</label>
+                        <label><input type="radio" name="catMediaType" value="image" onchange="toggleCategoryMedia()"> Image URL</label>
+                    </div>
                 </div>
-                <div class="form-row">
+                
+                <div class="form-group" id="catIconGroup">
+                    <label for="categoryIcon">Category Icon Class</label>
+                    <input type="text" id="categoryIcon" class="form-control" placeholder="e.g. fas fa-mobile-alt">
+                </div>
+                
+                <div class="form-group hidden" id="catImageGroup">
+                    <label for="categoryImage">Category Image URL</label>
+                    <input type="url" id="categoryImage" class="form-control" placeholder="https://example.com/icon.png">
+                </div>
+
+                <div class="form-row" style="margin-top: 20px;">
                     <button type="submit" class="btn btn-primary">Add Category</button>
                     <button type="button" class="btn" onclick="closeModal('categoryModal')" style="background-color: var(--light-gray); color: var(--dark-color);">Cancel</button>
                 </div>
@@ -720,7 +744,24 @@
             <form id="gatewayForm">
                 <div class="form-group"><label for="gatewayLogo">Logo URL (1:1 Ratio)</label><input type="url" id="gatewayLogo" class="form-control" required></div>
                 <div class="form-group"><label for="gatewayName">Gateway Name</label><input type="text" id="gatewayName" class="form-control" required></div>
-                <div class="form-group"><label for="gatewayLink">Page Link (URL)</label><input type="url" id="gatewayLink" class="form-control" required></div>
+                
+                <div class="form-group">
+                    <label>Integration Type</label>
+                    <div style="display: flex; gap: 15px; margin-bottom: 10px; font-size: 14px;">
+                        <label><input type="radio" name="gatewayIntegrationType" value="link" checked onchange="toggleGatewayIntegration()"> Page Link</label>
+                        <label><input type="radio" name="gatewayIntegrationType" value="plugin" onchange="toggleGatewayIntegration()"> Plugin URL</label>
+                    </div>
+                </div>
+                
+                <div class="form-group" id="gatewayLinkGroup">
+                    <label for="gatewayLink">Page Link (e.g. xyz.html)</label>
+                    <input type="text" id="gatewayLink" class="form-control" placeholder="e.g. xyz.html">
+                </div>
+                
+                <div class="form-group hidden" id="gatewayPluginGroup">
+                    <label for="gatewayPlugin">Plugin URL</label>
+                    <input type="url" id="gatewayPlugin" class="form-control" placeholder="https://...">
+                </div>
                 
                 <div class="form-row" style="margin-top: 20px;">
                     <button type="submit" class="btn btn-primary">Save Gateway</button>
@@ -772,6 +813,8 @@
 
         let isEditingProduct = false;
         let editingProductId = null;
+        let isEditingCategory = false;
+        let editingCategoryId = null;
         let isEditingPopUp = false;
         let editingPopUpId = null;
         let isEditingGateway = false;
@@ -840,6 +883,50 @@
             }
         };
 
+        window.toggleCategoryMedia = function() {
+            const val = document.querySelector('input[name="catMediaType"]:checked').value;
+            if (val === 'icon') {
+                document.getElementById('catIconGroup').classList.remove('hidden');
+                document.getElementById('catImageGroup').classList.add('hidden');
+                document.getElementById('categoryIcon').required = true;
+                document.getElementById('categoryImage').required = false;
+            } else {
+                document.getElementById('catIconGroup').classList.add('hidden');
+                document.getElementById('catImageGroup').classList.remove('hidden');
+                document.getElementById('categoryIcon').required = false;
+                document.getElementById('categoryImage').required = true;
+            }
+        };
+
+        window.toggleGatewayIntegration = function() {
+            const val = document.querySelector('input[name="gatewayIntegrationType"]:checked').value;
+            if (val === 'link') {
+                document.getElementById('gatewayLinkGroup').classList.remove('hidden');
+                document.getElementById('gatewayPluginGroup').classList.add('hidden');
+                document.getElementById('gatewayLink').required = true;
+                document.getElementById('gatewayPlugin').required = false;
+            } else {
+                document.getElementById('gatewayLinkGroup').classList.add('hidden');
+                document.getElementById('gatewayPluginGroup').classList.remove('hidden');
+                document.getElementById('gatewayLink').required = false;
+                document.getElementById('gatewayPlugin').required = true;
+            }
+        };
+
+        function renderProductGateways(selectedGateways = null) {
+            const container = document.getElementById('productGatewaysContainer');
+            container.innerHTML = '';
+            
+            // Default check all if selectedGateways is null
+            let checkCOD = selectedGateways === null || selectedGateways.includes('COD') ? 'checked' : '';
+            container.innerHTML += `<label style="display:flex; align-items:center; gap:5px; cursor:pointer;"><input type="checkbox" class="gateway-checkbox" value="COD" ${checkCOD}> Cash on Delivery (COD)</label>`;
+            
+            adminGateways.forEach(g => {
+                let checkGW = selectedGateways === null || selectedGateways.includes(g.id) ? 'checked' : '';
+                container.innerHTML += `<label style="display:flex; align-items:center; gap:5px; cursor:pointer;"><input type="checkbox" class="gateway-checkbox" value="${g.id}" ${checkGW}> ${g.name}</label>`;
+            });
+        }
+
         // Initialize UI Events
         document.addEventListener('DOMContentLoaded', function() {
             // Close sidebar on outside click
@@ -894,11 +981,18 @@
                 document.getElementById('mediaContainer').innerHTML = `<div class="dynamic-item"><input type="text" class="form-control product-media-input" placeholder="Enter Image URL" required><button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button></div>`;
                 document.getElementById('sizeColorToggle').checked = false;
                 toggleSizeColor();
+                renderProductGateways(null);
                 openModal('productModal');
             });
 
             document.getElementById('addCategoryBtn').addEventListener('click', () => {
+                isEditingCategory = false;
+                editingCategoryId = null;
+                document.getElementById('categoryModalTitle').textContent = 'Add New Category';
+                document.querySelector('#categoryForm button[type="submit"]').textContent = 'Add Category';
                 categoryForm.reset();
+                document.querySelector('input[name="catMediaType"][value="icon"]').checked = true;
+                toggleCategoryMedia();
                 openModal('categoryModal');
             });
 
@@ -921,9 +1015,12 @@
             
             document.getElementById('addGatewayBtn').addEventListener('click', () => {
                 isEditingGateway = false;
+                editingGatewayId = null;
                 document.getElementById('gatewayModalTitle').textContent = 'Add Payment Gateway';
                 document.querySelector('#gatewayForm button[type="submit"]').textContent = 'Save Gateway';
                 gatewayForm.reset();
+                document.querySelector('input[name="gatewayIntegrationType"][value="link"]').checked = true;
+                toggleGatewayIntegration();
                 openModal('gatewayModal');
             });
 
@@ -1095,13 +1192,21 @@
             categoriesTable.innerHTML = '';
             adminCategories.forEach(c => {
                 const count = adminProducts.filter(p => p.category === c.slug).length;
+                let mediaHtml = '';
+                if (c.mediaType === 'image' && c.imageUrl) {
+                    mediaHtml = `<img src="${c.imageUrl}" style="width: 35px; height: 35px; border-radius: 8px; object-fit: cover;">`;
+                } else {
+                    mediaHtml = `<div style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; background: rgba(67, 97, 238, 0.1); border-radius: 8px;"><i class="${c.iconClass || 'fas fa-tags'}" style="font-size:18px; color:var(--primary-color);"></i></div>`;
+                }
+
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td><div style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; background: rgba(67, 97, 238, 0.1); border-radius: 8px;"><i class="${c.iconClass}" style="font-size:18px; color:var(--primary-color);"></i></div></td>
+                    <td>${mediaHtml}</td>
                     <td>${c.name}</td>
                     <td>${count} Products</td>
                     <td>
                         <div class="action-buttons">
+                            <button class="btn-action btn-edit" onclick="editCategory('${c.id}')">Edit</button>
                             <button class="btn-action btn-delete" onclick="deleteCategory('${c.id}')">Delete</button>
                         </div>
                     </td>
@@ -1219,11 +1324,13 @@
         function populateGatewaysTable() {
             gatewaysTable.innerHTML = '';
             adminGateways.forEach(g => {
+                let linkHref = g.integrationType === 'plugin' ? g.pluginUrl : g.link;
+                let linkType = g.integrationType === 'plugin' ? 'Plugin' : 'Page';
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td><img src="${g.logo}" width="40" height="40" style="object-fit:cover; border-radius:8px;"></td>
                     <td>${g.name}</td>
-                    <td><a href="${g.link}" target="_blank" style="color:var(--primary-color); text-decoration:underline;">View Link</a></td>
+                    <td><a href="${linkHref}" target="_blank" style="color:var(--primary-color); text-decoration:underline;">View ${linkType}</a></td>
                     <td>
                         <button class="btn-action btn-edit" onclick="editGateway('${g.id}')">Edit</button>
                         <button class="btn-action btn-delete" onclick="deleteGateway('${g.id}')">Delete</button>
@@ -1292,7 +1399,10 @@
                 });
             }
 
-            const payload = { name, category, originalPrice, price, discount, stock, sales, description, status, images, keywords, variants };
+            const gatewayCheckboxes = document.querySelectorAll('.gateway-checkbox:checked');
+            const allowedGateways = Array.from(gatewayCheckboxes).map(cb => cb.value);
+
+            const payload = { name, category, originalPrice, price, discount, stock, sales, description, status, images, keywords, variants, allowedGateways };
             
             try {
                 if(isEditingProduct && editingProductId) {
@@ -1309,12 +1419,28 @@
         async function handleCategorySubmit(e) {
             e.preventDefault();
             const name = document.getElementById('categoryName').value;
-            const iconClass = document.getElementById('categoryIcon').value;
             const slug = name.toLowerCase().replace(/\s+/g, '-');
+            const mediaType = document.querySelector('input[name="catMediaType"]:checked').value;
+            const iconClass = document.getElementById('categoryIcon').value;
+            const imageUrl = document.getElementById('categoryImage').value;
+
+            const payload = { 
+                name, 
+                slug, 
+                mediaType, 
+                iconClass: mediaType === 'icon' ? iconClass : '', 
+                imageUrl: mediaType === 'image' ? imageUrl : '' 
+            };
+
             try {
-                await db.collection('categories').add({ name, slug, iconClass });
+                if (isEditingCategory && editingCategoryId) {
+                    await db.collection('categories').doc(editingCategoryId).update(payload);
+                    alert("Category Updated!");
+                } else {
+                    await db.collection('categories').add(payload);
+                    alert("Category Added!");
+                }
                 closeModal('categoryModal');
-                alert("Category Added!");
             } catch(e) { alert(e.message); }
         }
 
@@ -1358,10 +1484,13 @@
 
         async function handleGatewaySubmit(e) {
             e.preventDefault();
+            const integrationType = document.querySelector('input[name="gatewayIntegrationType"]:checked').value;
             const payload = {
                 logo: document.getElementById('gatewayLogo').value,
                 name: document.getElementById('gatewayName').value,
-                link: document.getElementById('gatewayLink').value
+                integrationType: integrationType,
+                link: integrationType === 'link' ? document.getElementById('gatewayLink').value : '',
+                pluginUrl: integrationType === 'plugin' ? document.getElementById('gatewayPlugin').value : ''
             };
             if(isEditingGateway && editingGatewayId) {
                 await db.collection('paymentGateways').doc(editingGatewayId).update(payload);
@@ -1459,9 +1588,35 @@
                 document.getElementById('sizeColorToggle').checked = false; toggleSizeColor();
             }
 
+            renderProductGateways(p.allowedGateways || null);
+
             isEditingProduct = true; editingProductId = id;
             document.getElementById('modalTitle').textContent = 'Edit Product';
             openModal('productModal');
+        };
+
+        window.editCategory = function(id) {
+            const c = adminCategories.find(x => x.id === id);
+            if(!c) return;
+            document.getElementById('categoryName').value = c.name;
+            
+            const mediaType = c.mediaType || 'icon';
+            document.querySelector(`input[name="catMediaType"][value="${mediaType}"]`).checked = true;
+            toggleCategoryMedia();
+            
+            if (mediaType === 'icon') {
+                document.getElementById('categoryIcon').value = c.iconClass || '';
+                document.getElementById('categoryImage').value = '';
+            } else {
+                document.getElementById('categoryImage').value = c.imageUrl || '';
+                document.getElementById('categoryIcon').value = '';
+            }
+
+            isEditingCategory = true;
+            editingCategoryId = id;
+            document.getElementById('categoryModalTitle').textContent = 'Edit Category';
+            document.querySelector('#categoryForm button[type="submit"]').textContent = 'Update Category';
+            openModal('categoryModal');
         };
 
         window.deleteProduct = function(id) {
@@ -1500,7 +1655,19 @@
             if(!g) return;
             document.getElementById('gatewayLogo').value = g.logo || '';
             document.getElementById('gatewayName').value = g.name || '';
-            document.getElementById('gatewayLink').value = g.link || '';
+            
+            const intType = g.integrationType || 'link';
+            document.querySelector(`input[name="gatewayIntegrationType"][value="${intType}"]`).checked = true;
+            toggleGatewayIntegration();
+            
+            if (intType === 'link') {
+                document.getElementById('gatewayLink').value = g.link || '';
+                document.getElementById('gatewayPlugin').value = '';
+            } else {
+                document.getElementById('gatewayPlugin').value = g.pluginUrl || '';
+                document.getElementById('gatewayLink').value = '';
+            }
+            
             isEditingGateway = true; editingGatewayId = id;
             document.getElementById('gatewayModalTitle').textContent = 'Edit Payment Gateway';
             openModal('gatewayModal');
@@ -1573,6 +1740,7 @@
         window.closeModal = function(id) { 
             document.getElementById(id).classList.remove('show'); 
             if(id === 'productModal') { isEditingProduct = false; editingProductId = null; }
+            if(id === 'categoryModal') { isEditingCategory = false; editingCategoryId = null; }
             if(id === 'popUpModal') { isEditingPopUp = false; editingPopUpId = null; }
             if(id === 'gatewayModal') { isEditingGateway = false; editingGatewayId = null; }
         };
