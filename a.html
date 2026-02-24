@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -391,7 +390,7 @@
                 <div id="categoriesPage" class="page-content hidden">
                     <div class="table-header">
                         <h3 class="table-title">Categories</h3>
-                        <button class="btn-add" id="addCategoryBtn"><i class="fas fa-plus"></i> Add Category</button>
+                        <button class="btn-add" id="addCategoryBtn"><i class="fas fa-plus"></i> Add </button>
                     </div>
                     <div class="table-container">
                         <table>
@@ -411,7 +410,7 @@
                 <div id="ordersPage" class="page-content hidden">
                     <div class="table-header">
                         <h3 class="table-title">Orders Management</h3>
-                        <button class="btn-refresh" onclick="refreshOrders()"><i class="fas fa-sync-alt"></i> Refresh</button>
+                        <button class="btn-refresh" onclick="refreshOrders()"><i class="fas fa-sync-alt"></i></button>
                     </div>
                     
                     <div class="order-tabs">
@@ -504,7 +503,7 @@
                 <div id="paymentPage" class="page-content hidden">
                     <div class="table-header">
                         <h3 class="table-title">Payment Gateways</h3>
-                        <button class="btn-add" id="addGatewayBtn"><i class="fas fa-plus"></i> Add Gateway</button>
+                        <button class="btn-add" id="addGatewayBtn"><i class="fas fa-plus"></i></button>
                     </div>
                     <div class="table-container">
                         <table>
@@ -563,7 +562,7 @@
                                     Hero Banner Images/Iframes 
                                     <button type="button" class="btn-icon-add" onclick="addBannerField()"><i class="fas fa-plus"></i></button>
                                 </label>
-                                <div class="dynamic-list-header"><span style="flex:1;">Type</span><span style="flex:3;">URL Source</span><span style="width:32px; text-align:center;">Act</span></div>
+                                <div class="dynamic-list-header"><span style="flex:1;">Type</span><span style="flex:3;">URL Source</span><span style="width:32px; text-align:center;"></span></div>
                                 <div id="bannerContainer" class="dynamic-list"></div>
                             </div>
 
@@ -572,7 +571,7 @@
                                     Social Links 
                                     <button type="button" class="btn-icon-add" onclick="addSocialField()"><i class="fas fa-plus"></i></button>
                                 </label>
-                                <div class="dynamic-list-header"><span style="flex:1;">Icon Class</span><span style="flex:2;">Link URL</span><span style="width:32px; text-align:center;">Act</span></div>
+                                <div class="dynamic-list-header"><span style="flex:1;">Icon Class</span><span style="flex:2;">Link URL</span><span style="width:32px; text-align:center;"></span></div>
                                 <div id="socialsContainer" class="dynamic-list"></div>
                             </div>
 
@@ -588,7 +587,7 @@
     <div id="productModal" class="modal">
         <div class="modal-content">
             <button class="close-modal-btn" onclick="closeModal('productModal')"><i class="fas fa-times"></i></button>
-            <h3 id="modalTitle" style="font-size: 22px; margin-bottom: 25px; color: var(--dark-color);">Add New Product</h3>
+            <h3 id="modalTitle" style="font-size: 22px; margin-bottom: 25px; color: var(--dark-color);">Add Product</h3>
             
             <form id="productForm">
                 <div class="form-row">
@@ -609,7 +608,7 @@
                         Product Images 
                         <button type="button" class="btn-icon-add" onclick="addMediaField()"><i class="fas fa-plus"></i></button>
                     </label>
-                    <div class="dynamic-list-header"><span style="flex:1;">Image URL</span><span style="width:32px; text-align:center;">Act</span></div>
+                    <div class="dynamic-list-header"><span style="flex:1;">Image URL</span><span style="width:32px; text-align:center;"></span></div>
                     <div id="mediaContainer" class="dynamic-list"></div>
                 </div>
 
@@ -667,9 +666,9 @@
                         </label>
                         <div class="dynamic-list-header">
                             <span style="flex:2;">Color, Size</span>
-                            <span style="flex:1;">Price (৳)</span>
+                            <span style="flex:1;">Price</span>
                             <span style="flex:2;">Image URL</span>
-                            <span style="width:32px; text-align:center;">Act</span>
+                            <span style="width:32px; text-align:center;"></span>
                         </div>
                         <div id="sizeColorContainer" class="dynamic-list"></div>
                     </div>
@@ -819,12 +818,12 @@
             <h3 id="gatewayModalTitle" style="font-size: 22px; margin-bottom: 25px;">Payment Gateway Integration</h3>
             <form id="gatewayForm">
                 <div class="form-group"><label for="gatewayLogo">Gateway Logo (URL)</label><input type="url" id="gatewayLogo" class="form-control" required></div>
-                <div class="form-group"><label for="gatewayName">Service Name (e.g. bKash, SSLCommerz)</label><input type="text" id="gatewayName" class="form-control" required></div>
+                <div class="form-group"><label for="gatewayName">Service Name</label><input type="text" id="gatewayName" class="form-control" required></div>
                 
                 <div class="form-group">
                     <label>Implementation Method</label>
                     <div style="display: flex; gap: 20px; margin-bottom: 10px; font-size: 14px; background: var(--light-gray); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
-                        <label style="cursor:pointer;"><input type="radio" name="gatewayIntegrationType" value="link" checked onchange="toggleGatewayIntegration()"> Direct HTML Page Link</label>
+                        <label style="cursor:pointer;"><input type="radio" name="gatewayIntegrationType" value="link" checked onchange="toggleGatewayIntegration()"> Direct Page Link</label>
                         <label style="cursor:pointer;"><input type="radio" name="gatewayIntegrationType" value="plugin" onchange="toggleGatewayIntegration()"> Hosted Plugin URL</label>
                     </div>
                 </div>
@@ -840,8 +839,8 @@
                 </div>
                 
                 <div class="form-row" style="margin-top: 30px;">
-                    <button type="submit" class="btn btn-primary">Save Gateway</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('gatewayModal')" style="margin-top: 0;">Cancel</button>
+                    <button type="submit" class="btn btn-primary">✔</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('gatewayModal')" style="margin-top: 0;">✘</button>
                 </div>
             </form>
         </div>
