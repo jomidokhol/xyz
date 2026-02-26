@@ -151,7 +151,17 @@
         .icon-revenue { background-color: var(--secondary-color); box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3); }
         
         /* Tables */
-        .table-container { background-color: var(--light-color); border-radius: 16px; box-shadow: var(--card-shadow); border: 1px solid var(--border-color); overflow-x: auto; max-height: 75vh; width: 100%; position: relative; }
+        .table-container { 
+            background-color: var(--light-color); 
+            border-radius: 16px; 
+            box-shadow: var(--card-shadow); 
+            border: 1px solid var(--border-color); 
+            overflow-x: auto; 
+            max-height: 75vh; 
+            width: 100%; 
+            position: relative;
+            margin-top: 20px; /* FIX 1: Spacing below sticky header */
+        }
         table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 800px; text-align: left; }
         thead th { position: sticky; top: 0; z-index: 20; padding: 16px 20px; font-weight: 600; font-size: 13px; color: var(--gray-color); text-transform: uppercase; letter-spacing: 0.5px; background-color: var(--light-gray); border-bottom: 1px solid var(--border-color); white-space: nowrap; }
         td { padding: 16px 20px; border-bottom: 1px solid var(--border-color); font-size: 14px; white-space: nowrap; vertical-align: middle; color: var(--dark-color); }
@@ -208,11 +218,35 @@
         input:checked + .slider { background-color: var(--primary-color); }
         input:checked + .slider:before { transform: translateX(24px); }
         
-        /* Tags */
-        .tag-container { border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; display: flex; flex-wrap: wrap; gap: 8px; background-color: transparent; }
-        .tag-container input { border: none; outline: none; flex: 1; padding: 4px; background: transparent; color: var(--dark-color); min-width: 150px; }
-        .tag { background-color: var(--light-color); color: var(--primary-color); border: 1px solid var(--primary-color); padding: 4px 12px; border-radius: 6px; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; }
-        .tag i { cursor: pointer; color: var(--danger-color); }
+        /* Tags (Updated for FIX 3) */
+        .tag-container { 
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--light-color);
+            cursor: text;
+        }
+        .tag { 
+            background-color: rgba(59, 130, 246, 0.15); 
+            color: var(--primary-color); 
+            padding: 5px 10px; 
+            border-radius: 6px; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 6px; 
+            font-size: 13px; 
+            font-weight: 500; 
+        }
+        .tag i { font-size: 11px; cursor: pointer; color: var(--danger-color); opacity: 0.7; transition: 0.2s; }
+        .tag i:hover { opacity: 1; }
+        .tag-container input { 
+            border: none; outline: none; background: transparent; 
+            color: var(--dark-color); min-width: 120px; flex: 1; padding: 4px;
+        }
         
         .hidden { display: none !important; }
         
@@ -829,8 +863,8 @@
                 </div>
                 
                 <div class="form-group" id="gatewayLinkGroup">
-                    <label for="gatewayLink">Local Page Link (e.g. payment.html)</label>
-                    <input type="text" id="gatewayLink" class="form-control" placeholder="e.g. bkash.html">
+                    <label for="gatewayLink">Local Page Link</label>
+                    <input type="text" id="gatewayLink" class="form-control" placeholder="Enter here...">
                 </div>
                 
                 <div class="form-group hidden" id="gatewayPluginGroup">
@@ -1174,7 +1208,7 @@
                 navigateToPage('orders');
             });
 
-            seoInput.addEventListener('keyup', handleSeoInput);
+            seoInput.addEventListener('keydown', handleSeoInput);
 
             productForm.addEventListener('submit', handleProductSubmit);
             categoryForm.addEventListener('submit', handleCategorySubmit);
@@ -1901,9 +1935,10 @@
         function handleSeoInput(e) {
             if (e.key === ',' || e.key === 'Enter') {
                 e.preventDefault();
-                const val = this.value.replace(',', '').trim();
+                const val = this.value.replace(/,/g, '').trim();
                 if (val && !adminSeoKeywords.includes(val)) {
-                    adminSeoKeywords.push(val); renderTags();
+                    adminSeoKeywords.push(val); 
+                    renderTags();
                 }
                 this.value = '';
             }
