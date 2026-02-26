@@ -1099,7 +1099,7 @@
                         </div>
                     `;
                 });
-                
+                // Undefined function call removed here
 
                 // Social Links Loader
                 const socialSnap = await db.collection('socials').get();
@@ -1495,7 +1495,7 @@
                         e.stopPropagation(); 
                         requireLogin(() => {
                             if (product.variants && product.variants.length > 0) {
-                                navigateTo(`product-details?id=${product.id}`);
+                               navigateTo(`product-details?id=${product.id}`);
                             } else {
                                 addToCart(product.id, 1, null);
                             }
