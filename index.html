@@ -146,6 +146,12 @@
         .thumbnail.active, .thumbnail:hover { opacity: 1; border-color: var(--primary); }
         .details-info h1 { font-size: 2.2rem; margin-bottom: 10px; line-height: 1.2; }
         .details-meta { display: flex; gap: 20px; margin-bottom: 20px; font-size: 0.9rem; color: var(--gray); }
+        
+        /* Updated Product Details Price Styling */
+        .details-info .price { display: flex; align-items: baseline; gap: 15px; margin-bottom: 20px; }
+        .details-info .current-price { font-size: 2.2rem; font-weight: 800; color: #1e5fd9; }
+        .details-info .original-price { font-size: 1.2rem; font-weight: 500; color: #6c819e; text-decoration: line-through; }
+
         .details-description { margin-bottom: 30px; font-size: 1.1rem; color: #4b5563; }
         .details-actions { display: none; }
         .sticky-actions-bar { position: fixed; bottom: 0; left: 0; width: 100%; background-color: white; box-shadow: 0 -4px 10px rgba(0,0,0,0.1); padding: 15px 20px; z-index: 999; display: flex; gap: 15px; justify-content: center; }
@@ -255,8 +261,8 @@
         .search-back-icon { font-size: 1.2rem; color: var(--dark); cursor: pointer; padding: 5px; }
         .search-page-form { flex: 1; display: flex; position: relative; }
         .search-page-input { width: 100%; border: none; padding: 10px 40px 10px 10px; font-size: 1rem; font-family: 'Poppins', sans-serif; background: transparent; outline: none; }
-        .search-page-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: var(--secondary); color: white; border: none; border-radius: 4px; padding: 6px 15px; cursor: pointer; font-size: 0.9rem; font-weight: 600; }
-        .search-clear-btn { position: absolute; right: 80px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 1.2rem; color: #999; cursor: pointer; display: none; }
+        .search-page-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: var(--primary); color: white; border: none; border-radius: 4px; padding: 6px 15px; cursor: pointer; font-size: 0.9rem; font-weight: 600; }
+        .search-clear-btn { position: absolute; right: 95px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 1.2rem; color: #999; cursor: pointer; display: none; }
         
         .search-section { background: white; padding: 20px; border-radius: 8px; box-shadow: var(--shadow); margin-bottom: 20px; }
         .search-section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -325,11 +331,14 @@
         .suggested-products-section { padding: 60px 0; background-color: #f9fafb; }
         .suggested-products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; justify-items: center; }
         
-        .custom-alert-box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 25px rgba(0,0,0,0.2); text-align: center; max-width: 400px; width: 90%; transform: scale(0.9); transition: transform 0.3s ease; }
+        /* Glassy Dark Custom Alert Box */
+        .custom-alert-box { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); padding: 30px; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); text-align: center; max-width: 400px; width: 90%; transform: scale(0.9); transition: transform 0.3s ease; color: white; }
         .custom-alert-overlay.active .custom-alert-box { transform: scale(1); }
-        .custom-alert-box h3 { margin-bottom: 15px; color: var(--dark); }
-        .custom-alert-box p { margin-bottom: 25px; color: var(--gray); }
+        .custom-alert-box h3 { margin-bottom: 15px; color: white; }
+        .custom-alert-box p { margin-bottom: 25px; color: #cbd5e1; }
         .custom-alert-actions { display: flex; justify-content: center; gap: 15px; }
+        .custom-alert-actions .btn-outline { color: white; border-color: rgba(255,255,255,0.4); }
+        .custom-alert-actions .btn-outline:hover { background: rgba(255,255,255,0.1); border-color: white; color: white; }
         
         .welcome-box { width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; transform: scale(1); background: transparent !important; box-shadow: none !important; padding: 0 !important; }
 
@@ -385,6 +394,18 @@
         }
         @media (max-width: 576px) { 
             .product-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } 
+            
+            /* 3 items per row specifically for Search Results */
+            #searchResultsGrid.product-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+            #searchResultsGrid .product-card { border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+            #searchResultsGrid .card-info { padding: 0.4rem; }
+            #searchResultsGrid .product-title { font-size: 0.65rem; margin-bottom: 0.2rem; -webkit-line-clamp: 2; line-height: 1.2; }
+            #searchResultsGrid .new-price { font-size: 0.75rem; }
+            #searchResultsGrid .old-price { font-size: 0.6rem; }
+            #searchResultsGrid .rating-section { display: none; }
+            #searchResultsGrid .btn-view { font-size: 0.6rem; padding: 0.3rem 0; gap: 2px; }
+            #searchResultsGrid .off-badge { font-size: 0.6rem; padding: 2px 4px; top: 5px; right: 5px; }
+            
             .timer { flex-wrap: wrap; justify-content: center; } 
             .category-card { width: 80px; height: 80px; border-radius: 12px; } 
             .category-icon { font-size: 1.2rem; } 
@@ -611,13 +632,6 @@
                         <span class="search-clear-history" id="clearHistoryBtn">Clear All <i class="fas fa-trash"></i></span>
                     </div>
                     <div class="search-tags-container" id="searchHistoryTags"></div>
-                </div>
-
-                <div class="search-section" id="searchDiscoverySection">
-                    <div class="search-section-head">
-                        <span class="search-section-title">Search Discovery</span>
-                    </div>
-                    <div class="search-tags-container" id="keywordSuggestions"></div>
                 </div>
             </div>
         </div>
@@ -1047,6 +1061,7 @@
         let selectedVariant = null;
         let actionToConfirm = null; 
         let isLoggedIn = false;
+        let isAuthResolved = false;
         let currentUser = null;
         let savedAddresses = [];
         let currentlyDisplayedProducts =[];
@@ -1100,7 +1115,6 @@
         const searchResultsTitle = document.getElementById('searchResultsTitle');
         const searchPageForm = document.getElementById('searchPageForm');
         const searchPageInput = document.getElementById('searchPageInput');
-        const keywordSuggestions = document.getElementById('keywordSuggestions');
         const searchSuggestionsList = document.getElementById('search-suggestions-list');
         const searchHistoryTags = document.getElementById('searchHistoryTags');
         const searchHistorySection = document.getElementById('searchHistorySection');
@@ -1217,10 +1231,8 @@
             startOfferTimer();
             updateCartCount();
             initHeroSlider();
-            updateAuthStateUI();
 
             window.addEventListener('hashchange', handleRouteChange);
-            handleRouteChange(true);
             
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
@@ -1231,14 +1243,25 @@
                         phone: userDoc.exists ? userDoc.data().phone : '' 
                     };
                     isLoggedIn = true;
-                    updateAuthStateUI();
-                    if(window.location.hash.includes('login') || window.location.hash.includes('register')){
-                        navigateTo('profile');
-                    }
                 } else {
                     isLoggedIn = false;
                     currentUser = null;
-                    updateAuthStateUI();
+                }
+                updateAuthStateUI();
+
+                if (!isAuthResolved) {
+                    isAuthResolved = true;
+                    handleRouteChange(true);
+                } else {
+                    const path = window.location.hash.substring(1) || 'home';
+                    const pageId = path.split('?')[0];
+                    if (!isLoggedIn && (pageId === 'profile' || pageId === 'checkout')) {
+                        navigateTo('login');
+                    } else if (isLoggedIn && (pageId === 'login' || pageId === 'register')) {
+                        navigateTo('profile');
+                    } else if (pageId === 'profile') {
+                        populateProfileData(); 
+                    }
                 }
             });
         }
@@ -1258,6 +1281,8 @@
         }
 
         function handleRouteChange(isInitialLoad = false) {
+            if (!isAuthResolved) return;
+            
             const path = window.location.hash.substring(1) || 'home';
             const[pageId, queryString] = path.split('?');
             const params = new URLSearchParams(queryString);
@@ -1555,13 +1580,10 @@
                 const discountBadge = discountPercentage > 0 ? `<div class="off-badge">-${discountPercentage}%</div>` : '';
                 const watermark = isOutOfStock ? `<div class="out-of-stock-banner">OUT OF STOCK</div>` : '';
                 const displayImg = (product.images && product.images.length > 0) ? product.images[0] : 'https://via.placeholder.com/200';
-                
-                const categoryHint = product.category ? `<span class="hint">${product.category}</span>` : '';
 
                 productCard.innerHTML = `
                     <div class="img-frame">
                         <img src="${displayImg}" alt="${product.name}" class="product-img">
-                        ${categoryHint}
                         ${discountBadge}
                         ${watermark}
                     </div>
@@ -1621,13 +1643,10 @@
                 const discountBadge = discountPercentage > 0 ? `<div class="off-badge">-${discountPercentage}%</div>` : '';
                 const watermark = isOutOfStock ? `<div class="out-of-stock-banner">OUT OF STOCK</div>` : '';
                 const displayImg = (product.images && product.images.length > 0) ? product.images[0] : 'https://via.placeholder.com/200';
-                
-                const categoryHint = product.category ? `<span class="hint">${product.category}</span>` : '';
 
                 card.innerHTML = `
                     <div class="img-frame">
                         <img src="${displayImg}" alt="${product.name}" class="product-img">
-                        ${categoryHint}
                         ${discountBadge}
                         ${watermark}
                     </div>
@@ -2029,9 +2048,11 @@
             notification.style.cssText = `
                 position: fixed; bottom: 20px; left: 50%;
                 transform: translateX(-50%);
-                background-color: var(--dark); color: white;
+                background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+                border: 1px solid rgba(255,255,255,0.1);
+                color: white; font-weight: 500;
                 padding: 12px 25px; border-radius: 25px;
-                box-shadow: var(--shadow); z-index: 10000;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.4); z-index: 10000;
                 animation: slideUp 0.5s ease;
             `;
             document.body.appendChild(notification);
@@ -2611,32 +2632,18 @@
             searchPageInput.addEventListener('input', () => {
                 const term = searchPageInput.value.toLowerCase();
                 if(term.length > 0) { searchClearBtn.style.display = 'block'; } else { searchClearBtn.style.display = 'none'; }
-                keywordSuggestions.innerHTML = '';
                 searchSuggestionsList.innerHTML = '';
                 if(term.length < 2) {
                     searchSuggestionsList.style.display = 'none';
                     return;
                 }
 
-                const allKeywords = new Set();
                 const matchedProducts = new Set();
                 
                 products.forEach(p => {
                     if(p.name.toLowerCase().includes(term) || (p.keywords && p.keywords.some(k => k.toLowerCase().includes(term)))) {
                         matchedProducts.add(p);
                     }
-                    if(p.keywords) { p.keywords.forEach(k => { if(k.toLowerCase().startsWith(term)) allKeywords.add(k); }); }
-                });
-                
-                allKeywords.forEach(k => {
-                    const chip = document.createElement('div');
-                    chip.className = 'search-tag';
-                    chip.textContent = k;
-                    chip.onclick = () => {
-                        searchPageInput.value = k;
-                        handleSearch(new Event('submit'), k);
-                    };
-                    keywordSuggestions.appendChild(chip);
                 });
 
                 if (matchedProducts.size > 0) {
@@ -2658,7 +2665,6 @@
                 searchClearBtn.style.display = 'none';
                 searchSuggestionsList.innerHTML = '';
                 searchSuggestionsList.style.display = 'none';
-                keywordSuggestions.innerHTML = '';
                 searchPageInput.focus();
             });
 
