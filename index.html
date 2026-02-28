@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -68,13 +69,17 @@
         .hero h1 { font-size: 2.8rem; margin-bottom: 20px; line-height: 1.2; }
         .hero p { font-size: 1.2rem; margin-bottom: 30px; opacity: 0.9; }
         .section-title { text-align: center; font-size: 2rem; margin-bottom: 40px; color: var(--dark); }
-        .categories { padding: 60px 0 20px; }
-        .category-grid { display: flex; gap: 30px; overflow-x: auto; padding: 20px 10px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; justify-content: flex-start; }
-        .category-card { background-color: white; border-radius: 50%; width: 140px; height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: var(--shadow); transition: var(--transition); cursor: pointer; scroll-snap-align: center; flex-shrink: 0; border: 3px solid white; outline: 2px solid transparent; overflow: hidden; }
+        
+        /* Category Update */
+        #categories .section-title { display: none; } /* "Shop by Category" লেখা হাইড করা হয়েছে */
+        .categories { padding: 30px 0 20px; }
+        .category-grid { display: flex; gap: 30px; overflow-x: auto; padding: 10px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; justify-content: flex-start; }
+        .category-card { background-color: white; border-radius: 16px; width: 100px; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: var(--shadow); transition: var(--transition); cursor: pointer; scroll-snap-align: center; flex-shrink: 0; border: 1px solid #eee; overflow: hidden; }
         .category-card:hover { transform: translateY(-5px); outline: 2px solid var(--primary); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); }
-        .category-icon { font-size: 2rem; color: var(--primary); margin-bottom: 8px; }
-        .category-card img { width: 100%; height: 100%; object-fit: cover; }
-        .category-card h3 { font-size: 0.9rem; font-weight: 500; text-align: center; line-height: 1.2; padding: 0 5px; z-index: 2; }
+        .category-icon { font-size: 1.5rem; color: var(--primary); margin-bottom: 5px; }
+        .category-card img { width: 50px; height: 50px; object-fit: cover; }
+        .category-card h3 { font-size: 0.8rem; font-weight: 600; text-align: center; line-height: 1.2; padding: 0 5px; z-index: 2; }
+        
         .products { padding: 60px 0; background-color: #f3f4f6; }
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 30px; }
         .product-card { background-color: white; border-radius: 8px; overflow: hidden; box-shadow: var(--shadow); transition: var(--transition); cursor: pointer; position: relative; }
@@ -119,12 +124,16 @@
         .sticky-actions-bar { position: fixed; bottom: 0; left: 0; width: 100%; background-color: white; box-shadow: 0 -4px 10px rgba(0,0,0,0.1); padding: 15px 20px; z-index: 999; display: flex; gap: 15px; justify-content: center; }
         .sticky-actions-bar .btn { flex: 1; max-width: 300px; }
         .btn-lg { padding: 12px 30px; font-size: 1.1rem; }
+        
+        /* Variant Selection Update */
         .variant-selector { margin-bottom: 20px; }
         .variant-selector h4 { font-weight: 600; margin-bottom: 10px; }
         .variant-options { display: flex; gap: 10px; flex-wrap: wrap; }
-        .variant-option { padding: 8px 15px; border: 2px solid #ddd; border-radius: 20px; cursor: pointer; transition: var(--transition); font-weight: 500; }
-        .variant-option.selected { border-color: var(--primary); background-color: var(--primary); color: white; }
+        .variant-option { padding: 8px 15px; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: var(--transition); font-weight: 500; display: inline-flex; align-items: center; gap: 8px; background-color: #fff; color: var(--dark); }
+        .variant-option .variant-img { width: 30px; height: 30px; border-radius: 4px; object-fit: cover; border: 1px solid #eee; }
+        .variant-option.selected { border-color: #2563eb; background-color: #eff6ff; color: #2563eb; outline: 1px solid #2563eb; }
         .variant-option.disabled { opacity: 0.5; cursor: not-allowed; background-color: #f3f4f6; }
+        
         .options-panel-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1002; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .options-panel-overlay.active { opacity: 1; pointer-events: auto; }
         .options-panel { position: fixed; bottom: 0; left: 0; width: 100%; background-color: white; z-index: 1003; padding: 20px; border-top-left-radius: 16px; border-top-right-radius: 16px; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); transform: translateY(100%); transition: transform 0.3s ease; }
@@ -169,7 +178,7 @@
         .cart-items { flex: 1; overflow-y: auto; padding: 20px; }
         .cart-item { display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #f3f4f6; gap: 10px; }
         .cart-item-details-link { display: flex; align-items: center; flex-grow: 1; text-decoration: none; color: inherit; cursor: pointer; }
-        .cart-item-img { width: 80px; height: 80px; background-color: #e5e7eb; border-radius: 4px; display: flex; align-items: center; justify-content: margin-right: 15px; overflow: hidden; }
+        .cart-item-img { width: 80px; height: 80px; background-color: #e5e7eb; border-radius: 4px; display: flex; align-items: center; justify-content: center; margin-right: 15px; overflow: hidden; }
         .cart-item-img img { width: 100%; height: 100%; object-fit: cover; }
         .cart-item-info { flex: 1; padding-left: 10px;}
         .cart-item-info h4 { font-size: 1rem; margin-bottom: 5px; }
@@ -313,16 +322,19 @@
         .od-meta-section .od-row { margin-bottom: 12px; }
         .od-actions { padding: 15px 20px; background: white; position: sticky; bottom: 0; border-top: 1px solid #eee; }
 
-        .promo-popup { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(200%); background-color: white; border-radius: 50px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); display: flex; flex-direction: row !important; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 15px; z-index: 1500; transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1); width: max-content; max-width: 95vw; flex-wrap: nowrap; }
+        /* Random Notification Promo Popup Update */
+        .promo-popup { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(200%); background-color: white; border: 2px solid #000; border-radius: 12px; display: flex; flex-direction: row !important; align-items: stretch; width: 400px; max-width: 95vw; z-index: 1500; transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1); padding: 0; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden; }
         .promo-popup.visible { transform: translateX(-50%) translateY(0); }
-        .promo-popup-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-        .promo-popup-content { display: flex; flex-direction: row; align-items: center; gap: 10px; flex-grow: 1; }
-        .promo-popup-content h4 { font-size: 0.85rem; margin: 0; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
-        .promo-popup-content .price { display: flex; align-items: center; gap: 5px; margin: 0; }
-        .promo-popup-content .current-price { font-size: 0.9rem; font-weight: 700; color: var(--primary); }
-        .promo-popup-content .original-price { display: none; }
-        .promo-popup-content .btn { padding: 5px 15px; font-size: 0.8rem; border-radius: 20px; white-space: nowrap; }
-        .promo-popup-close { position: static; background: none; border: none; font-size: 1.2rem; color: var(--gray); cursor: pointer; margin-left: 5px; }
+        .promo-popup-img { width: 130px; height: auto; object-fit: cover; border-right: 1px solid #eee; flex-shrink: 0; }
+        .promo-popup-content { display: flex; flex-direction: column; justify-content: center; padding: 15px; flex-grow: 1; position: relative; }
+        .promo-popup-content h4 { font-size: 1.1rem; margin: 0 0 5px 0; max-width: 100%; white-space: normal; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; font-weight: 700; color: #000; line-height: 1.3; }
+        .promo-popup-content .price { display: flex; align-items: baseline; gap: 8px; margin: 0 0 10px 0; }
+        .promo-popup-content .current-price { font-size: 1.25rem; font-weight: 800; color: #000; }
+        .promo-popup-content .original-price { display: inline-block; font-size: 0.9rem; color: #666; text-decoration: line-through; }
+        .promo-popup-content .btn { background-color: #38bdf8; border: none; border-radius: 30px; font-weight: 700; font-size: 1.1rem; padding: 8px; width: 100%; color: white; transition: background 0.3s; cursor: pointer; }
+        .promo-popup-content .btn:hover { background-color: #0ea5e9; }
+        .promo-popup-discount { position: absolute; top: 0; right: 0; background-color: #dc2626; color: white; padding: 8px 15px; border-bottom-left-radius: 20px; font-weight: 800; font-size: 1rem; text-align: center; line-height: 1.1; z-index: 2; }
+        .promo-popup-close { position: absolute; top: 5px; left: 5px; background: rgba(0,0,0,0.4); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; border: none; cursor: pointer; z-index: 10; margin: 0; }
 
         @media (max-width: 992px) { .details-wrapper { grid-template-columns: 1fr; } .offer-banner { flex-direction: column; text-align: center; gap: 30px; } .profile-container { flex-direction: column; } .sidebar { width: 100%; } .form-row { flex-direction: column; gap: 0; } }
         @media (max-width: 768px) { 
@@ -337,8 +349,9 @@
             .product-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } 
             .payment-methods { flex-direction: column; } 
             .timer { flex-wrap: wrap; justify-content: center; } 
-            .category-card { width: 100px; height: 100px; } 
-            .category-icon { font-size: 1.5rem; } 
+            /* Mobile Category Update */
+            .category-card { width: 80px; height: 80px; border-radius: 12px; } 
+            .category-icon { font-size: 1.2rem; } 
             .category-card h3 { font-size: 0.7rem; } 
             .suggested-products-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } 
         }
@@ -352,8 +365,6 @@
                 <a href="#home" class="logo" onclick="navigateTo('home')">
                     <img id="headerLogo" src="" alt="Logo">
                 </a>
-                
-                <!-- Desktop Nav Links Removed As Requested -->
                 
                 <div class="header-actions">
                     <div class="header-search-icon" onclick="navigateTo('search')">
@@ -381,7 +392,6 @@
             <div class="progress-bar" id="progressBar"></div>
 
             <div class="mobile-menu" id="mobileMenu">
-                
                 <div id="menuProfileSection" style="display: none; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; text-align: center;">
                     <div class="profile-picture" style="width: 60px; height: 60px; margin: 0 auto 10px; font-size: 24px; border-radius: 50%; background-color: #eef2ff; color: var(--primary); display: flex; align-items: center; justify-content: center; border: 2px solid var(--primary);"><i class="fas fa-user"></i></div>
                     <h4 id="menuProfileName" style="margin-bottom: 5px;">User Name</h4>
@@ -905,17 +915,19 @@
         </div>
     </div>
 
+    <!-- Updated Promo Popup -->
     <div class="promo-popup" id="promoPopup">
+        <div class="promo-popup-discount" id="promoPopupDiscount">20%<br>OFF</div>
+        <button class="promo-popup-close" id="promoPopupClose">&times;</button>
         <img src="" alt="Promo Product" class="promo-popup-img" id="promoPopupImg">
         <div class="promo-popup-content">
-            <h4 id="promoPopupName">Product Name</h4>
+            <h4 id="promoPopupName">Product Title (20 character Max)</h4>
             <div class="price">
-                <span class="current-price" id="promoPopupPrice">৳0.00</span>
-                <span class="original-price" id="promoPopupOldPrice">৳0.00</span>
+                <span class="current-price" id="promoPopupPrice">0.00 ৳</span>
+                <span class="original-price" id="promoPopupOldPrice">0.00 ৳</span>
             </div>
-            <button class="btn btn-secondary" id="promoPopupAction">Shop Now</button>
+            <button class="btn" id="promoPopupAction">Buy Now</button>
         </div>
-        <button class="promo-popup-close" id="promoPopupClose">&times;</button>
     </div>
 
     <div class="order-details-overlay" id="orderDetailsOverlay">
@@ -1086,7 +1098,7 @@
                     const cat = doc.data();
                     let iconHtml = '';
                     if (cat.mediaType === 'image' && cat.imageUrl) {
-                         iconHtml = `<img src="${cat.imageUrl}" alt="${cat.name}" style="width: 50px; height: 50px; object-fit: cover;">`;
+                         iconHtml = `<img src="${cat.imageUrl}" alt="${cat.name}">`;
                     } else {
                          iconHtml = `<div class="category-icon"><i class="${cat.iconClass || 'fas fa-box'}"></i></div>`;
                     }
@@ -1098,7 +1110,6 @@
                         </div>
                     `;
                 });
-                // Undefined function call removed here
 
                 // Social Links Loader
                 const socialSnap = await db.collection('socials').get();
@@ -1623,15 +1634,22 @@
             container.innerHTML = '';
             if (!product.variants || product.variants.length === 0) return;
 
-            // Admin structure:[{variantId, color, size, price, image}, ...]
-            const colors =[...new Set(product.variants.map(v => v.color).filter(c => c))];
-            const sizes =[...new Set(product.variants.map(v => v.size).filter(s => s && s !== 'N/A'))];
+            const colors = [...new Set(product.variants.map(v => v.color).filter(c => c && c !== 'N/A'))];
+            const sizes = [...new Set(product.variants.map(v => v.size).filter(s => s && s !== 'N/A'))];
 
             if (colors.length > 0) {
-                container.innerHTML += createSelectorHTML('Color', colors, 'color');
+                const colorOpts = colors.map(c => {
+                    const variantWithImg = product.variants.find(v => v.color === c && v.image);
+                    return { value: c, image: variantWithImg ? variantWithImg.image : null };
+                });
+                container.innerHTML += createSelectorHTML('Color', colorOpts, 'color');
             }
             if (sizes.length > 0) {
-                container.innerHTML += createSelectorHTML('Size', sizes, 'size');
+                const sizeOpts = sizes.map(s => {
+                    const variantWithImg = product.variants.find(v => v.size === s && v.image);
+                    return { value: s, image: variantWithImg ? variantWithImg.image : null };
+                });
+                container.innerHTML += createSelectorHTML('Size', sizeOpts, 'size');
             }
 
             attachVariantListeners(container);
@@ -1640,7 +1658,12 @@
         function createSelectorHTML(title, options, type) {
             let optionsHTML = '';
             options.forEach(opt => {
-                if(opt) optionsHTML += `<div class="variant-option ${type}-option" data-value="${opt}">${opt}</div>`;
+                if(opt && opt.value) {
+                    const imgTag = opt.image ? `<img src="${opt.image}" class="variant-img" alt="${opt.value}">` : '';
+                    optionsHTML += `<div class="variant-option ${type}-option" data-value="${opt.value}">${imgTag}<span>${opt.value}</span></div>`;
+                } else if(typeof opt === 'string' && opt) {
+                    optionsHTML += `<div class="variant-option ${type}-option" data-value="${opt}"><span>${opt}</span></div>`;
+                }
             });
             if(optionsHTML === '') return '';
             return `
@@ -2006,9 +2029,31 @@
             const price = popupData.variants && popupData.variants.length > 0 ? popupData.variants[0].price : (popupData.price || 0);
             
             document.getElementById('promoPopupImg').src = popupData.images[0];
-            document.getElementById('promoPopupName').textContent = popupData.name;
-            document.getElementById('promoPopupPrice').textContent = `৳${price.toFixed(2)}`;
-            document.getElementById('promoPopupOldPrice').textContent = `৳${popupData.originalPrice ? popupData.originalPrice.toFixed(2) : '0.00'}`;
+            
+            // Title up to 20 Characters
+            let title = popupData.name;
+            if (title.length > 20) {
+                title = title.substring(0, 20) + '...';
+            }
+            document.getElementById('promoPopupName').textContent = title;
+            document.getElementById('promoPopupPrice').textContent = `${price.toFixed(0)} ৳`;
+            
+            const originalPriceEl = document.getElementById('promoPopupOldPrice');
+            const discountBadge = document.getElementById('promoPopupDiscount');
+
+            if (popupData.originalPrice && popupData.originalPrice > price) {
+                originalPriceEl.textContent = `${popupData.originalPrice.toFixed(0)} ৳`;
+                originalPriceEl.style.display = 'inline-block';
+                
+                const discount = Math.round(((popupData.originalPrice - price) / popupData.originalPrice) * 100);
+                if (discountBadge) {
+                    discountBadge.innerHTML = `${discount}%<br>OFF`;
+                    discountBadge.style.display = 'block';
+                }
+            } else {
+                originalPriceEl.style.display = 'none';
+                if (discountBadge) discountBadge.style.display = 'none';
+            }
             
             const actionBtn = document.getElementById('promoPopupAction');
             actionBtn.onclick = () => {
