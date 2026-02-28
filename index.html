@@ -198,9 +198,23 @@
         .password-toggle-icon { position: absolute; top: 68%; right: 15px; transform: translateY(-50%); cursor: pointer; color: var(--gray); }
         .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
         .form-control { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Poppins', sans-serif; }
-        .address-management { margin-bottom: 20px; }
-        .address-management .form-group { display: flex; align-items: center; gap: 15px; }
-        #shippingInfoForm.hidden { display: none; }
+        
+        /* Updated Address Selection Styles */
+        .address-box { display: flex; gap: 15px; padding: 15px; border: 1px solid #eee; background: white; border-radius: 8px; margin-bottom: 10px; position: relative; cursor: pointer; transition: all 0.2s; }
+        .address-box:hover { border-color: var(--primary); }
+        .address-box.selected { border-color: var(--primary); background: #eff6ff; }
+        .address-box-icon { color: var(--primary); font-size: 24px; padding-top: 2px; }
+        .address-box-details { flex: 1; }
+        .address-box-details h5 { margin: 0 0 5px 0; font-size: 1rem; color: #333; display: flex; align-items: center; gap: 10px; }
+        .address-box-details .phone { color: #666; font-size: 0.9rem; font-weight: normal; }
+        .address-box-details p { margin: 0; font-size: 0.85rem; color: #555; line-height: 1.4; }
+        .address-badges { margin-top: 8px; display: flex; gap: 8px; }
+        .badge-title { border: 1px solid #333; padding: 2px 8px; font-size: 0.7rem; font-weight: 600; border-radius: 4px; color: #333; }
+        .badge-default { color: #dc2626; border: 1px solid #dc2626; padding: 2px 8px; font-size: 0.7rem; font-weight: 600; border-radius: 4px; background: #fef2f2; }
+        .btn-edit-addr { position: absolute; right: 15px; top: 15px; color: #f97316; cursor: pointer; font-size: 0.85rem; background: none; border: none; font-weight: 600; padding: 5px; }
+        .btn-edit-addr:hover { color: #ea580c; text-decoration: underline; }
+        .add-address-btn { width: 100%; padding: 15px; margin-bottom: 20px; border: 2px dashed #0ea5e9; color: #0ea5e9; background: transparent; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+        .add-address-btn:hover { background: #f0f9ff; }
         
         .payment-methods { display: flex; flex-direction: column; gap: 12px; margin: 20px 0; }
         .payment-method { display: flex; flex-direction: row; align-items: center; justify-content: flex-start; padding: 15px 20px; border: 1px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: var(--transition); gap: 15px; background-color: #fff; text-align: left; position: relative; }
@@ -301,7 +315,7 @@
         .profile-container { display: flex; gap: 30px; }
         .sidebar { width: 250px; flex-shrink: 0; }
         .profile-card { background-color: white; border-radius: 10px; padding: 25px; text-align: center; box-shadow: 0 3px 15px rgba(0, 0, 0, 0.05); margin-bottom: 20px; }
-        .profile-picture { width: 100px; height: 100px; border-radius: 50%; background-color: #eef2ff; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; color: var(--primary); font-size: 40px; border: 3px solid var(--primary); }
+        .profile-picture { width: 100px; height: 100px; border-radius: 50%; background-color: #eef2ff; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; color: var(--primary); font-size: 40px; border: 3px solid var(--primary); overflow: hidden;}
         .profile-name { font-size: 22px; font-weight: 600; margin-bottom: 5px; }
         .profile-email { color: var(--gray); font-size: 14px; margin-bottom: 15px; }
         .nav-menu { background-color: white; border-radius: 10px; overflow: hidden; box-shadow: 0 3px 15px rgba(0, 0, 0, 0.05); }
@@ -368,18 +382,19 @@
         .od-meta-section .od-row { margin-bottom: 12px; }
         .od-actions { padding: 15px 20px; background: white; position: sticky; bottom: 0; border-top: 1px solid #eee; }
 
-        .promo-popup { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(200%); background-color: white; border: 2px solid #000; border-radius: 12px; display: flex; flex-direction: row !important; align-items: stretch; width: 400px; max-width: 95vw; z-index: 1500; transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1); padding: 0; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden; }
+        /* Updated Promo Popup */
+        .promo-popup { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(200%); background-color: white; border: none; border-radius: 12px; display: flex; flex-direction: row !important; align-items: stretch; width: 400px; max-width: 95vw; z-index: 1500; transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1); padding: 0; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: visible; }
         .promo-popup.visible { transform: translateX(-50%) translateY(0); }
-        .promo-popup-img { width: 130px; height: auto; object-fit: cover; border-right: 1px solid #eee; flex-shrink: 0; }
+        .promo-popup-img { width: 130px; height: auto; object-fit: cover; border-right: 1px solid #eee; flex-shrink: 0; border-radius: 12px 0 0 12px; }
         .promo-popup-content { display: flex; flex-direction: column; justify-content: center; padding: 15px; flex-grow: 1; position: relative; }
         .promo-popup-content h4 { font-size: 1.1rem; margin: 0 0 5px 0; max-width: 100%; white-space: normal; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; font-weight: 700; color: #000; line-height: 1.3; }
         .promo-popup-content .price { display: flex; align-items: baseline; gap: 8px; margin: 0 0 10px 0; }
         .promo-popup-content .current-price { font-size: 1.25rem; font-weight: 800; color: #000; }
-        .promo-popup-content .original-price { display: inline-block; font-size: 0.9rem; color: #666; text-decoration: line-through; }
+        .promo-popup-content .original-price { display: inline-block; font-size: 0.85rem; color: #dc2626 !important; text-decoration: line-through; }
         .promo-popup-content .btn { background-color: #38bdf8; border: none; border-radius: 30px; font-weight: 700; font-size: 1.1rem; padding: 8px; width: 100%; color: white; transition: background 0.3s; cursor: pointer; }
         .promo-popup-content .btn:hover { background-color: #0ea5e9; }
-        .promo-popup-discount { position: absolute; top: 0; right: 0; background-color: #dc2626; color: white; padding: 8px 15px; border-bottom-left-radius: 20px; font-weight: 800; font-size: 1rem; text-align: center; line-height: 1.1; z-index: 2; }
-        .promo-popup-close { position: absolute; top: 5px; left: 5px; background: rgba(0,0,0,0.4); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; border: none; cursor: pointer; z-index: 10; margin: 0; }
+        .promo-popup-discount { position: absolute; top: 0; right: 0; background-color: #dc2626; color: white; padding: 8px 15px; border-bottom-left-radius: 20px; border-top-right-radius: 12px; font-weight: 800; font-size: 1rem; text-align: center; line-height: 1.1; z-index: 2; }
+        .promo-popup-close { position: absolute; top: -10px; right: -10px; left: auto; background: white; color: #333; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; border: none; cursor: pointer; z-index: 10; margin: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
 
         @media (max-width: 992px) { .details-wrapper { grid-template-columns: 1fr; } .offer-banner { flex-direction: column; text-align: center; gap: 30px; } .profile-container { flex-direction: column; } .sidebar { width: 100%; } .form-row { flex-direction: column; gap: 0; } }
         @media (max-width: 768px) { 
@@ -450,7 +465,9 @@
 
             <div class="mobile-menu" id="mobileMenu">
                 <div id="menuProfileSection" style="display: none; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; text-align: center;">
-                    <div class="profile-picture" style="width: 60px; height: 60px; margin: 0 auto 10px; font-size: 24px; border-radius: 50%; background-color: #eef2ff; color: var(--primary); display: flex; align-items: center; justify-content: center; border: 2px solid var(--primary);"><i class="fas fa-user"></i></div>
+                    <div class="profile-picture" style="width: 60px; height: 60px; margin: 0 auto 10px; font-size: 24px; border-radius: 50%; background-color: #eef2ff; color: var(--primary); display: flex; align-items: center; justify-content: center; border: 2px solid var(--primary); overflow: hidden;">
+                        <i class="fa-solid fa-face-grin"></i>
+                    </div>
                     <h4 id="menuProfileName" style="margin-bottom: 5px;">User Name</h4>
                     <button class="btn btn-outline" onclick="navigateTo('profile'); toggleMenu()" style="width: 100%; font-size: 0.9rem; padding: 8px;">My Profile</button>
                 </div>
@@ -672,29 +689,54 @@
                     <div class="checkout-form">
                         <h3>Shipping Information</h3>
                         <form id="checkoutForm">
-                            <div class="address-management">
-                                <div class="form-group" id="addressSelectorGroup" style="width: 100%;">
-                                    <select id="savedAddresses" class="form-control" style="flex-grow: 1;"></select>
-                                    <button type="button" class="btn btn-outline" id="addNewAddressBtn">Add New</button>
-                                </div>
+                            <!-- Updated Address Management for Checkout -->
+                            <div class="address-management" id="checkoutAddressManagement">
+                                <div id="checkoutSavedAddressesList"></div>
+                                <button type="button" class="add-address-btn" id="checkoutAddAddressBtn">+ Add new address</button>
                             </div>
 
-                            <div id="shippingInfoForm">
-                                <div class="form-group">
-                                    <label for="name">Full Name</label>
-                                    <input type="text" id="name" class="form-control" required>
+                            <div id="shippingInfoForm" style="display: none;">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="coAddressTitle">Location Title (e.g. Home, Office)</label>
+                                        <input type="text" id="coAddressTitle" class="form-control" placeholder="Home">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="coName">Full Name</label>
+                                        <input type="text" id="coName" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="coPhone">Mobile Number</label>
+                                        <input type="tel" id="coPhone" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="coEmail">Email Address</label>
+                                        <input type="email" id="coEmail" class="form-control" readonly style="background-color: #f3f4f6;">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="coRegion">Region</label>
+                                        <select id="coRegion" class="form-control" required>
+                                            <option value="">Select Region...</option>
+                                            <option value="Inside Dhaka">Inside Dhaka</option>
+                                            <option value="Outside Dhaka">Outside Dhaka</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="coPostCode">Post Code</label>
+                                        <input type="number" id="coPostCode" class="form-control" min="1000" max="9999" placeholder="E.g., 1205" required>
+                                    </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="phone">Phone Number</label>
-                                    <input type="tel" id="phone" class="form-control" required>
+                                    <label for="coAddress">Full Address</label>
+                                    <textarea id="coAddress" class="form-control" rows="3" required placeholder="E.g., House No, Road, Area, Thana"></textarea>
                                 </div>
-                                <div class="form-group">
-                                    <label for="address">Delivery Address</label>
-                                    <textarea id="address" class="form-control" rows="3" required placeholder="E.g., House No, Road, Area"></textarea>
-                                </div>
-                                 <div class="form-group">
-                                    <input type="checkbox" id="saveAddressCheck" checked>
-                                    <label for="saveAddressCheck">Save this address for future use</label>
+                                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                                    <button type="button" class="btn btn-outline" id="coCancelAddressBtn" style="flex: 1;">Cancel</button>
+                                    <button type="button" class="btn btn-primary" id="coSaveAddressBtn" style="flex: 1;">Save Address</button>
                                 </div>
                             </div>
                             
@@ -797,7 +839,7 @@
                     <div class="sidebar">
                         <div class="profile-card">
                             <div class="profile-picture">
-                                <i class="fas fa-user"></i>
+                                <i class="fa-solid fa-face-grin"></i>
                             </div>
                             <h2 class="profile-name" id="profileNameDisplay">User Name</h2>
                             <p class="profile-email" id="profileEmailDisplay">user@email.com</p>
@@ -848,21 +890,63 @@
                                 <button type="submit" class="btn btn-primary">Save Changes</button>
                             </form>
                         </section>
-                        <!-- Location Setup Section -->
+                        <!-- Location Setup Section (Updated) -->
                         <section id="profile-section-location" class="content-section">
                             <div class="section-header">
                                 <h2 class="section-title">Manage Your Addresses</h2>
                             </div>
-                            <form id="newAddressForm">
-                                <div class="form-group">
-                                    <label for="newAddress" class="form-label">Add New Address</label>
-                                    <textarea id="newAddress" class="form-control" rows="3" placeholder="Enter full address"></textarea>
+                            
+                            <div id="addressListContainer">
+                                <button id="showAddAddressFormBtn" class="add-address-btn">+ Add address</button>
+                                <div id="savedAddressesUI" class="locations-list"></div>
+                            </div>
+
+                            <form id="newAddressForm" style="display: none; background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #eee;">
+                                <h4 style="margin-bottom: 20px;" id="addressFormTitle">Add New Address</h4>
+                                <input type="hidden" id="editAddressId" value="">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="addrTitle">Location Title (e.g. Home, Office)</label>
+                                        <input type="text" id="addrTitle" class="form-control" placeholder="Home">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="addrName">Full Name</label>
+                                        <input type="text" id="addrName" class="form-control" required>
+                                    </div>
                                 </div>
-                                <button type="submit" class="btn btn-primary">Save New Address</button>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="addrPhone">Mobile Number</label>
+                                        <input type="tel" id="addrPhone" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="addrEmail">Email Address</label>
+                                        <input type="email" id="addrEmail" class="form-control" readonly style="background-color: #e5e7eb;">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="addrRegion">Region</label>
+                                        <select id="addrRegion" class="form-control" required>
+                                            <option value="">Select Region...</option>
+                                            <option value="Inside Dhaka">Inside Dhaka</option>
+                                            <option value="Outside Dhaka">Outside Dhaka</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="addrPostCode">Post Code</label>
+                                        <input type="number" id="addrPostCode" class="form-control" min="1000" max="9999" placeholder="E.g., 1205" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="addrFull">Full Address</label>
+                                    <textarea id="addrFull" class="form-control" rows="3" required placeholder="E.g., House No, Road, Area, Thana"></textarea>
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    <button type="button" class="btn btn-outline" id="cancelAddressBtn">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">Save Address</button>
+                                </div>
                             </form>
-                            <hr style="margin: 30px 0;">
-                            <h4>Saved Addresses:</h4>
-                            <div id="savedAddressesList" class="locations-list"></div>
                         </section>
                         <!-- Order History Section -->
                         <section id="profile-section-tracking" class="content-section">
@@ -1242,10 +1326,29 @@
                         email: user.email, 
                         phone: userDoc.exists ? userDoc.data().phone : '' 
                     };
+                    
+                    // Fetch saved addresses from user document
+                    if(userDoc.exists && userDoc.data().addresses) {
+                        savedAddresses = userDoc.data().addresses;
+                    } else {
+                        savedAddresses = [];
+                    }
+
+                    // Setup Profile Picture based on Google Login vs Email
+                    let profilePicHtml = '<i class="fa-solid fa-face-grin"></i>';
+                    if (user.photoURL) {
+                        profilePicHtml = `<img src="${user.photoURL}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" alt="Profile Picture">`;
+                    }
+                    const menuPic = document.querySelector('#menuProfileSection .profile-picture');
+                    const profileCardPic = document.querySelector('.profile-card .profile-picture');
+                    if (menuPic) menuPic.innerHTML = profilePicHtml;
+                    if (profileCardPic) profileCardPic.innerHTML = profilePicHtml;
+
                     isLoggedIn = true;
                 } else {
                     isLoggedIn = false;
                     currentUser = null;
+                    savedAddresses = [];
                 }
                 updateAuthStateUI();
 
@@ -1317,7 +1420,7 @@
                 } else if (finalPageId === 'profile') {
                     populateProfileData();
                 } else if (finalPageId === 'checkout') {
-                    populateSavedAddresses();
+                    populateCheckoutAddresses();
                     renderPaymentMethods();
                 } else if (finalPageId === 'search') {
                     renderSearchHistory();
@@ -1453,6 +1556,7 @@
                 document.getElementById('profileEmail').value = currentUser.email;
                 document.getElementById('profilePhone').value = currentUser.phone;
                 fetchUserOrders();
+                renderSavedAddressesList();
             }
         }
         
@@ -1677,12 +1781,11 @@
             const fullStars = Math.floor(rating);
             for (let i = 0; i < fullStars; i++) stars += '<span class="material-symbols-outlined star">star</span>';
             const emptyStars = 5 - Math.ceil(rating);
-            // Half stars are tricky with this specific material icon setup, using empty stars for the rest
             for (let i = 0; i < emptyStars; i++) stars += '<span class="material-symbols-outlined star-empty">star</span>';
             return stars;
         }
 
-        function getStarRating(rating) { // For backwards compatibility with other sections if needed
+        function getStarRating(rating) { 
             let stars = '';
             const fullStars = Math.floor(rating);
             const halfStar = rating % 1 >= 0.5;
@@ -2122,26 +2225,150 @@
             }, 1000);
         }
 
-        function populateSavedAddresses() {
-            const select = document.getElementById('savedAddresses');
-            const selectorGroup = document.getElementById('addressSelectorGroup');
-            const shippingForm = document.getElementById('shippingInfoForm');
-            select.innerHTML = '';
+        // ================= Address Management Logic (Profile & Checkout) =================
+        let editingAddressId = null;
 
+        function renderSavedAddressesList() {
+            const listContainer = document.getElementById('savedAddressesUI');
+            listContainer.innerHTML = '';
+            
             if (savedAddresses.length === 0) {
-                selectorGroup.style.display = 'none';
-                shippingForm.classList.remove('hidden');
-                shippingForm.reset();
+                listContainer.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 20px;">No saved addresses found. Please add a new address.</p>';
             } else {
-                selectorGroup.style.display = 'flex';
-                shippingForm.classList.remove('hidden');
                 savedAddresses.forEach((addr, index) => {
-                    const option = document.createElement('option');
-                    option.value = index;
-                    option.textContent = addr.address;
-                    select.appendChild(option);
+                    const isDefault = addr.isDefault || index === 0;
+                    const html = `
+                        <div class="address-box">
+                            <div class="address-box-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="address-box-details">
+                                <h5>${addr.name} <span class="phone">${addr.phone}</span></h5>
+                                <p>${addr.address}</p>
+                                <p>${addr.region} - ${addr.postcode}</p>
+                                <div class="address-badges">
+                                    ${addr.title ? `<span class="badge-title">${addr.title.toUpperCase()}</span>` : ''}
+                                    ${isDefault ? `<span class="badge-default">Default shipping address</span>` : ''}
+                                </div>
+                            </div>
+                            <button class="btn-edit-addr" onclick="openAddressForm(${index})">Edit</button>
+                        </div>
+                    `;
+                    listContainer.innerHTML += html;
                 });
-                select.dispatchEvent(new Event('change'));
+            }
+        }
+
+        function populateCheckoutAddresses() {
+            const listContainer = document.getElementById('checkoutSavedAddressesList');
+            const addressManager = document.getElementById('checkoutAddressManagement');
+            const newForm = document.getElementById('shippingInfoForm');
+            
+            listContainer.innerHTML = '';
+            
+            if (savedAddresses.length === 0) {
+                addressManager.style.display = 'none';
+                newForm.style.display = 'block';
+                document.getElementById('coEmail').value = currentUser?.email || '';
+            } else {
+                addressManager.style.display = 'block';
+                newForm.style.display = 'none';
+                
+                savedAddresses.forEach((addr, index) => {
+                    const isDefault = addr.isDefault || index === 0;
+                    const div = document.createElement('div');
+                    div.className = `address-box ${isDefault ? 'selected' : ''}`;
+                    div.onclick = (e) => {
+                        if(e.target.classList.contains('btn-edit-addr')) return;
+                        document.querySelectorAll('#checkoutSavedAddressesList .address-box').forEach(b => b.classList.remove('selected'));
+                        div.classList.add('selected');
+                    };
+
+                    div.innerHTML = `
+                        <div class="address-box-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="address-box-details">
+                            <h5>${addr.name} <span class="phone">${addr.phone}</span></h5>
+                            <p>${addr.address}</p>
+                            <p>${addr.region} - ${addr.postcode}</p>
+                            <div class="address-badges">
+                                ${addr.title ? `<span class="badge-title">${addr.title.toUpperCase()}</span>` : ''}
+                                ${isDefault ? `<span class="badge-default">Default shipping address</span>` : ''}
+                            </div>
+                        </div>
+                        <button type="button" class="btn-edit-addr" onclick="openCheckoutAddressForm(${index})">Edit</button>
+                    `;
+                    listContainer.appendChild(div);
+                });
+            }
+        }
+
+        function openAddressForm(index = null) {
+            document.getElementById('addressListContainer').style.display = 'none';
+            document.getElementById('newAddressForm').style.display = 'block';
+            
+            if (index !== null && index >= 0) {
+                const addr = savedAddresses[index];
+                document.getElementById('addressFormTitle').textContent = 'Edit Address';
+                document.getElementById('editAddressId').value = index;
+                document.getElementById('addrTitle').value = addr.title || '';
+                document.getElementById('addrName').value = addr.name || '';
+                document.getElementById('addrPhone').value = addr.phone || '';
+                document.getElementById('addrEmail').value = addr.email || currentUser?.email || '';
+                document.getElementById('addrRegion').value = addr.region || '';
+                document.getElementById('addrPostCode').value = addr.postcode || '';
+                document.getElementById('addrFull').value = addr.address || '';
+            } else {
+                document.getElementById('addressFormTitle').textContent = 'Add New Address';
+                document.getElementById('newAddressForm').reset();
+                document.getElementById('editAddressId').value = '';
+                document.getElementById('addrEmail').value = currentUser?.email || '';
+                if(currentUser) {
+                    document.getElementById('addrName').value = currentUser.name;
+                    document.getElementById('addrPhone').value = currentUser.phone;
+                }
+            }
+        }
+
+        function openCheckoutAddressForm(index = null) {
+            document.getElementById('checkoutAddressManagement').style.display = 'none';
+            document.getElementById('shippingInfoForm').style.display = 'block';
+            
+            if (index !== null && index >= 0) {
+                editingAddressId = index;
+                const addr = savedAddresses[index];
+                document.getElementById('coAddressTitle').value = addr.title || '';
+                document.getElementById('coName').value = addr.name || '';
+                document.getElementById('coPhone').value = addr.phone || '';
+                document.getElementById('coEmail').value = addr.email || currentUser?.email || '';
+                document.getElementById('coRegion').value = addr.region || '';
+                document.getElementById('coPostCode').value = addr.postcode || '';
+                document.getElementById('coAddress').value = addr.address || '';
+            } else {
+                editingAddressId = null;
+                document.getElementById('coAddressTitle').value = '';
+                document.getElementById('coName').value = currentUser?.name || '';
+                document.getElementById('coPhone').value = currentUser?.phone || '';
+                document.getElementById('coEmail').value = currentUser?.email || '';
+                document.getElementById('coRegion').value = '';
+                document.getElementById('coPostCode').value = '';
+                document.getElementById('coAddress').value = '';
+            }
+        }
+
+        async function saveAddressesToFirebase() {
+            if(!auth.currentUser) return;
+            try {
+                // Ensure at least first one is default
+                if(savedAddresses.length > 0) {
+                    let hasDefault = savedAddresses.some(a => a.isDefault);
+                    if(!hasDefault) savedAddresses[0].isDefault = true;
+                }
+                await db.collection('users').doc(auth.currentUser.uid).update({ addresses: savedAddresses });
+            } catch (error) {
+                console.error("Error saving address:", error);
+                showCustomAlert("Error", "Failed to save address to database.");
             }
         }
         
@@ -2171,18 +2398,6 @@
             element.classList.add('active');
         }
 
-        function renderSavedAddressesList() {
-            const listContainer = document.getElementById('savedAddressesList');
-            listContainer.innerHTML = '';
-            if (savedAddresses.length === 0) {
-                listContainer.innerHTML = '<p>No saved addresses.</p>';
-            } else {
-                savedAddresses.forEach(addr => {
-                    listContainer.innerHTML += `<div style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px;">${addr.address}</div>`;
-                });
-            }
-        }
-        
         function applyFilterAndRender(productsList, filter, targetGrid) {
             let sortedProducts = [...productsList];
             const getPrice = p => (p.variants && p.variants.length > 0) ? p.variants[0].price : (p.price || 0);
@@ -2361,18 +2576,44 @@
                 });
             });
             
-            checkoutForm.addEventListener('submit', function(e) {
+            // Checkout Form Submit
+            checkoutForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                const saveAddress = document.getElementById('saveAddressCheck').checked;
                 
-                if (saveAddress) {
-                    const newAddr = {
-                        name: document.getElementById('name').value,
-                        phone: document.getElementById('phone').value,
-                        address: document.getElementById('address').value
+                let orderAddress = {};
+                const isCreatingNewAddress = document.getElementById('shippingInfoForm').style.display !== 'none';
+
+                if (isCreatingNewAddress) {
+                    const postCode = document.getElementById('coPostCode').value;
+                    if(postCode < 1000 || postCode > 9999) {
+                        showCustomAlert('Invalid Post Code', 'Post code must be between 1000 and 9999.');
+                        return;
+                    }
+                    orderAddress = {
+                        title: document.getElementById('coAddressTitle').value,
+                        name: document.getElementById('coName').value,
+                        phone: document.getElementById('coPhone').value,
+                        email: document.getElementById('coEmail').value,
+                        region: document.getElementById('coRegion').value,
+                        postcode: postCode,
+                        address: document.getElementById('coAddress').value,
+                        isDefault: savedAddresses.length === 0
                     };
-                    if (!savedAddresses.some(a => a.address === newAddr.address)) {
-                         savedAddresses.push(newAddr);
+                    
+                    if(editingAddressId !== null) {
+                        savedAddresses[editingAddressId] = orderAddress;
+                    } else {
+                        savedAddresses.push(orderAddress);
+                    }
+                    await saveAddressesToFirebase();
+                } else {
+                    const selectedBox = document.querySelector('#checkoutSavedAddressesList .address-box.selected');
+                    if(selectedBox) {
+                        const index = Array.from(selectedBox.parentNode.children).indexOf(selectedBox);
+                        orderAddress = savedAddresses[index];
+                    } else {
+                        showCustomAlert('No Address', 'Please select a shipping address.');
+                        return;
                     }
                 }
 
@@ -2411,15 +2652,16 @@
                 });
                 
                 const deliveryInside = parseFloat(document.getElementById('deliveryInsideTk').textContent.replace('৳','')) || 60;
-                const shippingFee = deliveryInside; 
+                const deliveryOutside = parseFloat(document.getElementById('deliveryOutsideTk').textContent.replace('৳','')) || 120;
+                const shippingFee = (orderAddress.region === 'Outside Dhaka') ? deliveryOutside : deliveryInside; 
                 const total = subtotal + shippingFee;
 
                 if(isLoggedIn && currentUser) {
                      const orderData = {
                          id: orderNo.toString(),
-                         customer: document.getElementById('name').value,
-                         phone: document.getElementById('phone').value,
-                         address: document.getElementById('address').value,
+                         customer: orderAddress.name,
+                         phone: orderAddress.phone,
+                         address: `${orderAddress.address}, ${orderAddress.region} - ${orderAddress.postcode}`,
                          amount: total,
                          date: date,
                          status: 'Pending',
@@ -2454,7 +2696,8 @@
                 cart = cart.filter(item => !item.selected);
                 updateCartCount();
                 renderCartItems();
-                this.reset();
+                document.getElementById('shippingInfoForm').style.display = 'none';
+                populateCheckoutAddresses();
             });
 
             document.getElementById('closeOrderDetails').addEventListener('click', () => {
@@ -2546,37 +2789,98 @@
                 }
             });
 
-            const savedAddressesSelect = document.getElementById('savedAddresses');
-            const shippingInfoFormDiv = document.getElementById('shippingInfoForm');
-            const addNewAddressBtn = document.getElementById('addNewAddressBtn');
-
-            savedAddressesSelect.addEventListener('change', (e) => {
-                const selectedAddress = savedAddresses[e.target.value];
-                if (selectedAddress) {
-                    document.getElementById('name').value = selectedAddress.name || (currentUser?.name || '');
-                    document.getElementById('phone').value = selectedAddress.phone || (currentUser?.phone || '');
-                    document.getElementById('address').value = selectedAddress.address;
-                }
-            });
-
-            addNewAddressBtn.addEventListener('click', () => {
-                savedAddressesSelect.value = "";
-                shippingInfoFormDiv.reset();
-                if(currentUser) {
-                    document.getElementById('name').value = currentUser.name;
-                    document.getElementById('phone').value = currentUser.phone;
-                }
-                document.getElementById('address').focus();
+            // Profile Address Management
+            document.getElementById('showAddAddressFormBtn').addEventListener('click', () => {
+                openAddressForm(null);
             });
             
-            document.getElementById('newAddressForm').addEventListener('submit', e => {
+            document.getElementById('cancelAddressBtn').addEventListener('click', () => {
+                document.getElementById('newAddressForm').style.display = 'none';
+                document.getElementById('addressListContainer').style.display = 'block';
+            });
+            
+            document.getElementById('newAddressForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const newAddressValue = document.getElementById('newAddress').value.trim();
-                if (newAddressValue) {
-                    savedAddresses.push({ address: newAddressValue });
-                    renderSavedAddressesList();
-                    e.target.reset();
+                const postCode = document.getElementById('addrPostCode').value;
+                if(postCode < 1000 || postCode > 9999) {
+                    showCustomAlert('Invalid Post Code', 'Post code must be between 1000 and 9999.');
+                    return;
                 }
+
+                const addr = {
+                    title: document.getElementById('addrTitle').value,
+                    name: document.getElementById('addrName').value,
+                    phone: document.getElementById('addrPhone').value,
+                    email: document.getElementById('addrEmail').value,
+                    region: document.getElementById('addrRegion').value,
+                    postcode: postCode,
+                    address: document.getElementById('addrFull').value,
+                    isDefault: savedAddresses.length === 0
+                };
+
+                const editId = document.getElementById('editAddressId').value;
+                if (editId !== '') {
+                    savedAddresses[editId] = addr;
+                } else {
+                    savedAddresses.push(addr);
+                }
+                
+                await saveAddressesToFirebase();
+                document.getElementById('newAddressForm').style.display = 'none';
+                document.getElementById('addressListContainer').style.display = 'block';
+                renderSavedAddressesList();
+                showNotification("Address saved successfully!");
+            });
+
+            // Checkout Address Management
+            document.getElementById('checkoutAddAddressBtn').addEventListener('click', () => {
+                openCheckoutAddressForm(null);
+            });
+
+            document.getElementById('coCancelAddressBtn').addEventListener('click', () => {
+                if(savedAddresses.length > 0) {
+                    document.getElementById('shippingInfoForm').style.display = 'none';
+                    document.getElementById('checkoutAddressManagement').style.display = 'block';
+                    populateCheckoutAddresses();
+                } else {
+                    showCustomAlert('Required', 'You must add a shipping address to checkout.');
+                }
+            });
+            
+            document.getElementById('coSaveAddressBtn').addEventListener('click', async () => {
+                const form = document.getElementById('checkoutForm');
+                if(!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+                const postCode = document.getElementById('coPostCode').value;
+                if(postCode < 1000 || postCode > 9999) {
+                    showCustomAlert('Invalid Post Code', 'Post code must be between 1000 and 9999.');
+                    return;
+                }
+
+                const addr = {
+                    title: document.getElementById('coAddressTitle').value,
+                    name: document.getElementById('coName').value,
+                    phone: document.getElementById('coPhone').value,
+                    email: document.getElementById('coEmail').value,
+                    region: document.getElementById('coRegion').value,
+                    postcode: postCode,
+                    address: document.getElementById('coAddress').value,
+                    isDefault: savedAddresses.length === 0
+                };
+
+                if (editingAddressId !== null) {
+                    savedAddresses[editingAddressId] = addr;
+                } else {
+                    savedAddresses.push(addr);
+                }
+                
+                await saveAddressesToFirebase();
+                document.getElementById('shippingInfoForm').style.display = 'none';
+                document.getElementById('checkoutAddressManagement').style.display = 'block';
+                populateCheckoutAddresses();
+                showNotification("Address saved for checkout!");
             });
 
             // Handle Filter Selection inside Dropdowns
