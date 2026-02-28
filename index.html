@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -58,7 +57,8 @@
         .mobile-nav-links a { text-decoration: none; color: var(--dark); font-weight: 500; display: block; padding: 10px 0; }
         .mobile-auth { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
         
-        .hero { position: relative; color: white; width: 100%; aspect-ratio: 2.5 / 1; max-height: 80vh; margin-bottom: 60px; overflow: hidden; display: flex; align-items: center; }
+        /* [Change 1] Reduced margin-bottom here */
+        .hero { position: relative; color: white; width: 100%; aspect-ratio: 2.5 / 1; max-height: 80vh; margin-bottom: 20px; overflow: hidden; display: flex; align-items: center; }
         .hero-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
         .hero-slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1s ease; }
         .hero-slide.active { opacity: 1; }
@@ -71,8 +71,9 @@
         .section-title { text-align: center; font-size: 2rem; margin-bottom: 40px; color: var(--dark); }
         
         /* Category Update */
-        #categories .section-title { display: none; } /* "Shop by Category" লেখা হাইড করা হয়েছে */
-        .categories { padding: 30px 0 20px; }
+        #categories .section-title { display: none; }
+        /* [Change 1] Reduced padding here */
+        .categories { padding: 10px 0 20px; }
         .category-grid { display: flex; gap: 30px; overflow-x: auto; padding: 10px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; justify-content: flex-start; }
         .category-card { background-color: white; border-radius: 16px; width: 100px; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: var(--shadow); transition: var(--transition); cursor: pointer; scroll-snap-align: center; flex-shrink: 0; border: 1px solid #eee; overflow: hidden; }
         .category-card:hover { transform: translateY(-5px); outline: 2px solid var(--primary); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); }
@@ -125,13 +126,14 @@
         .sticky-actions-bar .btn { flex: 1; max-width: 300px; }
         .btn-lg { padding: 12px 30px; font-size: 1.1rem; }
         
-        /* Variant Selection Update */
+        /* [Change 2] Variant Selection Update */
         .variant-selector { margin-bottom: 20px; }
         .variant-selector h4 { font-weight: 600; margin-bottom: 10px; }
         .variant-options { display: flex; gap: 10px; flex-wrap: wrap; }
-        .variant-option { padding: 8px 15px; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: var(--transition); font-weight: 500; display: inline-flex; align-items: center; gap: 8px; background-color: #fff; color: var(--dark); }
-        .variant-option .variant-img { width: 30px; height: 30px; border-radius: 4px; object-fit: cover; border: 1px solid #eee; }
-        .variant-option.selected { border-color: #2563eb; background-color: #eff6ff; color: #2563eb; outline: 1px solid #2563eb; }
+        .variant-option { padding: 8px 20px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; transition: var(--transition); font-weight: 500; display: inline-flex; flex-direction: column; align-items: center; gap: 5px; background-color: #fff; color: var(--dark); min-width: 60px; justify-content: center; position: relative; }
+        .variant-option .variant-img { width: 60px; height: 60px; border-radius: 4px; object-fit: cover; border: none; }
+        /* Box-shadow simulates outline beautifully and works perfectly with border-radius */
+        .variant-option.selected { border-color: var(--primary); background-color: #eff6ff; color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
         .variant-option.disabled { opacity: 0.5; cursor: not-allowed; background-color: #f3f4f6; }
         
         .options-panel-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1002; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
@@ -157,11 +159,16 @@
         .address-management .form-group { display: flex; align-items: center; gap: 15px; }
         #shippingInfoForm.hidden { display: none; }
         
-        .payment-methods { display: flex; gap: 20px; margin: 20px 0; flex-wrap: wrap; }
-        .payment-method { flex: 1; min-width: 120px; text-align: center; padding: 15px; border: 2px solid #e5e7eb; border-radius: 4px; cursor: pointer; transition: var(--transition); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
-        .payment-method img { max-width: 50px; max-height: 50px; object-fit: contain; }
+        /* [Change 3] Payment Methods layout update */
+        .payment-methods { display: flex; flex-direction: column; gap: 12px; margin: 20px 0; }
+        .payment-method { display: flex; flex-direction: row; align-items: center; justify-content: flex-start; padding: 15px 20px; border: 1px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: var(--transition); gap: 15px; background-color: #fff; text-align: left; position: relative; }
+        .payment-method img { max-width: 40px; max-height: 40px; object-fit: contain; }
+        .payment-method i { font-size: 24px; color: var(--primary); width: 40px; text-align: center; }
+        .payment-method p { margin: 0; font-weight: 500; flex-grow: 1; font-size: 1rem; color: var(--dark); }
+        .payment-method::after { content: '\f105'; font-family: 'Font Awesome 6 Free'; font-weight: 900; color: #ccc; font-size: 1.2rem; }
         .payment-method:hover { border-color: var(--primary); }
-        .payment-method.active { border-color: var(--primary); background-color: rgba(37, 99, 235, 0.05); }
+        .payment-method.active { border-color: var(--primary); background-color: #eff6ff; }
+        .payment-method.active::after { color: var(--primary); }
 
         .auth-container { max-width: 450px; margin: 60px auto; background: white; padding: 40px; border-radius: 8px; box-shadow: var(--shadow); }
         .auth-title { text-align: center; margin-bottom: 30px; color: var(--primary); }
@@ -270,8 +277,8 @@
         .suggested-products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
         .suggested-product-card { background-color: white; border-radius: 8px; overflow: hidden; box-shadow: var(--shadow); transition: var(--transition); cursor: pointer; border: 1px solid #e5e7eb; }
         .suggested-product-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); border-color: var(--primary); }
-        .suggested-product-img { height: 150px; overflow: hidden; }
-        .suggested-product-img img { width: 100%; height: 100%; object-fit: cover; }
+        .suggested-product-img { height: 150px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .suggested-product-img img { width: 100%; height: 100%; object-fit: contain; }
         .suggested-product-info { padding: 15px; text-align: center; }
         .suggested-product-info h4 { font-size: 1rem; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .suggested-product-info .current-price { font-size: 1.1rem; font-weight: 600; }
@@ -322,7 +329,6 @@
         .od-meta-section .od-row { margin-bottom: 12px; }
         .od-actions { padding: 15px 20px; background: white; position: sticky; bottom: 0; border-top: 1px solid #eee; }
 
-        /* Random Notification Promo Popup Update */
         .promo-popup { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(200%); background-color: white; border: 2px solid #000; border-radius: 12px; display: flex; flex-direction: row !important; align-items: stretch; width: 400px; max-width: 95vw; z-index: 1500; transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1); padding: 0; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden; }
         .promo-popup.visible { transform: translateX(-50%) translateY(0); }
         .promo-popup-img { width: 130px; height: auto; object-fit: cover; border-right: 1px solid #eee; flex-shrink: 0; }
@@ -347,9 +353,7 @@
         }
         @media (max-width: 576px) { 
             .product-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } 
-            .payment-methods { flex-direction: column; } 
             .timer { flex-wrap: wrap; justify-content: center; } 
-            /* Mobile Category Update */
             .category-card { width: 80px; height: 80px; border-radius: 12px; } 
             .category-icon { font-size: 1.2rem; } 
             .category-card h3 { font-size: 0.7rem; } 
@@ -915,7 +919,6 @@
         </div>
     </div>
 
-    <!-- Updated Promo Popup -->
     <div class="promo-popup" id="promoPopup">
         <div class="promo-popup-discount" id="promoPopupDiscount">20%<br>OFF</div>
         <button class="promo-popup-close" id="promoPopupClose">&times;</button>
@@ -960,7 +963,6 @@
     </div>
 
     <script>
-        // Updated Firebase Config (Same as Admin)
         const firebaseConfig = {
             apiKey: "AIzaSyD5p-7Cgep9aGf6omMXDH8LOTy0C76jJaQ",
             authDomain: "e-commerce-shop-24.firebaseapp.com",
@@ -976,7 +978,6 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // Data Arrays
         let products = [];
         let heroSlidesData = [];
         let cart =[];
@@ -991,7 +992,6 @@
         let lastSearchTerm = '';
         let paymentGateways =[];
 
-        // DOM Elements
         const productGrid = document.getElementById('productGrid');
         const cartIcon = document.getElementById('cartIcon');
         const cartOverlay = document.getElementById('cartOverlay');
@@ -1046,10 +1046,8 @@
         const welcomeOverlay = document.getElementById('welcomeOverlay');
         const promoPopup = document.getElementById('promoPopup');
 
-        // Fetching Data from Firebase
         async function loadInitialData() {
             try {
-                // Settings Loader
                 const settingsSnap = await db.collection('settings').doc('general').get();
                 if(settingsSnap.exists) {
                     const data = settingsSnap.data();
@@ -1070,7 +1068,6 @@
                     document.getElementById('footerCopyright').innerHTML = data.footerCopyright || '';
                 }
 
-                // Popups Loader (Opening Ad)
                 const popupSnap = await db.collection('popups').where('section', '==', 'opening').get();
                 if(!popupSnap.empty) {
                     const popupData = popupSnap.docs[0].data();
@@ -1090,7 +1087,6 @@
                     document.getElementById('welcomeOverlay').style.display = 'none';
                 }
 
-                // Categories Loader
                 const catSnap = await db.collection('categories').get();
                 const categoryGrid = document.getElementById('categoryGrid');
                 categoryGrid.innerHTML = '';
@@ -1111,7 +1107,6 @@
                     `;
                 });
 
-                // Social Links Loader
                 const socialSnap = await db.collection('socials').get();
                 const socialGrid = document.getElementById('footerSocials');
                 socialGrid.innerHTML = '';
@@ -1120,19 +1115,16 @@
                     socialGrid.innerHTML += `<a href="${social.url}" class="social-icon" target="_blank"><i class="${social.iconClass}"></i></a>`;
                 });
 
-                // Hero Slides Loader
                 const slidesSnap = await db.collection('heroSlides').orderBy('order').get();
                 heroSlidesData =[];
                 slidesSnap.forEach(doc => { heroSlidesData.push(doc.data()); });
 
-                // Payment Gateways Loader
                 const gatewaysSnap = await db.collection('paymentGateways').get();
                 paymentGateways =[];
                 gatewaysSnap.forEach(doc => {
                     paymentGateways.push({ id: doc.id, ...doc.data() });
                 });
 
-                // Products Loader
                 const prodSnap = await db.collection('products').get();
                 products =[];
                 prodSnap.forEach(doc => {
@@ -1516,12 +1508,26 @@
             });
         }
 
+        // [Change 4] Updated renderSuggestedProducts logic
         function renderSuggestedProducts(currentProd) {
             const grid = document.getElementById('suggestedProductsGrid');
             grid.innerHTML = '';
+            
+            const currentNameWords = currentProd.name.toLowerCase().split(' ');
+
             const suggested = products.filter(p => {
-                return p.id != currentProd.id && p.keywords && p.keywords.some(k => currentProd.keywords && currentProd.keywords.includes(k));
+                if (p.id == currentProd.id) return false;
+
+                // Name Match (matching parts of the name)
+                const nameMatch = currentNameWords.some(word => word.length > 3 && p.name.toLowerCase().includes(word));
+                // Keyword Match
+                const keywordMatch = p.keywords && currentProd.keywords && p.keywords.some(k => currentProd.keywords.includes(k));
+                // Category Match
+                const categoryMatch = p.category && currentProd.category && p.category === currentProd.category;
+
+                return nameMatch || keywordMatch || categoryMatch;
             }).slice(0, 4); 
+
             if (suggested.length === 0) {
                 document.querySelector('.suggested-products-section').style.display = 'none';
                 return;
@@ -1580,7 +1586,6 @@
             detailQty.max = currentProduct.stock || 1;
             document.getElementById('detailStockStatus').textContent = `(Stock: ${currentProduct.stock || 0})`;
             
-            // Payment Gateways rendering
             const gatewaysContainer = document.getElementById('detailPaymentGateways');
             gatewaysContainer.innerHTML = '';
             if (currentProduct.allowedGateways && currentProduct.allowedGateways.length > 0) {
@@ -1701,7 +1706,6 @@
             const variant = currentProduct.variants.find(v => {
                  const colorMatch = currentSelections.color ? v.color === currentSelections.color : true;
                  const sizeMatch = currentSelections.size ? v.size === currentSelections.size : true;
-                 // Handle cases where product only has Color or only Size
                  const hasColor = v.color && v.color !== 'N/A';
                  const hasSize = v.size && v.size !== 'N/A';
                  
@@ -1733,10 +1737,6 @@
                 panelProductInfo.querySelector('.current-price').textContent = `৳${price.toFixed(2)}`;
 
                 renderVariantSelectors(currentProduct, panelVariantSelectors);
-                // Pre-select if already selected on detail page
-                if(selectedVariant) {
-                     // Simple re-selection logic could be added here if needed
-                }
                 attachVariantListeners(panelVariantSelectors);
                 panelQty.value = detailQty.value || 1;
                 optionsPanelOverlay.classList.add('active');
@@ -1761,7 +1761,6 @@
             } else {
                 const itemPrice = variant ? variant.price : (product.price || 0);
                 let itemName = product.name;
-                // Add variant info to name
                 if(variant) {
                    if(variant.color && variant.color !== 'N/A' && variant.size && variant.size !== 'N/A') {
                        itemName = `${product.name} (${variant.color}, ${variant.size})`;
@@ -1774,7 +1773,7 @@
 
                 cart.push({ 
                     id: product.id,
-                    pid: product.pid, // Added PID from admin
+                    pid: product.pid,
                     cartId: cartId,
                     name: itemName, 
                     price: itemPrice, 
@@ -1782,7 +1781,6 @@
                     quantity: quantity,
                     variant: variant,
                     selected: true,
-                    // Pass specific attributes separately for easier DB storage
                     color: variant ? variant.color : 'N/A',
                     size: variant ? variant.size : 'N/A'
                 });
@@ -1969,6 +1967,7 @@
             }
         }
         
+        // [Change 3] Javascript structure update for the new Gateway design
         function renderPaymentMethods() {
             const container = document.getElementById('checkoutPaymentMethods');
             container.innerHTML = '';
@@ -2030,7 +2029,6 @@
             
             document.getElementById('promoPopupImg').src = popupData.images[0];
             
-            // Title up to 20 Characters
             let title = popupData.name;
             if (title.length > 20) {
                 title = title.substring(0, 20) + '...';
@@ -2075,7 +2073,6 @@
         }
 
         function setupEventListeners() {
-            // Full Screen Ad Banner Timer Logic (Opening Popup)
             let adTimer;
             let timeLeft = 5;
 
@@ -2210,12 +2207,10 @@
                     return; 
                 }
                 
-                // Order Processing
                 const orderNo = Math.floor(Math.random() * 1000000000000) + 1000000000000;
                 const dateObj = new Date();
                 const date = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + dateObj.toLocaleTimeString('en-GB', { hour12: false });
                 
-                // Get Selected Payment Method
                 const activePayment = document.querySelector('.payment-method.active');
                 const paymentMethodText = activePayment ? activePayment.dataset.method : 'Cash on Delivery';
                 
@@ -2240,12 +2235,10 @@
                     `;
                 });
                 
-                // Shipping Logic
                 const deliveryInside = parseFloat(document.getElementById('deliveryInsideTk').textContent.replace('৳','')) || 60;
                 const shippingFee = deliveryInside; 
                 const total = subtotal + shippingFee;
 
-                // Save Order to Firebase
                 if(isLoggedIn && currentUser) {
                      const orderData = {
                          id: orderNo.toString(),
@@ -2257,7 +2250,7 @@
                          status: 'Pending',
                          payment: paymentMethodText,
                          cartItems: selectedItems.map(i => ({
-                             pid: i.pid || i.id, // Store Admin PID
+                             pid: i.pid || i.id,
                              name: i.name,
                              price: i.price,
                              qty: i.quantity,
@@ -2442,7 +2435,6 @@
             cartOverlay.addEventListener('click', (e) => { if (e.target === cartOverlay) cartOverlay.classList.remove('active'); });
             shopNowBtn.addEventListener('click', () => { document.getElementById('shop').scrollIntoView({ behavior: 'smooth' }); });
 
-            // Close mobile menu on outside click
             document.addEventListener('click', (e) => {
                 if (mobileMenu.classList.contains('active') && !mobileMenu.contains(e.target) && !menuToggle.contains(e.target)) {
                     mobileMenu.classList.remove('active');
@@ -2544,7 +2536,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
-            await loadInitialData(); // Added async-await here to fix Product Grid loading race condition
+            await loadInitialData();
             init();
         });
     </script>
