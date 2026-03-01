@@ -160,7 +160,7 @@
             max-height: 75vh; 
             width: 100%; 
             position: relative;
-            margin-top: 20px; /* FIX 1: Spacing below sticky header */
+            margin-top: 20px;
         }
         table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 800px; text-align: left; }
         thead th { position: sticky; top: 0; z-index: 20; padding: 16px 20px; font-weight: 600; font-size: 13px; color: var(--gray-color); text-transform: uppercase; letter-spacing: 0.5px; background-color: var(--light-gray); border-bottom: 1px solid var(--border-color); white-space: nowrap; }
@@ -218,7 +218,7 @@
         input:checked + .slider { background-color: var(--primary-color); }
         input:checked + .slider:before { transform: translateX(24px); }
         
-        /* Tags (Updated for FIX 3) */
+        /* Tags */
         .tag-container { 
             display: flex;
             flex-wrap: wrap;
@@ -646,7 +646,7 @@
                     <div id="mediaContainer" class="dynamic-list"></div>
                 </div>
 
-                <div class="form-row">
+                <div class="form-row" id="mainPricingStock">
                     <div class="form-group">
                         <label for="productOriginalPrice">Original Price (৳)</label>
                         <input type="number" id="productOriginalPrice" class="form-control" placeholder="0.00" step="0.01">
@@ -656,13 +656,11 @@
                         <input type="number" id="productPrice" class="form-control" placeholder="0.00" step="0.01" required>
                     </div>
                     <div class="form-group">
-                        <label for="productDiscount">Discount (%)</label>
-                        <input type="number" id="productDiscount" class="form-control" placeholder="0" min="0" max="100">
-                    </div>
-                    <div class="form-group">
                         <label for="productStock">Stock Quantity</label>
                         <input type="number" id="productStock" class="form-control" placeholder="0" required>
                     </div>
+                </div>
+                <div class="form-row">
                     <div class="form-group">
                         <label for="productSales">Total Sales (Fake/Real)</label>
                         <input type="number" id="productSales" class="form-control" placeholder="0">
@@ -698,12 +696,6 @@
                             Variants Options 
                             <button type="button" class="btn-icon-add" onclick="addSizeColorField()"><i class="fas fa-plus"></i></button>
                         </label>
-                        <div class="dynamic-list-header">
-                            <span style="flex:2;">Color, Size</span>
-                            <span style="flex:1;">Price</span>
-                            <span style="flex:2;">Image URL</span>
-                            <span style="width:32px; text-align:center;"></span>
-                        </div>
                         <div id="sizeColorContainer" class="dynamic-list"></div>
                     </div>
                 </div>
@@ -1145,7 +1137,7 @@
             const searchInput = document.getElementById('productSearchById');
             if (searchInput) searchInput.addEventListener('input', populateProductsTable);
 
-            // Modals Logic - Adding clear resets (Fix 1)
+            // Modals Logic 
             document.getElementById('addProductBtn').addEventListener('click', () => {
                 isEditingProduct = false;
                 document.getElementById('modalTitle').textContent = 'Add New Product';
@@ -1153,7 +1145,6 @@
                 productForm.reset();
                 resetSEO();
                 
-                // FIX 1: Cleared containers properly
                 document.getElementById('sizeColorContainer').innerHTML = ''; 
                 document.getElementById('mediaContainer').innerHTML = '';
                 addMediaField();
@@ -1376,21 +1367,48 @@
 
                 if (p.variants && p.variants.length > 0) {
                     p.variants.forEach(v => {
-                        const varRow = document.createElement('tr');
-                        varRow.style.backgroundColor = 'rgba(59, 130, 246, 0.02)';
                         const varImg = v.image ? `<img src="${v.image}" style="width:30px; height:30px; border-radius:6px; object-fit:cover;">` : `<i class="fas fa-level-up-alt fa-rotate-90" style="color: var(--gray-color); margin-left: 10px;"></i>`;
-                        varRow.innerHTML = `
-                            <td style="padding-left: 35px;">
-                                <div style="display:flex; align-items:center; gap:10px;">
-                                    ${varImg}
-                                    <span style="font-size: 12px; color: var(--gray-color); font-weight: 600;">${v.variantId || 'N/A'}</span>
-                                </div>
-                            </td>
-                            <td colspan="2" style="font-size: 13px; color: var(--gray-color);">Variant: ${v.color} ${v.size !== 'N/A' ? `(${v.size})` : ''}</td>
-                            <td style="font-size: 13px; font-weight: 600;">৳${v.price}</td>
-                            <td colspan="3"></td>
-                        `;
-                        productsTable.appendChild(varRow);
+                        
+                        if (v.sizes && v.sizes.length > 0) {
+                            v.sizes.forEach(s => {
+                                const varRow = document.createElement('tr');
+                                varRow.style.backgroundColor = 'rgba(59, 130, 246, 0.02)';
+                                varRow.innerHTML = `
+                                    <td style="padding-left: 35px;">
+                                        <div style="display:flex; align-items:center; gap:10px;">
+                                            ${varImg}
+                                            <span style="font-size: 12px; color: var(--gray-color); font-weight: 600;">${v.variantId || 'N/A'}</span>
+                                        </div>
+                                    </td>
+                                    <td colspan="2" style="font-size: 13px; color: var(--gray-color);">Variant: ${v.color} <br><span style="color: var(--dark-color); font-weight: 600;">Size: ${s.size}</span></td>
+                                    <td style="font-size: 13px; font-weight: 600;">
+                                        ৳${v.price}
+                                        ${v.discount > 0 ? `<br><small style="color:var(--danger-color); padding: 1px 4px; background: rgba(239,68,68,0.1); border-radius: 4px;">-${v.discount}%</small>` : ''}
+                                    </td>
+                                    <td style="font-size: 13px;">${s.stock}</td>
+                                    <td colspan="2"></td>
+                                `;
+                                productsTable.appendChild(varRow);
+                            });
+                        } else {
+                            const varRow = document.createElement('tr');
+                            varRow.style.backgroundColor = 'rgba(59, 130, 246, 0.02)';
+                            varRow.innerHTML = `
+                                <td style="padding-left: 35px;">
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        ${varImg}
+                                        <span style="font-size: 12px; color: var(--gray-color); font-weight: 600;">${v.variantId || 'N/A'}</span>
+                                    </div>
+                                </td>
+                                <td colspan="2" style="font-size: 13px; color: var(--gray-color);">Variant: ${v.color} ${v.size && v.size !== 'N/A' ? `(${v.size})` : ''}</td>
+                                <td style="font-size: 13px; font-weight: 600;">
+                                    ৳${v.price}
+                                    ${v.discount > 0 ? `<br><small style="color:var(--danger-color); padding: 1px 4px; background: rgba(239,68,68,0.1); border-radius: 4px;">-${v.discount}%</small>` : ''}
+                                </td>
+                                <td colspan="3"></td>
+                            `;
+                            productsTable.appendChild(varRow);
+                        }
                     });
                 }
             });
@@ -1608,42 +1626,70 @@
 
             const name = document.getElementById('productName').value;
             const category = document.getElementById('productCategory').value;
-            const originalPrice = parseFloat(document.getElementById('productOriginalPrice').value) || 0;
-            const price = parseFloat(document.getElementById('productPrice').value);
-            const discount = parseInt(document.getElementById('productDiscount').value) || 0;
-            const stock = parseInt(document.getElementById('productStock').value) || 0;
+            let originalPrice = parseFloat(document.getElementById('productOriginalPrice').value) || 0;
+            let price = parseFloat(document.getElementById('productPrice').value) || 0;
+            
+            let discount = 0;
+            if (originalPrice > price && price > 0) {
+                discount = Math.round(((originalPrice - price) / originalPrice) * 100);
+            }
+            
+            let stock = parseInt(document.getElementById('productStock').value) || 0;
             const sales = parseInt(document.getElementById('productSales').value) || 0;
             const description = document.getElementById('productDescription').value;
             let status = document.getElementById('productStatus').value;
-            
-            if(stock <= 0 && status !== 'Inactive') status = 'Out of Stock';
 
             const imageInputs = document.querySelectorAll('.product-media-input');
             const images = Array.from(imageInputs).map(inp => inp.value).filter(val => val.trim() !== '');
-            const keywords = [...adminSeoKeywords];
+            const seo_tag = [...adminSeoKeywords];
 
             let variants = [];
+            let totalStock = 0;
             if(document.getElementById('sizeColorToggle').checked) {
-                const varItems = document.querySelectorAll('#sizeColorContainer .dynamic-item');
-                varItems.forEach((item, idx) => {
-                    const typeVal = item.querySelector('.var-color-size').value;
-                    const priceVal = parseFloat(item.querySelector('.var-price').value) || price;
-                    const imgVal = item.querySelector('.var-image').value || '';
-                    if(typeVal) {
-                        let colorStr = typeVal; let sizeStr = "N/A";
-                        if(typeVal.includes(',')) {
-                            const parts = typeVal.split(',');
-                            colorStr = parts[0].trim(); sizeStr = parts[1].trim();
+                const varBlocks = document.querySelectorAll('#sizeColorContainer .variant-block');
+                varBlocks.forEach((block, idx) => {
+                    const colorName = block.querySelector('.var-color-name').value;
+                    const origPrice = parseFloat(block.querySelector('.var-orig-price').value) || 0;
+                    const currPrice = parseFloat(block.querySelector('.var-curr-price').value) || 0;
+                    const imgVal = block.querySelector('.var-image').value || '';
+                    
+                    let varDiscount = 0;
+                    if(origPrice > currPrice && currPrice > 0) {
+                        varDiscount = Math.round(((origPrice - currPrice) / origPrice) * 100);
+                    }
+                    
+                    let sizes = [];
+                    const sizeItems = block.querySelectorAll('.size-item');
+                    sizeItems.forEach(sItem => {
+                        const sName = sItem.querySelector('.var-size-name').value;
+                        const sStock = parseInt(sItem.querySelector('.var-size-stock').value) || 0;
+                        if(sName) {
+                            sizes.push({ size: sName, stock: sStock });
+                            totalStock += sStock;
                         }
-                        variants.push({ variantId: `${pid}-V${idx+1}`, color: colorStr, size: sizeStr, price: priceVal, image: imgVal });
+                    });
+
+                    if(colorName) {
+                        variants.push({ 
+                            variantId: `${pid}-V${idx+1}`, 
+                            color: colorName, 
+                            originalPrice: origPrice,
+                            price: currPrice, 
+                            discount: varDiscount,
+                            image: imgVal,
+                            sizes: sizes
+                        });
                     }
                 });
+                stock = totalStock;
             }
+            
+            if(stock <= 0 && status !== 'Inactive') status = 'Out of Stock';
 
             const gatewayCheckboxes = document.querySelectorAll('.gateway-checkbox:checked');
             const allowedGateways = Array.from(gatewayCheckboxes).map(cb => cb.value);
 
-            const payload = { pid, name, category, originalPrice, price, discount, stock, sales, description, status, images, keywords, variants, allowedGateways };
+            const payload = { pid, name, category, originalPrice, price, discount, stock, sales, description, status, images, seo_tag, variants, allowedGateways };
             
             try {
                 if(isEditingProduct && editingProductId) {
@@ -1797,8 +1843,7 @@
             document.getElementById('productName').value = p.name;
             document.getElementById('productCategory').value = p.category;
             document.getElementById('productOriginalPrice').value = p.originalPrice || '';
-            document.getElementById('productPrice').value = p.price;
-            document.getElementById('productDiscount').value = p.discount || 0;
+            document.getElementById('productPrice').value = p.price || '';
             document.getElementById('productStock').value = p.stock || 0;
             document.getElementById('productSales').value = p.sales || 0;
             document.getElementById('productDescription').value = p.description || '';
@@ -1810,17 +1855,28 @@
                 mc.insertAdjacentHTML('beforeend', html);
             });
 
-            adminSeoKeywords = p.keywords ? [...p.keywords] : [];
+            adminSeoKeywords = p.seo_tag ? [...p.seo_tag] : (p.keywords ? [...p.keywords] : []);
             renderTags();
 
             const sc = document.getElementById('sizeColorContainer'); sc.innerHTML = '';
             if(p.variants && p.variants.length > 0) {
                 document.getElementById('sizeColorToggle').checked = true;
                 toggleSizeColor();
-                p.variants.forEach(v => {
-                    const str = v.size !== "N/A" ? `${v.color}, ${v.size}` : v.color;
-                    addSizeColorField(str, v.price, v.image || "");
-                });
+                
+                if (p.variants[0].sizes) {
+                    p.variants.forEach(v => {
+                        addSizeColorField(v.color, v.originalPrice || v.price, v.price, v.image || "", v.sizes);
+                    });
+                } else {
+                    let grouped = {};
+                    p.variants.forEach(v => {
+                        if(!grouped[v.color]) grouped[v.color] = { originalPrice: v.originalPrice || v.price, price: v.price, image: v.image, sizes: [] };
+                        grouped[v.color].sizes.push({ size: v.size !== 'N/A' ? v.size : 'Default', stock: 0 }); 
+                    });
+                    for (const [col, data] of Object.entries(grouped)) {
+                        addSizeColorField(col, data.originalPrice, data.price, data.image || "", data.sizes);
+                    }
+                }
             } else {
                 document.getElementById('sizeColorToggle').checked = false; toggleSizeColor();
             }
@@ -1906,21 +1962,63 @@
         function updateOrderStatus(id, status) { db.collection('orders').doc(id).update({status: status}); }
         window.deleteOrder = function(id) { if(confirm("Permanently delete this order?")) db.collection('orders').doc(id).delete(); };
 
-        // Dynamic Field Generators - Fix 2 (Replaced innerHTML += with insertAdjacentHTML)
+        // Dynamic Field Generators
         window.addMediaField = function() {
             const html = `<div class="dynamic-item"><input type="text" class="form-control product-media-input" placeholder="Image URL" style="flex:1;"><button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button></div>`;
             document.getElementById('mediaContainer').insertAdjacentHTML('beforeend', html);
         };
         
-        window.addSizeColorField = function(colorSize = '', price = '', image = '') {
+        let variantCounter = 0;
+        window.addSizeColorField = function(colorName = '', origPrice = '', currPrice = '', image = '', sizes = []) {
+            variantCounter++;
+            const varId = `var_${variantCounter}`;
+            let sizesHtml = '';
+            
+            if(sizes && sizes.length > 0) {
+                sizes.forEach(s => {
+                    sizesHtml += `<div class="dynamic-item size-item" style="margin-top: 5px; gap: 10px; display: flex;">
+                        <input type="text" class="form-control var-size-name" placeholder="Size Name (e.g. M, L)" value="${s.size}" style="flex:2;">
+                        <input type="number" class="form-control var-size-stock" placeholder="Stock Qty" value="${s.stock}" style="flex:1;">
+                        <button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button>
+                    </div>`;
+                });
+            } else {
+                sizesHtml += `<div class="dynamic-item size-item" style="margin-top: 5px; gap: 10px; display: flex;">
+                    <input type="text" class="form-control var-size-name" placeholder="Size Name (e.g. M, L)" style="flex:2;">
+                    <input type="number" class="form-control var-size-stock" placeholder="Stock Qty" style="flex:1;">
+                    <button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button>
+                </div>`;
+            }
+
             const html = `
-            <div class="dynamic-item" style="flex-wrap: wrap; gap: 10px; border-bottom: 1px dashed var(--border-color); padding-bottom: 12px; margin-bottom: 10px;">
-                <input type="text" class="form-control var-color-size" placeholder="Color, Size" value="${colorSize}" style="flex: 2; min-width: 120px;">
-                <input type="number" class="form-control var-price" placeholder="Price (৳)" value="${price}" style="flex: 1; min-width: 80px;">
-                <input type="text" class="form-control var-image" placeholder="Image URL (Optional)" value="${image}" style="flex: 2; min-width: 150px;">
-                <button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()" style="margin-top: 5px;">-</button>
+            <div class="variant-block dynamic-item" style="flex-direction: column; align-items: stretch; border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; margin-bottom: 15px; background: var(--light-color);">
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+                    <input type="text" class="form-control var-color-name" placeholder="Variant Name (e.g. Red, XL)" value="${colorName}" style="flex: 2; min-width: 120px;">
+                    <input type="number" class="form-control var-orig-price" placeholder="Orig. Price (৳)" value="${origPrice}" style="flex: 1; min-width: 90px;">
+                    <input type="number" class="form-control var-curr-price" placeholder="Discount Price (৳)" value="${currPrice}" style="flex: 1; min-width: 90px;">
+                    <input type="text" class="form-control var-image" placeholder="Image URL (Optional)" value="${image}" style="flex: 2; min-width: 150px;">
+                    <button type="button" class="btn-icon-remove" onclick="this.closest('.variant-block').remove()" style="margin-top: 2px;">-</button>
+                </div>
+                <div class="sizes-container" id="sizes_${varId}" style="padding-left: 15px; border-left: 2px solid var(--primary-color);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px; font-size: 13px; font-weight: 600; color: var(--gray-color);">
+                        <span><i class="fas fa-ruler"></i> Sizes & Stock for this Variant</span>
+                        <button type="button" class="btn-add" style="padding: 4px 10px; font-size: 12px; border-radius: 4px;" onclick="addSizeField('sizes_${varId}')"><i class="fas fa-plus"></i> Add Size</button>
+                    </div>
+                    <div class="sizes-list" style="display: flex; flex-direction: column; gap: 8px;">
+                        ${sizesHtml}
+                    </div>
+                </div>
             </div>`;
             document.getElementById('sizeColorContainer').insertAdjacentHTML('beforeend', html);
+        };
+        
+        window.addSizeField = function(containerId) {
+            const html = `<div class="dynamic-item size-item" style="margin-top: 5px; gap: 10px; display: flex;">
+                <input type="text" class="form-control var-size-name" placeholder="Size Name (e.g. M, L)" style="flex:2;">
+                <input type="number" class="form-control var-size-stock" placeholder="Stock Qty" style="flex:1;">
+                <button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button>
+            </div>`;
+            document.querySelector(`#${containerId} .sizes-list`).insertAdjacentHTML('beforeend', html);
         };
         
         window.addBannerField = function(src="", type="image", id="") {
@@ -1957,11 +2055,24 @@
         
         window.toggleSizeColor = function() {
             const sec = document.getElementById('sizeColorSection');
+            const mainPricing = document.getElementById('mainPricingStock');
+            const pPrice = document.getElementById('productPrice');
+            const pStock = document.getElementById('productStock');
+            
             if(document.getElementById('sizeColorToggle').checked) {
                 sec.classList.remove('hidden');
+                mainPricing.classList.add('hidden');
+                pPrice.removeAttribute('required');
+                pStock.removeAttribute('required');
                 if(document.getElementById('sizeColorContainer').children.length === 0) addSizeColorField();
-            } else sec.classList.add('hidden');
+            } else {
+                sec.classList.add('hidden');
+                mainPricing.classList.remove('hidden');
+                pPrice.setAttribute('required', 'true');
+                pStock.setAttribute('required', 'true');
+            }
         }
+        
         window.togglePopUpActionButton = function() {
             if (document.getElementById('popUpActionButtonToggle').checked) document.getElementById('popUpActionButtonFields').classList.remove('hidden');
             else document.getElementById('popUpActionButtonFields').classList.add('hidden');
