@@ -524,7 +524,7 @@
                                     <th>Visual</th>
                                     <th>Name</th>
                                     <th>Section</th>
-                                    <th>Action Button</th>
+                                    <th>Content</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
@@ -678,7 +678,7 @@
                     <div class="form-group">
                         <label>Product SEO Keywords</label>
                         <div class="tag-container" id="seoTagsContainer">
-                            <input type="text" id="seoInput" placeholder="Type keyword and press comma (,)">
+                            <input type="text" id="seoInput" placeholder="Type keyword and press Enter or comma (,)">
                         </div>
                     </div>
                 </div>
@@ -808,26 +808,43 @@
                     </select>
                 </div>
                 
-                <div class="form-group hidden" id="popUpNameField">
-                    <label for="popUpName">Pop Up Identifier Name</label>
-                    <input type="text" id="popUpName" class="form-control" placeholder="Enter pop up internal name">
+                <div class="form-group hidden" id="popUpTypeGroup">
+                    <label for="popUpType">Pop Up Type</label>
+                    <select id="popUpType" class="form-control" onchange="togglePopUpTypeFields()">
+                        <option value="advertisement">Advertisement</option>
+                        <option value="product">Product</option>
+                    </select>
                 </div>
                 
-                <div class="form-group">
-                    <label for="popUpBannerLogo">Visual Media (Image URL)</label>
-                    <input type="text" id="popUpBannerLogo" class="form-control" required>
-                </div>
-                
-                <div class="form-full">
-                    <div style="display: flex; align-items: center; margin: 20px 0; background: var(--light-gray); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color);">
-                        <label class="switch"><input type="checkbox" id="popUpActionButtonToggle" onchange="togglePopUpActionButton()"><span class="slider"></span></label>
-                        <span style="font-weight: 600;">Enable Interactive Action Button</span>
+                <div id="popUpAdFields">
+                    <div class="form-group hidden" id="popUpNameField">
+                        <label for="popUpName">Pop Up Identifier Name</label>
+                        <input type="text" id="popUpName" class="form-control" placeholder="Enter pop up internal name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="popUpBannerLogo">Visual Media (Image URL)</label>
+                        <input type="text" id="popUpBannerLogo" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-full">
+                        <div style="display: flex; align-items: center; margin: 20px 0; background: var(--light-gray); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color);">
+                            <label class="switch"><input type="checkbox" id="popUpActionButtonToggle" onchange="togglePopUpActionButton()"><span class="slider"></span></label>
+                            <span style="font-weight: 600;">Enable Interactive Action Button</span>
+                        </div>
+                    </div>
+                    
+                    <div id="popUpActionButtonFields" class="hidden form-section" style="padding: 20px;">
+                        <div class="form-group"><label for="popUpActionButtonName">Button Text</label><input type="text" id="popUpActionButtonName" class="form-control"></div>
+                        <div class="form-group"><label for="popUpActionButtonLink">Redirection URL</label><input type="text" id="popUpActionButtonLink" class="form-control"></div>
                     </div>
                 </div>
                 
-                <div id="popUpActionButtonFields" class="hidden form-section" style="padding: 20px;">
-                    <div class="form-group"><label for="popUpActionButtonName">Button Text</label><input type="text" id="popUpActionButtonName" class="form-control"></div>
-                    <div class="form-group"><label for="popUpActionButtonLink">Redirection URL</label><input type="text" id="popUpActionButtonLink" class="form-control"></div>
+                <div class="form-group hidden" id="popUpProductField">
+                    <label for="popUpProductSelect">Select Active Product</label>
+                    <select id="popUpProductSelect" class="form-control">
+                        <!-- Injected via JS -->
+                    </select>
                 </div>
 
                 <div class="form-row" style="margin-top: 30px;">
@@ -958,7 +975,7 @@
         const generalSettingsForm = document.getElementById('generalSettingsForm');
         const appearanceSettingsForm = document.getElementById('appearanceSettingsForm');
 
-        // Helper: Navigate Page System (History API) - Fix 3
+        // Helper: Navigate Page System (History API)
         function navigateToPage(target, pushToHistory = true) {
             if (!target) return;
             
@@ -1032,17 +1049,57 @@
 
         window.togglePopUpFields = function() {
             const section = document.getElementById('popUpSection').value;
-            const nameField = document.getElementById('popUpNameField');
-            const nameInput = document.getElementById('popUpName');
+            const typeGroup = document.getElementById('popUpTypeGroup');
+            
             if (section === 'random-product') {
-                nameField.classList.remove('hidden');
-                nameInput.required = true;
+                typeGroup.classList.remove('hidden');
             } else {
-                nameField.classList.add('hidden');
-                nameInput.required = false;
-                nameInput.value = '';
+                typeGroup.classList.add('hidden');
+                document.getElementById('popUpType').value = 'advertisement';
+            }
+            togglePopUpTypeFields();
+        };
+
+        window.togglePopUpTypeFields = function() {
+            const section = document.getElementById('popUpSection').value;
+            const type = document.getElementById('popUpType').value;
+            
+            const adFields = document.getElementById('popUpAdFields');
+            const productField = document.getElementById('popUpProductField');
+            const bannerInput = document.getElementById('popUpBannerLogo');
+            
+            if (section === 'random-product' && type === 'product') {
+                adFields.classList.add('hidden');
+                productField.classList.remove('hidden');
+                bannerInput.required = false;
+                populateActiveProductsDropdown();
+            } else {
+                adFields.classList.remove('hidden');
+                productField.classList.add('hidden');
+                bannerInput.required = true;
+                
+                const nameField = document.getElementById('popUpNameField');
+                const nameInput = document.getElementById('popUpName');
+                if (section === 'random-product') {
+                    nameField.classList.remove('hidden');
+                    nameInput.required = true;
+                } else {
+                    nameField.classList.add('hidden');
+                    nameInput.required = false;
+                    nameInput.value = '';
+                }
             }
         };
+
+        function populateActiveProductsDropdown() {
+            const select = document.getElementById('popUpProductSelect');
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">-- Select Product --</option>';
+            adminProducts.filter(p => p.status === 'Active').forEach(p => {
+                select.innerHTML += `<option value="${p.id}">${p.pid} - ${p.name}</option>`;
+            });
+            if (currentVal) select.value = currentVal;
+        }
 
         window.toggleCategoryMedia = function() {
             const val = document.querySelector('input[name="catMediaType"]:checked').value;
@@ -1405,7 +1462,8 @@
                                     ৳${v.price}
                                     ${v.discount > 0 ? `<br><small style="color:var(--danger-color); padding: 1px 4px; background: rgba(239,68,68,0.1); border-radius: 4px;">-${v.discount}%</small>` : ''}
                                 </td>
-                                <td colspan="3"></td>
+                                <td style="font-size: 13px;">${v.stock || 0}</td>
+                                <td colspan="2"></td>
                             `;
                             productsTable.appendChild(varRow);
                         }
@@ -1563,12 +1621,15 @@
         function populatePopUpsTable() {
             popUpsTable.innerHTML = '';
             adminPopups.forEach(p => {
+                let displayType = p.section === 'opening' ? 'Opening Page' : 'Random Product';
+                let contentDisplay = p.type === 'product' ? `<span style="color:var(--success-color); font-weight:500;">Product: ${p.name || 'Selected'}</span>` : (p.actionButton ? `<span style="color:var(--primary-color); font-weight:500;">${p.actionButtonName}</span>` : '<span style="color:var(--gray-color)">None</span>');
+                
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td><img src="${p.bannerLogo || p.image || ''}" width="50" style="object-fit:cover; border-radius: 8px; border: 1px solid var(--border-color);"></td>
-                    <td style="font-weight: 500;">${p.section === 'random-product' ? (p.name || 'N/A') : 'Opening App Ad'}</td>
-                    <td><span style="background: var(--light-gray); padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">${p.section === 'opening' ? 'Opening Page' : 'Random Product'}</span></td>
-                    <td>${p.actionButton ? `<span style="color:var(--primary-color); font-weight:500;">${p.actionButtonName}</span>` : '<span style="color:var(--gray-color)">None</span>'}</td>
+                    <td style="font-weight: 500;">${p.section === 'random-product' ? (p.type === 'product' ? 'Product Redirection' : (p.name || 'N/A')) : 'Opening App Ad'}</td>
+                    <td><span style="background: var(--light-gray); padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">${displayType} ${p.type === 'product' ? '(Product)' : ''}</span></td>
+                    <td>${contentDisplay}</td>
                     <td><span class="status status-active">Live</span></td>
                     <td>
                         <button class="btn-action btn-edit" onclick="editPopUp('${p.id}')"><i class="fas fa-edit"></i></button>
@@ -1641,7 +1702,7 @@
 
             const imageInputs = document.querySelectorAll('.product-media-input');
             const images = Array.from(imageInputs).map(inp => inp.value).filter(val => val.trim() !== '');
-            const seo_tag = [...adminSeoKeywords];
+            const seo_tag = adminSeoKeywords.join(', ');
 
             let variants = [];
             let totalStock = 0;
@@ -1651,6 +1712,7 @@
                     const colorName = block.querySelector('.var-color-name').value;
                     const origPrice = parseFloat(block.querySelector('.var-orig-price').value) || 0;
                     const currPrice = parseFloat(block.querySelector('.var-curr-price').value) || 0;
+                    const vStockInput = parseInt(block.querySelector('.var-stock').value) || 0;
                     const imgVal = block.querySelector('.var-image').value || '';
                     
                     let varDiscount = 0;
@@ -1659,15 +1721,22 @@
                     }
                     
                     let sizes = [];
+                    let variantStock = 0;
                     const sizeItems = block.querySelectorAll('.size-item');
-                    sizeItems.forEach(sItem => {
-                        const sName = sItem.querySelector('.var-size-name').value;
-                        const sStock = parseInt(sItem.querySelector('.var-size-stock').value) || 0;
-                        if(sName) {
-                            sizes.push({ size: sName, stock: sStock });
-                            totalStock += sStock;
-                        }
-                    });
+                    if (sizeItems.length > 0) {
+                        sizeItems.forEach(sItem => {
+                            const sName = sItem.querySelector('.var-size-name').value;
+                            const sStock = parseInt(sItem.querySelector('.var-size-stock').value) || 0;
+                            if(sName) {
+                                sizes.push({ size: sName, stock: sStock });
+                                variantStock += sStock;
+                            }
+                        });
+                    } else {
+                        variantStock = vStockInput;
+                    }
+
+                    totalStock += variantStock;
 
                     if(colorName) {
                         variants.push({ 
@@ -1676,6 +1745,7 @@
                             originalPrice: origPrice,
                             price: currPrice, 
                             discount: varDiscount,
+                            stock: variantStock,
                             image: imgVal,
                             sizes: sizes
                         });
@@ -1689,7 +1759,10 @@
             const gatewayCheckboxes = document.querySelectorAll('.gateway-checkbox:checked');
             const allowedGateways = Array.from(gatewayCheckboxes).map(cb => cb.value);
 
-            const payload = { pid, name, category, originalPrice, price, discount, stock, sales, description, status, images, seo_tag, variants, allowedGateways };
+            const payload = { 
+                pid, name, category, originalPrice, price, discount, stock, sales, description, 
+                status, keyword: status, images, seo_tag, variants, allowedGateways 
+            };
             
             try {
                 if(isEditingProduct && editingProductId) {
@@ -1749,15 +1822,24 @@
         async function handlePopUpSubmit(e) {
             e.preventDefault();
             const section = document.getElementById('popUpSection').value;
-            const actionButton = document.getElementById('popUpActionButtonToggle').checked;
-            const payload = {
-                section: section,
-                name: section === 'random-product' ? document.getElementById('popUpName').value : '',
-                bannerLogo: document.getElementById('popUpBannerLogo').value,
-                actionButton: actionButton,
-                actionButtonName: actionButton ? document.getElementById('popUpActionButtonName').value : '',
-                actionButtonLink: actionButton ? document.getElementById('popUpActionButtonLink').value : ''
-            };
+            const type = section === 'random-product' ? document.getElementById('popUpType').value : 'advertisement';
+            
+            let payload = { section, type };
+
+            if (type === 'product') {
+                payload.productId = document.getElementById('popUpProductSelect').value;
+                const selectedProd = adminProducts.find(p => p.id === payload.productId);
+                payload.name = selectedProd ? selectedProd.name : '';
+                payload.bannerLogo = selectedProd && selectedProd.images && selectedProd.images.length ? selectedProd.images[0] : '';
+            } else {
+                const actionButton = document.getElementById('popUpActionButtonToggle').checked;
+                payload.name = section === 'random-product' ? document.getElementById('popUpName').value : '';
+                payload.bannerLogo = document.getElementById('popUpBannerLogo').value;
+                payload.actionButton = actionButton;
+                payload.actionButtonName = actionButton ? document.getElementById('popUpActionButtonName').value : '';
+                payload.actionButtonLink = actionButton ? document.getElementById('popUpActionButtonLink').value : '';
+            }
+            
             if(isEditingPopUp && editingPopUpId) {
                 await db.collection('popups').doc(editingPopUpId).update(payload);
             } else {
@@ -1855,7 +1937,7 @@
                 mc.insertAdjacentHTML('beforeend', html);
             });
 
-            adminSeoKeywords = p.seo_tag ? [...p.seo_tag] : (p.keywords ? [...p.keywords] : []);
+            adminSeoKeywords = p.seo_tag ? (typeof p.seo_tag === 'string' ? p.seo_tag.split(',').map(s=>s.trim()).filter(Boolean) : [...p.seo_tag]) : (p.keywords ? [...p.keywords] : []);
             renderTags();
 
             const sc = document.getElementById('sizeColorContainer'); sc.innerHTML = '';
@@ -1865,16 +1947,16 @@
                 
                 if (p.variants[0].sizes) {
                     p.variants.forEach(v => {
-                        addSizeColorField(v.color, v.originalPrice || v.price, v.price, v.image || "", v.sizes);
+                        addSizeColorField(v.color, v.originalPrice || v.price, v.price, v.stock || 0, v.image || "", v.sizes);
                     });
                 } else {
                     let grouped = {};
                     p.variants.forEach(v => {
-                        if(!grouped[v.color]) grouped[v.color] = { originalPrice: v.originalPrice || v.price, price: v.price, image: v.image, sizes: [] };
-                        grouped[v.color].sizes.push({ size: v.size !== 'N/A' ? v.size : 'Default', stock: 0 }); 
+                        if(!grouped[v.color]) grouped[v.color] = { originalPrice: v.originalPrice || v.price, price: v.price, stock: v.stock || 0, image: v.image, sizes: [] };
+                        if(v.size && v.size !== 'N/A') grouped[v.color].sizes.push({ size: v.size, stock: v.stock || 0 }); 
                     });
                     for (const [col, data] of Object.entries(grouped)) {
-                        addSizeColorField(col, data.originalPrice, data.price, data.image || "", data.sizes);
+                        addSizeColorField(col, data.originalPrice, data.price, data.stock, data.image || "", data.sizes);
                     }
                 }
             } else {
@@ -1917,19 +1999,27 @@
         window.editPopUp = function(id) {
             const p = adminPopups.find(x => x.id === id);
             if(!p) return;
-            document.getElementById('popUpSection').value = p.section;
+            document.getElementById('popUpSection').value = p.section || 'opening';
+            document.getElementById('popUpType').value = p.type || 'advertisement';
             togglePopUpFields();
-            if(p.section === 'random-product') document.getElementById('popUpName').value = p.name || '';
-            document.getElementById('popUpBannerLogo').value = p.bannerLogo || p.image || '';
-            document.getElementById('popUpActionButtonToggle').checked = p.actionButton || false;
-            togglePopUpActionButton();
-            if(p.actionButton) {
-                document.getElementById('popUpActionButtonName').value = p.actionButtonName || '';
-                document.getElementById('popUpActionButtonLink').value = p.actionButtonLink || '';
+            
+            if (p.type === 'product') {
+                populateActiveProductsDropdown();
+                document.getElementById('popUpProductSelect').value = p.productId || '';
             } else {
-                document.getElementById('popUpActionButtonName').value = '';
-                document.getElementById('popUpActionButtonLink').value = '';
+                if(p.section === 'random-product') document.getElementById('popUpName').value = p.name || '';
+                document.getElementById('popUpBannerLogo').value = p.bannerLogo || p.image || '';
+                document.getElementById('popUpActionButtonToggle').checked = p.actionButton || false;
+                togglePopUpActionButton();
+                if(p.actionButton) {
+                    document.getElementById('popUpActionButtonName').value = p.actionButtonName || '';
+                    document.getElementById('popUpActionButtonLink').value = p.actionButtonLink || '';
+                } else {
+                    document.getElementById('popUpActionButtonName').value = '';
+                    document.getElementById('popUpActionButtonLink').value = '';
+                }
             }
+            
             isEditingPopUp = true; editingPopUpId = id;
             document.getElementById('popUpModalTitle').textContent = 'Update Pop Up Config';
             openModal('popUpModal');
@@ -1969,7 +2059,7 @@
         };
         
         let variantCounter = 0;
-        window.addSizeColorField = function(colorName = '', origPrice = '', currPrice = '', image = '', sizes = []) {
+        window.addSizeColorField = function(colorName = '', origPrice = '', currPrice = '', stock = '', image = '', sizes = []) {
             variantCounter++;
             const varId = `var_${variantCounter}`;
             let sizesHtml = '';
@@ -1982,12 +2072,6 @@
                         <button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button>
                     </div>`;
                 });
-            } else {
-                sizesHtml += `<div class="dynamic-item size-item" style="margin-top: 5px; gap: 10px; display: flex;">
-                    <input type="text" class="form-control var-size-name" placeholder="Size Name (e.g. M, L)" style="flex:2;">
-                    <input type="number" class="form-control var-size-stock" placeholder="Stock Qty" style="flex:1;">
-                    <button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button>
-                </div>`;
             }
 
             const html = `
@@ -1996,12 +2080,13 @@
                     <input type="text" class="form-control var-color-name" placeholder="Variant Name (e.g. Red, XL)" value="${colorName}" style="flex: 2; min-width: 120px;">
                     <input type="number" class="form-control var-orig-price" placeholder="Orig. Price (৳)" value="${origPrice}" style="flex: 1; min-width: 90px;">
                     <input type="number" class="form-control var-curr-price" placeholder="Discount Price (৳)" value="${currPrice}" style="flex: 1; min-width: 90px;">
+                    <input type="number" class="form-control var-stock" placeholder="Stock Qty" value="${stock}" style="flex: 1; min-width: 80px;">
                     <input type="text" class="form-control var-image" placeholder="Image URL (Optional)" value="${image}" style="flex: 2; min-width: 150px;">
                     <button type="button" class="btn-icon-remove" onclick="this.closest('.variant-block').remove()" style="margin-top: 2px;">-</button>
                 </div>
                 <div class="sizes-container" id="sizes_${varId}" style="padding-left: 15px; border-left: 2px solid var(--primary-color);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px; font-size: 13px; font-weight: 600; color: var(--gray-color);">
-                        <span><i class="fas fa-ruler"></i> Sizes & Stock for this Variant</span>
+                        <span><i class="fas fa-ruler"></i> Sizes (Overrides Variant Stock)</span>
                         <button type="button" class="btn-add" style="padding: 4px 10px; font-size: 12px; border-radius: 4px;" onclick="addSizeField('sizes_${varId}')"><i class="fas fa-plus"></i> Add Size</button>
                     </div>
                     <div class="sizes-list" style="display: flex; flex-direction: column; gap: 8px;">
