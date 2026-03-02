@@ -518,7 +518,7 @@
                 <div id="popupPage" class="page-content hidden">
                     <div class="table-header">
                         <h3 class="table-title">Pop Up Announcements</h3>
-                        <button class="btn-add" id="addPopUpBtn"><i class="fas fa-plus"></i> Add Pop Up</button>
+                        <button class="btn-add" id="addPopUpBtn"><i class="fas fa-plus"></i></button>
                     </div>
                     <div class="table-container">
                         <table>
@@ -563,6 +563,7 @@
                         <form id="generalSettingsForm">
                             <div class="form-row">
                                 <div class="form-group"><label>Site/Store Name</label><input type="text" id="siteName" class="form-control" required></div>
+                                <div class="form-group"><label>Domain Name</label><input type="text" id="domainName" class="form-control" placeholder="https://example.com" required></div>
                                 <div class="form-group"><label>Site Logo URL</label><input type="text" id="logoUrl" class="form-control"></div>
                             </div>
                             
@@ -579,7 +580,7 @@
                                 <div class="form-group">
                                     <label>COD Handling Fee (৳)</label>
                                     <input type="number" id="codHandlingFee" class="form-control" required>
-                                    <small style="color: var(--gray-color); font-size: 11px; margin-top: 5px; display: block;">যদি শূন্য দেও তাহলে Free হবে</small>
+                                    <small style="color: var(--gray-color); font-size: 11px; margin-top: 5px; display: block;"><b>If you enter zero, it will show Free</b></small>
                                 </div>
                             </div>
 
@@ -590,7 +591,7 @@
                             </div>
                             <div class="form-full"><div class="form-group"><label>Office Address</label><textarea id="footerAddress" class="form-control" rows="2"></textarea></div></div>
                             <div class="form-full"><div class="form-group"><label>About Us Text</label><textarea id="footerAbout" class="form-control" rows="2"></textarea></div></div>
-                            <div class="form-full"><div class="form-group"><label>Copyright Text (HTML supported)</label><input type="text" id="footerCopyright" class="form-control"></div></div>
+                            <div class="form-full"><div class="form-group"><label>Copyright</label><input type="text" id="footerCopyright" class="form-control"></div></div>
 
                             <button type="submit" class="btn btn-primary" style="width: auto; margin-top: 10px; padding: 12px 30px;">Save General Settings</button>
                         </form>
@@ -725,6 +726,34 @@
                             <select id="returnRefundTime" class="form-control">
                                 <!-- Options populated dynamically in JS -->
                             </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- New Ord Cancellation Section -->
+                <div class="form-full">
+                    <div style="display: flex; align-items: center; margin-bottom: 20px; background: var(--light-gray); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color);">
+                        <label class="switch">
+                            <input type="checkbox" id="orderCancellationToggle" onchange="toggleOrderCancellation()">
+                            <span class="slider"></span>
+                        </label>
+                        <span style="font-weight: 600; color: var(--dark-color);">Ord Cancellation</span>
+                    </div>
+                    <div id="orderCancellationSection" class="hidden dynamic-list-wrapper">
+                        <div class="form-row" style="margin-bottom: 0;">
+                            <div class="form-group">
+                                <label for="orderCancelTimeValue">Select Number</label>
+                                <select id="orderCancelTimeValue" class="form-control">
+                                    <!-- Options 1-23 populated dynamically in JS -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="orderCancelTimeUnit">Select Unit</label>
+                                <select id="orderCancelTimeUnit" class="form-control">
+                                    <option value="Minutes">Minutes</option>
+                                    <option value="Hours">Hours</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1221,6 +1250,14 @@
                 rrSelect.innerHTML = optionsHTML;
             }
 
+            // Populate Order Cancellation Number Options dynamically
+            const ocSelect = document.getElementById('orderCancelTimeValue');
+            if (ocSelect) {
+                let optionsHTML = '';
+                for(let i=1; i<=23; i++) optionsHTML += `<option value="${i}">${i}</option>`;
+                ocSelect.innerHTML = optionsHTML;
+            }
+
             document.addEventListener('click', function(e) {
                 if (window.innerWidth <= 768 && sidebar.classList.contains('active')) {
                     if (!sidebar.contains(e.target) && !document.getElementById('toggleSidebarBtn').contains(e.target)) {
@@ -1288,6 +1325,9 @@
 
                 document.getElementById('returnRefundToggle').checked = false;
                 toggleReturnRefund();
+
+                document.getElementById('orderCancellationToggle').checked = false;
+                toggleOrderCancellation();
 
                 renderProductGateways(null);
                 openModal('productModal');
@@ -1366,6 +1406,7 @@
                 if(doc.exists) {
                     const data = doc.data();
                     document.getElementById('siteName').value = data.siteName || '';
+                    document.getElementById('domainName').value = data.domainName || '';
                     document.getElementById('logoUrl').value = data.logoUrl || '';
                     document.getElementById('heroTitle').value = data.heroTitle || '';
                     document.getElementById('heroDesc').value = data.heroDesc || '';
@@ -1716,7 +1757,7 @@
             popUpsTable.innerHTML = '';
             adminPopups.forEach(p => {
                 let displayType = p.section === 'opening' ? 'Opening Page' : 'Random Product';
-                let contentDisplay = p.type === 'product' ? `<span style="color:var(--success-color); font-weight:500;">Product: ${p.name || 'Selected'}</span>` : (p.actionButton ? `<span style="color:var(--primary-color); font-weight:500;">${p.actionButtonName}</span>` : '<span style="color:var(--gray-color)">None</span>');
+                let contentDisplay = p.type === 'product' ? `<span style="color:var(--success-color); font-weight:500;">Product: ${p.title || p.name || 'Selected'}</span>` : (p.actionButton ? `<span style="color:var(--primary-color); font-weight:500;">${p.actionButtonName}</span>` : '<span style="color:var(--gray-color)">None</span>');
                 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -1797,6 +1838,10 @@
             let hasReturnPolicy = document.getElementById('returnRefundToggle').checked;
             let returnTime = hasReturnPolicy ? document.getElementById('returnRefundTime').value : null;
 
+            let hasOrderCancellation = document.getElementById('orderCancellationToggle').checked;
+            let orderCancelTimeValue = hasOrderCancellation ? document.getElementById('orderCancelTimeValue').value : null;
+            let orderCancelTimeUnit = hasOrderCancellation ? document.getElementById('orderCancelTimeUnit').value : null;
+
             const imageInputs = document.querySelectorAll('.product-media-input');
             const images = Array.from(imageInputs).map(inp => inp.value).filter(val => val.trim() !== '');
             const seo_tag = adminSeoKeywords.join(', ');
@@ -1859,7 +1904,8 @@
             const payload = { 
                 pid, name, category, originalPrice, price, discount, stock, sales, description, 
                 status, keyword: status, images, seo_tag, variants, allowedGateways,
-                hasReturnPolicy, returnTime
+                hasReturnPolicy, returnTime,
+                hasOrderCancellation, orderCancelTimeValue, orderCancelTimeUnit
             };
             
             try {
@@ -1931,7 +1977,9 @@
                 }
                 const selectedProd = adminProducts.find(p => p.id === payload.productId);
                 payload.name = selectedProd ? selectedProd.name : '';
+                payload.title = selectedProd ? selectedProd.name : '';
                 payload.bannerLogo = selectedProd && selectedProd.images && selectedProd.images.length ? selectedProd.images[0] : '';
+                payload.image = payload.bannerLogo; // Explicitly adding image
                 
                 payload.price = selectedProd ? selectedProd.price : 0;
                 payload.originalPrice = selectedProd ? selectedProd.originalPrice : 0;
@@ -1981,6 +2029,7 @@
             e.preventDefault();
             const payload = {
                 siteName: document.getElementById('siteName').value,
+                domainName: document.getElementById('domainName').value,
                 logoUrl: document.getElementById('logoUrl').value,
                 heroTitle: document.getElementById('heroTitle').value,
                 heroDesc: document.getElementById('heroDesc').value,
@@ -2047,6 +2096,13 @@
             toggleReturnRefund();
             if(p.hasReturnPolicy) {
                 document.getElementById('returnRefundTime').value = p.returnTime || '1 day';
+            }
+
+            document.getElementById('orderCancellationToggle').checked = p.hasOrderCancellation || false;
+            toggleOrderCancellation();
+            if(p.hasOrderCancellation) {
+                document.getElementById('orderCancelTimeValue').value = p.orderCancelTimeValue || '1';
+                document.getElementById('orderCancelTimeUnit').value = p.orderCancelTimeUnit || 'Minutes';
             }
 
             const mc = document.getElementById('mediaContainer'); mc.innerHTML = '';
@@ -2303,6 +2359,15 @@
         window.toggleReturnRefund = function() {
             const sec = document.getElementById('returnRefundSection');
             if(document.getElementById('returnRefundToggle').checked) {
+                sec.classList.remove('hidden');
+            } else {
+                sec.classList.add('hidden');
+            }
+        }
+
+        window.toggleOrderCancellation = function() {
+            const sec = document.getElementById('orderCancellationSection');
+            if(document.getElementById('orderCancellationToggle').checked) {
                 sec.classList.remove('hidden');
             } else {
                 sec.classList.add('hidden');
