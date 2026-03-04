@@ -24,7 +24,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
     <style>
-        /* ... Existing CSS ... */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root { --primary: #2563eb; --secondary: #f97316; --dark: #1f2937; --gray: #6b7280; --light: #f9fafb; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --transition: all 0.3s ease; }
         body { font-family: 'Poppins', sans-serif; color: var(--dark); background-color: var(--light); line-height: 1.6; overflow-x: hidden; }
@@ -80,7 +79,6 @@
         .hero p { font-size: 1.2rem; margin-bottom: 30px; opacity: 0.9; }
         .section-title { text-align: center; font-size: 2rem; margin-bottom: 40px; color: var(--dark); }
         
-        /* Updated Section Title for Recommendations */
         .suggested-title { font-size: 1.3rem; font-weight: 400; color: var(--dark); margin-bottom: 25px; text-align: left; padding-bottom: 10px; border-bottom: 1px solid #e5e7eb; }
 
         #categories .section-title { display: none; }
@@ -95,7 +93,6 @@
         .products { padding: 40px 0; background-color: #f3f4f6; }
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; justify-items: center; }
         
-        /* New Product Card Styles */
         .product-card { width: 100%; max-width: 240px; background: white; border-radius: 20px; box-shadow: 0 18px 30px -10px rgba(0, 90, 190, 0.2); transition: 0.2s ease-in-out; border: 1px solid rgba(0, 119, 255, 0.1); overflow: hidden; display: flex; flex-direction: column; cursor: pointer; }
         .product-card:hover { transform: translateY(-5px); box-shadow: 0 24px 40px -12px #0066dd55; }
         .img-frame { position: relative; aspect-ratio: 6 / 8; background: #f0f7ff; display: flex; align-items: center; justify-content: center; overflow: hidden; border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
@@ -116,7 +113,6 @@
         .btn-view { background: #1f6ff0; border: none; color: white; width: 100%; padding: 0.6rem 0; font-size: 0.9rem; font-weight: 600; border-radius: 50px; cursor: pointer; transition: 0.15s; box-shadow: 0 6px 16px -6px #1f6ff0cc; border: 1px solid #5495ff; display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: auto; }
         .btn-view:hover { background: #0d5bdf; box-shadow: 0 10px 22px -8px #0d5bdf; }
 
-        /* Filter Dropdown */
         .filter-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; position: relative; }
         .filter-controls .section-title { margin-bottom: 0; text-align: left; }
         .filter-dropdown-container { position: relative; }
@@ -129,7 +125,6 @@
         .filter-options-dropdown button:hover { background-color: #f3f4f6; color: var(--primary); }
         .filter-options-dropdown button.active { background-color: #eef2ff; color: var(--primary); font-weight: 600; }
 
-        /* Empty State */
         .empty-state { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 50px 20px; text-align: center; color: var(--gray); background: white; border-radius: 12px; box-shadow: var(--shadow); width: 100%; }
         .empty-state i { font-size: 3rem; margin-bottom: 15px; color: #cbd5e1; }
         .empty-state h3 { font-size: 1.2rem; color: var(--dark); margin-bottom: 5px; }
@@ -167,12 +162,10 @@
         .sticky-actions-bar .btn { flex: 1; max-width: 300px; }
         .btn-lg { padding: 12px 30px; font-size: 1.1rem; }
         
-        /* Sold Out container */
         .sold-out-container { display: none; background: #f9fafb; border: 2px dashed #d1d5db; color: #6b7280; font-size: 1.8rem; font-weight: 700; text-align: center; padding: 20px; border-radius: 12px; width: 100%; max-width: 600px; margin: 20px auto 0; text-transform: uppercase; letter-spacing: 2px; }
         .sticky-actions-bar.sold-out-mode { background: transparent; box-shadow: none; pointer-events: none; }
         .sticky-actions-bar.sold-out-mode .sold-out-container { display: block; background: rgba(249, 250, 251, 0.95); box-shadow: 0 -4px 15px rgba(0,0,0,0.05); pointer-events: auto; }
 
-        /* Advanced Variant Options Styles */
         .variant-selector { margin-bottom: 20px; }
         .variant-selector h4 { font-weight: 600; margin-bottom: 12px; color: var(--dark); font-size: 1.1rem; }
         .variant-options { display: flex; gap: 12px; flex-wrap: wrap; }
@@ -293,7 +286,6 @@
         .social-icon:hover { background-color: var(--primary); transform: translateY(-3px); }
         .copyright { text-align: center; padding-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1); opacity: 0.7; }
         
-        /* Updated Search Page UI */
         .search-page-container { background: #f3f4f6; min-height: 100vh; padding: 20px; }
         .search-header-ui { display: flex; align-items: center; background: white; padding: 10px 15px; border-radius: 8px; box-shadow: var(--shadow); margin-bottom: 20px; gap: 15px; }
         .search-back-icon { font-size: 1.2rem; color: var(--dark); cursor: pointer; padding: 5px; }
@@ -369,7 +361,6 @@
         .suggested-products-section { padding: 40px 0; background-color: #f9fafb; }
         .suggested-products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; justify-items: center; }
         
-        /* Glassy Dark Custom Alert Box */
         .custom-alert-box { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); padding: 30px; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); text-align: center; max-width: 400px; width: 90%; transform: scale(0.9); transition: transform 0.3s ease; color: white; }
         .custom-alert-overlay.active .custom-alert-box { transform: scale(1); }
         .custom-alert-box h3 { margin-bottom: 15px; color: white; }
@@ -422,6 +413,23 @@
         .btn-plain-plus { background: transparent; border: none; font-size: 1.2rem; color: var(--primary); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 5px; }
         .variant-layer-panel { max-height: 85vh; overflow-y: auto; padding-bottom: 80px; }
         .variant-panel-btn-wrapper { position: absolute; bottom: 0; left: 0; width: 100%; padding: 15px 20px; background: white; border-top: 1px solid #eee; z-index: 10; }
+
+        /* COD Confirm Page specific styles */
+        .cod-confirm-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 3000; display: flex; justify-content: center; transform: translateX(100%); transition: transform 0.3s ease; }
+        .cod-confirm-overlay.active { transform: translateX(0); }
+        .cod-confirm-page { width: 100%; max-width: 500px; background: #f3f4f6; display: flex; flex-direction: column; height: 100%; position: relative; }
+        .cod-header { background: white; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; }
+        .cod-header h2 { font-size: 1.1rem; font-weight: 600; margin: 0; color: #111; }
+        .cod-header i { font-size: 1.2rem; cursor: pointer; color: #333; }
+        .cod-banner { background: #e0f2fe; color: #0369a1; padding: 15px 20px; font-size: 0.9rem; display: flex; align-items: center; gap: 12px; font-weight: 500; }
+        .cod-info-section { padding: 25px 20px; display: flex; gap: 15px; background: white; margin-top: 10px; flex-grow: 1; align-items: flex-start; }
+        .cod-text p { margin-bottom: 18px; font-size: 0.95rem; color: #333; line-height: 1.6; }
+        .cod-footer { background: white; padding: 25px 20px; border-top: 1px solid #eee; margin-top: auto; }
+        .cod-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.95rem; color: #555; }
+        .cod-total { font-weight: 700; font-size: 1.15rem; color: #111; margin-top: 15px; border-top: 1px dashed #ddd; padding-top: 15px; }
+        .cod-total span:last-child { color: #f97316; }
+        #codConfirmPlaceOrderBtn { width: 100%; background-color: #f97316; border-color: #f97316; margin-top: 20px; padding: 14px; font-size: 1.1rem; font-weight: 600; border-radius: 8px; color: white; border:none; cursor: pointer; }
+        #codConfirmPlaceOrderBtn:hover { background-color: #ea580c; }
 
         @media (max-width: 992px) { .details-wrapper { grid-template-columns: 1fr; } .offer-banner { flex-direction: column; text-align: center; gap: 30px; } .profile-container { flex-direction: column; } .sidebar { width: 100%; } .form-row { flex-direction: column; gap: 0; } }
         @media (max-width: 768px) { 
@@ -606,7 +614,10 @@
                     </div>
                     
                     <div class="details-info">
-                        <h1 id="detailName">Product Name</h1>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                            <h1 id="detailName" style="margin-bottom: 0; line-height: 1.2; flex: 1;">Product Name</h1>
+                            <button id="shareProductBtn" class="btn-outline" style="padding: 8px 12px; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 15px;" title="Share Product"><i class="fas fa-share-alt"></i></button>
+                        </div>
                         <div class="rating" id="detailRating"></div>
                         <div class="price">
                             <span class="current-price" id="detailPrice">৳0.00</span>
@@ -1055,7 +1066,35 @@
       <img class="lightbox-content" id="lightboxImg">
     </div>
 
-    <!-- Options panel is hidden as Variants will be displayed in main detail section -->
+    <!-- COD Confirmation Overlay -->
+    <div class="cod-confirm-overlay" id="codConfirmOverlay">
+        <div class="cod-confirm-page">
+            <div class="cod-header">
+                <i class="fas fa-chevron-left" onclick="document.getElementById('codConfirmOverlay').classList.remove('active')"></i>
+                <h2>Cash on Delivery</h2>
+                <div style="width:20px;"></div>
+            </div>
+            <div class="cod-banner">
+                <i class="fas fa-info-circle"></i> Collect payment voucher & get extra savings on your purchase!
+            </div>
+            <div class="cod-info-section">
+                <div class="cod-icon"><i class="fas fa-money-bill-wave" style="color: #3b82f6; font-size: 24px;"></i></div>
+                <div class="cod-text">
+                    <p>- You may pay in cash to our courier upon receiving your parcel at the doorstep</p>
+                    <p>- Before agreeing to receive the parcel, check if your delivery status has been updated to 'Out for Delivery'</p>
+                    <p>- Before receiving, confirm that the airway bill shows that the parcel is from <span id="codStoreNameSpan" style="font-weight: 600;">Store</span></p>
+                    <p>- Before you make payment to the courier, confirm your order number, sender information and tracking number on the parcel</p>
+                </div>
+            </div>
+            <div class="cod-footer">
+                <div class="cod-row"><span>Subtotal</span><span id="codConfirmSubtotal">৳ 0</span></div>
+                <div class="cod-row"><span>Cash Payment Fee</span><span id="codConfirmFee">৳ 0</span></div>
+                <div class="cod-row cod-total"><span>Total Amount</span><span id="codConfirmTotal">৳ 0</span></div>
+                <button class="btn btn-primary" id="codConfirmPlaceOrderBtn">Confirm Order</button>
+            </div>
+        </div>
+    </div>
+
     <div class="options-panel-overlay" id="optionsPanelOverlay" style="display:none;"></div>
     
     <div class="custom-alert-overlay" id="customAlert">
@@ -1199,8 +1238,11 @@
         let randomPopups = []; 
         let searchHistory = JSON.parse(localStorage.getItem('searchHistory')) || [];
 
+        let appDomainName = window.location.origin;
+        let appCodHandlingFee = 0;
         let appDeliveryInside = 60;
         let appDeliveryOutside = 120;
+        let pendingOrderParams = null; // Holds order details until COD is confirmed
 
         const productGrid = document.getElementById('productGrid');
         const cartIcon = document.getElementById('cartIcon');
@@ -1269,6 +1311,10 @@
                     document.getElementById('offerDesc').textContent = data.offerDesc || '';
                     appDeliveryInside = parseFloat(data.deliveryInside) || 60;
                     appDeliveryOutside = parseFloat(data.deliveryOutside) || 120;
+                    
+                    appDomainName = data.domainName || window.location.origin;
+                    appCodHandlingFee = parseFloat(data.codHandlingFee) || 0;
+                    
                     document.getElementById('footerAboutText').textContent = data.footerAbout || '';
                     document.getElementById('footerAddress').textContent = data.footerAddress || '';
                     document.getElementById('footerPhone').textContent = data.footerPhone || '';
@@ -1790,7 +1836,6 @@
             const suggested = products.filter(p => {
                 if (p.id == currentProd.id) return false;
                 
-                // SEO matching for suggestions
                 let seoMatch = false;
                 if (currentProd.seo_tag && p.seo_tag) {
                     let currentTags = typeof currentProd.seo_tag === 'string' ? currentProd.seo_tag.split(',').map(s=>s.trim().toLowerCase()) : currentProd.seo_tag.map(s=>s.toLowerCase());
@@ -1885,14 +1930,31 @@
             }
             selectedVariant = null;
             
-            // Set Open Graph Meta Tags dynamically
+            // Setup Open Graph Meta Tags & Document Title
+            document.title = currentProduct.name + " - " + document.getElementById('pageTitle').textContent;
             document.getElementById('ogTitle').content = currentProduct.name;
-            document.getElementById('ogDesc').content = currentProduct.description || 'Check out this awesome product!';
+            document.getElementById('ogDesc').content = currentProduct.name; 
             if(currentProduct.images && currentProduct.images.length > 0) {
                 document.getElementById('ogImage').content = currentProduct.images[0];
             }
             document.getElementById('ogUrl').content = window.location.href;
-            document.title = currentProduct.name + " - " + document.getElementById('pageTitle').textContent;
+            
+            // Share Button Action
+            const shareBtn = document.getElementById('shareProductBtn');
+            shareBtn.onclick = () => {
+                const cleanDomain = appDomainName.replace(/\/$/, '');
+                const shareUrl = `${cleanDomain}/product-details?id=${currentProduct.id}`;
+                if (navigator.share) {
+                    navigator.share({
+                        title: currentProduct.name,
+                        text: currentProduct.name,
+                        url: shareUrl
+                    }).catch(err => console.log('Share failed', err));
+                } else {
+                    navigator.clipboard.writeText(shareUrl);
+                    showNotification('Product link copied to clipboard!');
+                }
+            };
             
             detailName.textContent = currentProduct.name;
             const price = currentProduct.variants && currentProduct.variants.length > 0 ? currentProduct.variants[0].price : (currentProduct.price || 0);
@@ -1909,7 +1971,6 @@
             detailQty.max = totalStock || 1;
             document.getElementById('detailStockStatus').textContent = `(Total Stock: ${totalStock})`;
             
-            // Hide standard qty selector if variants exist, layer will handle it
             if (currentProduct.variants && currentProduct.variants.length > 0) {
                 detailQtySelectorBlock.style.display = 'none';
             } else {
@@ -1963,11 +2024,9 @@
                 detailThumbnails.appendChild(thumb);
             });
             
-            // Only show basic color icons in main view if variants exist, real selection in popup
             renderVariantPreview(currentProduct, detailVariantSelectors);
-            
             renderSuggestedProducts(currentProduct);
-            updateDeliveryDisplay(); // Update delivery charges based on user address
+            updateDeliveryDisplay(); 
             
             let currentImageIndex = 0;
             const thumbnails = detailThumbnails.querySelectorAll('.thumbnail');
@@ -1999,7 +2058,7 @@
         }
 
         function openVariantLayer(action) {
-            pendingActionToConfirm = action; // 'cart' or 'buy'
+            pendingActionToConfirm = action; 
             
             document.getElementById('vlProductName').textContent = currentProduct.name;
             const defaultPrice = currentProduct.variants && currentProduct.variants.length > 0 ? currentProduct.variants[0].price : currentProduct.price;
@@ -2701,10 +2760,79 @@
         }
         
         function showPromoPopupWithCheck() {
-            const isAnyOverlayActive = document.querySelector('.cart-overlay.active, .options-panel-overlay.active, .custom-alert-overlay.active, .welcome-overlay.active, .order-details-overlay.active, .lightbox[style*="display: flex"]');
+            const isAnyOverlayActive = document.querySelector('.cart-overlay.active, .options-panel-overlay.active, .custom-alert-overlay.active, .welcome-overlay.active, .order-details-overlay.active, .lightbox[style*="display: flex"], .cod-confirm-overlay.active');
             if (!isAnyOverlayActive) {
                 showPromoPopup();
             }
+        }
+
+        function executeOrderPlacement(orderAddress, selectedItems, paymentMethodText, subtotal, shippingFee, codFee) {
+            const orderNo = Math.floor(Math.random() * 1000000000000) + 1000000000000;
+            const dateObj = new Date();
+            const date = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + dateObj.toLocaleTimeString('en-GB', { hour12: false });
+            
+            const total = subtotal + shippingFee + codFee;
+            
+            let itemsHtml = '';
+            selectedItems.forEach(item => {
+                const variantText = (item.color!=='N/A' ? item.color : '') + (item.size!=='N/A' ? `, ${item.size}` : '');
+                itemsHtml += `
+                    <div class="od-item">
+                        <img src="${item.image}" alt="">
+                        <div class="od-item-info">
+                            <h4>${item.name}</h4>
+                            ${variantText ? `<div class="od-item-variant">${variantText}</div>` : ''}
+                            <div class="od-item-price-row">
+                                <span class="od-item-price">৳ ${item.price.toFixed(0)}</span>
+                                <span class="od-item-qty">Qty: ${item.quantity}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            if(isLoggedIn && currentUser) {
+                 const orderData = {
+                     id: orderNo.toString(),
+                     customer: orderAddress.name,
+                     phone: orderAddress.phone,
+                     address: `${orderAddress.address}, ${orderAddress.region} - ${orderAddress.postcode}`,
+                     amount: total,
+                     date: date,
+                     status: 'Pending',
+                     payment: paymentMethodText,
+                     cartItems: selectedItems.map(i => ({
+                         pid: i.pid || i.id,
+                         name: i.name,
+                         price: i.price,
+                         qty: i.quantity,
+                         color: i.color,
+                         size: i.size,
+                         image: i.image
+                     })),
+                     userId: auth.currentUser.uid
+                 };
+                 db.collection('orders').doc(orderNo.toString()).set(orderData);
+            }
+            
+            document.getElementById('odBody').innerHTML = itemsHtml;
+            document.getElementById('odSubtotal').textContent = `৳ ${subtotal.toFixed(0)}`;
+            document.getElementById('odShipping').textContent = `৳ ${shippingFee}`;
+            document.getElementById('odCOD').textContent = codFee === 0 ? 'Free' : `৳ ${codFee}`;
+            document.getElementById('odTotal').textContent = `৳ ${total.toFixed(0)}`;
+            document.getElementById('odPaidAmount').textContent = `৳ ${total.toFixed(0)}`;
+            document.getElementById('odPaidMethodName').textContent = paymentMethodText;
+            document.getElementById('odOrderNo').textContent = orderNo;
+            document.getElementById('odDate').textContent = date;
+            document.getElementById('odPaymentMethod').textContent = paymentMethodText;
+            
+            document.getElementById('orderDetailsOverlay').classList.add('active');
+            
+            cart = cart.filter(item => !item.selected);
+            updateCartCount();
+            renderCartItems();
+            document.getElementById('shippingInfoForm').style.display = 'none';
+            populateCheckoutAddresses();
         }
 
         function setupEventListeners() {
@@ -2761,7 +2889,6 @@
                 detailQty.value = val;
             });
 
-            // Variant Layer Event Listeners
             document.getElementById('vlCloseBtn').addEventListener('click', closeVariantLayer);
             document.getElementById('variantLayerOverlay').addEventListener('click', closeVariantLayer);
             
@@ -2832,6 +2959,9 @@
                 });
             });
             
+            // ------------------------------------------------------------------------------------------
+            // COD Confirm Logic Execution and Form Submission handling
+            // ------------------------------------------------------------------------------------------
             checkoutForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
@@ -2878,79 +3008,42 @@
                     return; 
                 }
                 
-                const orderNo = Math.floor(Math.random() * 1000000000000) + 1000000000000;
-                const dateObj = new Date();
-                const date = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + dateObj.toLocaleTimeString('en-GB', { hour12: false });
-                
                 const activePayment = document.querySelector('.payment-method.active');
                 const paymentMethodText = activePayment ? activePayment.dataset.method : 'Cash on Delivery';
                 
                 let subtotal = 0;
-                let itemsHtml = '';
-                
-                selectedItems.forEach(item => {
-                    subtotal += item.price * item.quantity;
-                    const variantText = (item.color!=='N/A' ? item.color : '') + (item.size!=='N/A' ? `, ${item.size}` : '');
-                    itemsHtml += `
-                        <div class="od-item">
-                            <img src="${item.image}" alt="">
-                            <div class="od-item-info">
-                                <h4>${item.name}</h4>
-                                ${variantText ? `<div class="od-item-variant">${variantText}</div>` : ''}
-                                <div class="od-item-price-row">
-                                    <span class="od-item-price">৳ ${item.price.toFixed(0)}</span>
-                                    <span class="od-item-qty">Qty: ${item.quantity}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-                
+                selectedItems.forEach(item => subtotal += item.price * item.quantity);
                 const shippingFee = (orderAddress.region === 'Outside Dhaka') ? appDeliveryOutside : appDeliveryInside; 
-                const total = subtotal + shippingFee;
-
-                if(isLoggedIn && currentUser) {
-                     const orderData = {
-                         id: orderNo.toString(),
-                         customer: orderAddress.name,
-                         phone: orderAddress.phone,
-                         address: `${orderAddress.address}, ${orderAddress.region} - ${orderAddress.postcode}`,
-                         amount: total,
-                         date: date,
-                         status: 'Pending',
-                         payment: paymentMethodText,
-                         cartItems: selectedItems.map(i => ({
-                             pid: i.pid || i.id,
-                             name: i.name,
-                             price: i.price,
-                             qty: i.quantity,
-                             color: i.color,
-                             size: i.size,
-                             image: i.image
-                         })),
-                         userId: auth.currentUser.uid
-                     };
-                     db.collection('orders').doc(orderNo.toString()).set(orderData);
+                
+                if (paymentMethodText === 'Cash on Delivery') {
+                    const codFee = appCodHandlingFee;
+                    const totalBase = subtotal + shippingFee;
+                    
+                    document.getElementById('codStoreNameSpan').textContent = document.getElementById('pageTitle').textContent;
+                    document.getElementById('codConfirmSubtotal').textContent = `৳ ${totalBase.toFixed(0)}`;
+                    document.getElementById('codConfirmFee').textContent = codFee === 0 ? 'Free' : `৳ ${codFee.toFixed(0)}`;
+                    document.getElementById('codConfirmTotal').textContent = `৳ ${(totalBase + codFee).toFixed(0)}`;
+                    
+                    pendingOrderParams = { orderAddress, selectedItems, paymentMethodText, subtotal, shippingFee, codFee };
+                    document.getElementById('codConfirmOverlay').classList.add('active');
+                } else {
+                    executeOrderPlacement(orderAddress, selectedItems, paymentMethodText, subtotal, shippingFee, 0);
                 }
-                
-                document.getElementById('odBody').innerHTML = itemsHtml;
-                document.getElementById('odSubtotal').textContent = `৳ ${subtotal.toFixed(0)}`;
-                document.getElementById('odShipping').textContent = `৳ ${shippingFee}`;
-                document.getElementById('odCOD').textContent = `৳ 0`;
-                document.getElementById('odTotal').textContent = `৳ ${total.toFixed(0)}`;
-                document.getElementById('odPaidAmount').textContent = `৳ ${total.toFixed(0)}`;
-                document.getElementById('odPaidMethodName').textContent = paymentMethodText;
-                document.getElementById('odOrderNo').textContent = orderNo;
-                document.getElementById('odDate').textContent = date;
-                document.getElementById('odPaymentMethod').textContent = paymentMethodText;
-                
-                document.getElementById('orderDetailsOverlay').classList.add('active');
-                
-                cart = cart.filter(item => !item.selected);
-                updateCartCount();
-                renderCartItems();
-                document.getElementById('shippingInfoForm').style.display = 'none';
-                populateCheckoutAddresses();
+            });
+
+            document.getElementById('codConfirmPlaceOrderBtn').addEventListener('click', () => {
+                if(pendingOrderParams) {
+                    document.getElementById('codConfirmOverlay').classList.remove('active');
+                    executeOrderPlacement(
+                        pendingOrderParams.orderAddress, 
+                        pendingOrderParams.selectedItems, 
+                        pendingOrderParams.paymentMethodText, 
+                        pendingOrderParams.subtotal, 
+                        pendingOrderParams.shippingFee, 
+                        pendingOrderParams.codFee
+                    );
+                    pendingOrderParams = null;
+                }
             });
 
             document.getElementById('closeOrderDetails').addEventListener('click', () => {
