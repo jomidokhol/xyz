@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -128,16 +129,6 @@
         .empty-state { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 50px 20px; text-align: center; color: var(--gray); background: white; border-radius: 12px; box-shadow: var(--shadow); width: 100%; }
         .empty-state i { font-size: 3rem; margin-bottom: 15px; color: #cbd5e1; }
         .empty-state h3 { font-size: 1.2rem; color: var(--dark); margin-bottom: 5px; }
-
-        .offers { padding: 60px 0; background-color: white; }
-        .offer-banner { background: linear-gradient(120deg, var(--primary), #8b5cf6); color: white; border-radius: 20px; padding: 50px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; box-shadow: 0 20px 40px rgba(37, 99, 235, 0.2); }
-        .offer-banner::before, .offer-banner::after { content: ''; position: absolute; width: 200px; height: 200px; background: rgba(255, 255, 255, 0.1); border-radius: 50%; }
-        .offer-banner::before { top: -50px; left: -50px; }
-        .offer-banner::after { bottom: -50px; right: -50px; }
-        .offer-text h2 { font-size: 2.5rem; margin-bottom: 15px; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .timer { display: flex; gap: 15px; text-align: center; z-index: 2; }
-        .time-unit { background-color: rgba(255, 255, 255, 0.25); backdrop-filter: blur(5px); padding: 15px; border-radius: 12px; min-width: 80px; border: 1px solid rgba(255, 255, 255, 0.3); }
-        .time-value { font-size: 2.2rem; font-weight: 700; line-height: 1; margin-bottom: 5px; }
         
         .product-details-container { padding: 40px 0; background-color: white; min-height: 80vh; padding-bottom: 120px; }
         .back-btn { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px; color: var(--gray); text-decoration: none; cursor: pointer; font-weight: 500; }
@@ -431,7 +422,7 @@
         #codConfirmPlaceOrderBtn { width: 100%; background-color: #f97316; border-color: #f97316; margin-top: 20px; padding: 14px; font-size: 1.1rem; font-weight: 600; border-radius: 8px; color: white; border:none; cursor: pointer; }
         #codConfirmPlaceOrderBtn:hover { background-color: #ea580c; }
 
-        @media (max-width: 992px) { .details-wrapper { grid-template-columns: 1fr; } .offer-banner { flex-direction: column; text-align: center; gap: 30px; } .profile-container { flex-direction: column; } .sidebar { width: 100%; } .form-row { flex-direction: column; gap: 0; } }
+        @media (max-width: 992px) { .details-wrapper { grid-template-columns: 1fr; } .profile-container { flex-direction: column; } .sidebar { width: 100%; } .form-row { flex-direction: column; gap: 0; } }
         @media (max-width: 768px) { 
             .header-actions .auth-buttons, .search-container { display: none; } 
             .body.user-logged-in .header-actions .auth-buttons { display: none; } 
@@ -445,7 +436,7 @@
         @media (max-width: 576px) { 
             .product-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } 
             
-            #searchResultsGrid.product-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+            #searchResultsGrid.product-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             #searchResultsGrid .product-card { border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
             #searchResultsGrid .card-info { padding: 0.4rem; }
             #searchResultsGrid .product-title { font-size: 0.65rem; margin-bottom: 0.2rem; -webkit-line-clamp: 2; line-height: 1.2; }
@@ -455,7 +446,6 @@
             #searchResultsGrid .btn-view { font-size: 0.6rem; padding: 0.3rem 0; gap: 2px; }
             #searchResultsGrid .off-badge { font-size: 0.6rem; padding: 2px 4px; top: 5px; right: 5px; }
             
-            .timer { flex-wrap: wrap; justify-content: center; } 
             .category-card { width: 80px; height: 80px; border-radius: 12px; } 
             .category-icon { font-size: 1.2rem; } 
             .category-card h3 { font-size: 0.7rem; } 
@@ -511,7 +501,6 @@
                     <li><a href="javascript:void(0)" onclick="navigateTo('search'); toggleMenu()">Search</a></li>
                     <li><a href="javascript:void(0)" onclick="navigateTo('home'); toggleMenu(); setTimeout(()=>document.getElementById('shop').scrollIntoView(),300)">Shop</a></li>
                     <li><a href="javascript:void(0)" onclick="navigateTo('home'); toggleMenu(); setTimeout(()=>document.getElementById('categories').scrollIntoView(),300)">Categories</a></li>
-                    <li><a href="javascript:void(0)" onclick="navigateTo('home'); toggleMenu(); setTimeout(()=>document.getElementById('offers').scrollIntoView(),300)">Offers</a></li>
                     <li><a href="javascript:void(0)" onclick="navigateTo('home'); toggleMenu(); setTimeout(()=>document.getElementById('contact').scrollIntoView(),300)">About</a></li>
                     <li><a href="javascript:void(0)" onclick="navigateTo('home'); toggleMenu(); setTimeout(()=>document.getElementById('contact').scrollIntoView(),300)">Contact</a></li>
                 </ul>
@@ -563,37 +552,6 @@
                         </div>
                     </div>
                     <div class="product-grid" id="productGrid"></div>
-                </div>
-            </section>
-
-            <section class="offers" id="offers">
-                <div class="container">
-                    <h2 class="section-title">Special Offers</h2>
-                    <div class="offer-banner">
-                        <div class="offer-text">
-                            <h2 id="offerTitle"></h2>
-                            <p id="offerSubtitle"></p>
-                            <p id="offerDesc"></p>
-                        </div>
-                        <div class="timer">
-                            <div class="time-unit">
-                                <div class="time-value" id="days">00</div>
-                                <div>Days</div>
-                            </div>
-                            <div class="time-unit">
-                                <div class="time-value" id="hours">00</div>
-                                <div>Hours</div>
-                            </div>
-                            <div class="time-unit">
-                                <div class="time-value" id="minutes">00</div>
-                                <div>Minutes</div>
-                            </div>
-                            <div class="time-unit">
-                                <div class="time-value" id="seconds">00</div>
-                                <div>Seconds</div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </section>
         </div>
@@ -659,7 +617,7 @@
             
             <section class="suggested-products-section">
                 <div class="container">
-                    <h2 class="suggested-title" style="font-size: 1.1rem; font-weight: 300; border-bottom: 1px solid #eee; padding-bottom: 10px;">Best Match For You</h2>
+                    <h2 class="suggested-title" style="font-size: 1.1rem; font-weight: 300; border-bottom: 1px solid #eee; padding-bottom: 10px;"><i class="fas fa-magic" style="color: var(--primary); margin-right: 8px;"></i>Best Match For You</h2>
                     <div class="suggested-products-grid" id="suggestedProductsGrid"></div>
                 </div>
             </section>
@@ -1026,7 +984,6 @@
                     <ul>
                         <li><a href="javascript:void(0)" onclick="navigateTo('home')">Home</a></li>
                         <li><a href="javascript:void(0)" onclick="navigateTo('home')">Shop</a></li>
-                        <li><a href="javascript:void(0)" onclick="navigateTo('home')">Offers</a></li>
                         <li><a href="javascript:void(0)" onclick="navigateTo('home')">Contact</a></li>
                     </ul>
                 </div>
@@ -1051,14 +1008,17 @@
             <button class="close-cart" id="closeCart">&times;</button>
         </div>
         <div class="cart-items" id="cartItems">
-            <p class="empty-cart-message" id="emptyCartMessage">Your cart is empty</p>
+            <div class="empty-state" style="padding:20px; box-shadow:none; margin-top:50px;">
+                <i class="fas fa-shopping-cart" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 15px;"></i>
+                <p>Your cart is empty.</p>
+            </div>
         </div>
         <div class="cart-footer">
             <div class="cart-total">
                 <span>Total:</span>
                 <span id="cartTotalPrice">৳0.00</span>
             </div>
-            <button class="btn btn-primary btn-block" id="checkoutBtn" style="width: 100%;">Proceed to Checkout</button>
+            <button class="btn btn-primary btn-block" id="checkoutBtn" style="width: 100%;" disabled>Proceed to Checkout</button>
         </div>
     </div>
     
@@ -1250,7 +1210,6 @@
         const cartOverlay = document.getElementById('cartOverlay');
         const closeCart = document.getElementById('closeCart');
         const cartItems = document.getElementById('cartItems');
-        const emptyCartMessage = document.getElementById('emptyCartMessage');
         const cartTotalPrice = document.getElementById('cartTotalPrice');
         const cartCount = document.querySelector('.cart-count');
         const checkoutBtn = document.getElementById('checkoutBtn');
@@ -1307,9 +1266,7 @@
                     
                     document.getElementById('heroTitle').textContent = data.heroTitle || '';
                     document.getElementById('heroDesc').textContent = data.heroDesc || '';
-                    document.getElementById('offerTitle').textContent = data.offerTitle || '';
-                    document.getElementById('offerSubtitle').textContent = data.offerSubtitle || '';
-                    document.getElementById('offerDesc').textContent = data.offerDesc || '';
+                    
                     appDeliveryInside = parseFloat(data.deliveryInside) || 60;
                     appDeliveryOutside = parseFloat(data.deliveryOutside) || 120;
                     
@@ -1410,7 +1367,6 @@
             }, 1500);
             
             setupEventListeners();
-            startOfferTimer();
             updateCartCount();
             initHeroSlider();
 
@@ -1492,7 +1448,7 @@
             const params = new URLSearchParams(searchParams);
 
             const displayPageAndData = () => {
-                let finalPageId = path;
+                let finalPageId = path.split('?')[0];
                 if (!isLoggedIn && (finalPageId === 'profile' || finalPageId === 'checkout')) {
                     finalPageId = 'login';
                 }
@@ -1544,9 +1500,10 @@
         function navigateTo(path) {
             path = path.replace(/^\//, '');
             let currentPath = window.location.pathname.substring(1);
-            if(currentPath === '' || currentPath === 'user.html') currentPath = 'home';
+            let currentFull = currentPath + window.location.search;
+            if(currentPath === '' || currentPath === 'user.html') currentFull = 'home';
             
-            if (currentPath.split('?')[0] === path.split('?')[0]) {
+            if (currentFull === path) {
                  handleRouteChange(); return;
             }
             history.pushState(null, '', '/' + path);
@@ -2372,13 +2329,12 @@
         function renderCartItems() {
             cartItems.innerHTML = '';
             if (cart.length === 0) {
-                cartItems.innerHTML = `<div class="empty-state" style="padding:20px; box-shadow:none;"><i class="fas fa-shopping-cart"></i><p>Your cart is empty.</p></div>`;
+                cartItems.innerHTML = `<div class="empty-state" style="padding:20px; box-shadow:none; margin-top:50px;"><i class="fas fa-shopping-cart" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 15px;"></i><p>Your cart is empty.</p></div>`;
                 cartTotalPrice.textContent = '৳0.00';
                 checkoutBtn.disabled = true;
                 return;
             }
             
-            emptyCartMessage.style.display = 'none';
             checkoutBtn.disabled = false;
             let total = 0;
             
@@ -3493,25 +3449,6 @@
                     this.classList.toggle('fa-eye-slash');
                 });
             });
-        }
-
-        function startOfferTimer() {
-            const endDate = new Date();
-            endDate.setDate(endDate.getDate() + 3);
-            const timerInterval = setInterval(updateTimer, 1000);
-            function updateTimer() {
-                const distance = endDate - new Date().getTime();
-                if (distance < 0) { clearInterval(timerInterval); return; };
-                const d = Math.floor(distance / (1000*60*60*24)).toString().padStart(2,'0');
-                const h = Math.floor((distance % (1000*60*60*24))/(1000*60*60)).toString().padStart(2,'0');
-                const m = Math.floor((distance % (1000*60*60))/(1000*60)).toString().padStart(2,'0');
-                const s = Math.floor((distance % (1000*60))/1000).toString().padStart(2,'0');
-                document.getElementById('days').textContent = d;
-                document.getElementById('hours').textContent = h;
-                document.getElementById('minutes').textContent = m;
-                document.getElementById('seconds').textContent = s;
-            }
-            updateTimer();
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
