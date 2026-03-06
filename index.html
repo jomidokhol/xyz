@@ -184,9 +184,10 @@
         .sticky-actions-bar .btn { flex: 1; max-width: 300px; }
         .btn-lg { padding: 12px 30px; font-size: 1.1rem; }
         
-        .sold-out-container { display: none; background: #f9fafb; border: 2px dashed #d1d5db; color: #6b7280; font-size: 1.8rem; font-weight: 700; text-align: center; padding: 20px; border-radius: 12px; width: 100%; max-width: 600px; margin: 20px auto 0; text-transform: uppercase; letter-spacing: 2px; }
-        .sticky-actions-bar.sold-out-mode { background: transparent; box-shadow: none; pointer-events: none; }
-        .sticky-actions-bar.sold-out-mode .sold-out-container { display: block; background: rgba(249, 250, 251, 0.95); box-shadow: 0 -4px 15px rgba(0,0,0,0.05); pointer-events: auto; }
+        /* Updated Sold Out CSS Requirements */
+        .sold-out-container { display: none; background: #f5f5f5; color: #6b7280; font-size: 1.5rem; font-weight: 700; text-align: center; padding: 15px 20px; width: 100%; margin: 0; border: none; border-radius: 0; text-transform: capitalize; letter-spacing: normal; }
+        .sticky-actions-bar.sold-out-mode { background: #f5f5f5; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); pointer-events: auto; padding: 0; justify-content: center; align-items: center; }
+        .sticky-actions-bar.sold-out-mode .sold-out-container { display: block; background: transparent; box-shadow: none; pointer-events: auto; }
 
         .variant-selector { margin-bottom: 20px; }
         .variant-selector h4 { font-weight: 600; margin-bottom: 12px; color: var(--dark); font-size: 1.1rem; }
@@ -655,7 +656,7 @@
                             <button class="qty-btn" id="detailDecQty">-</button>
                             <input type="number" class="qty-input" id="detailQty" value="1" min="1">
                             <button class="qty-btn" id="detailIncQty">+</button>
-                            <span id="detailStockStatus" style="margin-left: 10px; font-size: 0.9rem; color: var(--gray);"></span>
+                            <span id="detailStockStatus" style="margin-left: 10px; font-size: 0.9rem; color: var(--gray); display: none !important;"></span>
                         </div>
                         
                         <div class="details-description">
@@ -1245,7 +1246,7 @@
                 <button class="qty-btn" id="vlDecQty">-</button>
                 <input type="number" class="qty-input" id="vlQty" value="1" min="1">
                 <button class="qty-btn" id="vlIncQty">+</button>
-                <span id="vlStockStatus" style="margin-left: 10px; font-size: 0.9rem; color: var(--gray);"></span>
+                <span id="vlStockStatus" style="margin-left: 10px; font-size: 0.9rem; color: var(--gray); display: none !important;"></span>
             </div>
         </div>
         <div class="variant-panel-btn-wrapper">
@@ -1969,6 +1970,8 @@
                     </div>
                 `;
             });
+            
+            document.querySelector('.od-actions').style.display = 'none'; // Profile History theke open hole hide thakbe
             
             document.getElementById('odBody').innerHTML = itemsHtml;
             document.getElementById('odSubtotal').parentNode.style.display = 'none';
@@ -2748,10 +2751,12 @@
             if (savedAddresses.length === 0) {
                 addressManager.style.display = 'none';
                 newForm.style.display = 'block';
+                newForm.querySelectorAll('input, select, textarea').forEach(el => el.disabled = false);
                 document.getElementById('coEmail').value = currentUser?.email || '';
             } else {
                 addressManager.style.display = 'block';
                 newForm.style.display = 'none';
+                newForm.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true);
                 
                 savedAddresses.forEach((addr, index) => {
                     const isDefault = addr.isDefault;
@@ -2876,7 +2881,9 @@
 
         function openCheckoutAddressForm(index = null) {
             document.getElementById('checkoutAddressManagement').style.display = 'none';
-            document.getElementById('shippingInfoForm').style.display = 'block';
+            const formDiv = document.getElementById('shippingInfoForm');
+            formDiv.style.display = 'block';
+            formDiv.querySelectorAll('input, select, textarea').forEach(el => el.disabled = false);
             
             if (index !== null && index >= 0) {
                 editingAddressId = index;
@@ -3078,6 +3085,8 @@
                  };
                  db.collection('orders').doc(orderNo.toString()).set(orderData);
             }
+            
+            document.querySelector('.od-actions').style.display = 'block'; // New Order er jonno action btn visible hobe
             
             document.getElementById('odBody').innerHTML = itemsHtml;
             document.getElementById('odSubtotal').parentNode.style.display = 'flex';
@@ -3350,7 +3359,9 @@
 
             document.getElementById('closeOrderDetails').addEventListener('click', () => {
                 document.getElementById('orderDetailsOverlay').classList.remove('active');
-                navigateTo('home');
+                if (document.querySelector('.od-actions').style.display !== 'none') {
+                    navigateTo('home');
+                }
             });
             document.getElementById('odContinueShopping').addEventListener('click', () => {
                 document.getElementById('orderDetailsOverlay').classList.remove('active');
