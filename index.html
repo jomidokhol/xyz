@@ -22,6 +22,38 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    
+    <!-- Media Caching Service Worker (Requirement 2) -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                const CACHE_NAME = 'media-cache-v1';
+                self.addEventListener('install', e => self.skipWaiting());
+                self.addEventListener('activate', e => self.clients.claim());
+                self.addEventListener('fetch', e => {
+                    const req = e.request;
+                    const url = new URL(req.url);
+                    // Intercept images, videos, audio, and Firebase storage files
+                    if (req.method === 'GET' && (req.destination === 'image' || req.destination === 'video' || req.destination === 'audio' || url.pathname.match(/\\.(png|jpg|jpeg|gif|webp|svg|mp4|mp3)$/i) || url.hostname.includes('firebasestorage.googleapis.com'))) {
+                        e.respondWith(
+                            caches.match(req).then(cached => {
+                                return cached || fetch(req).then(res => {
+                                    if(res && res.status === 200 && (res.type === 'basic' || res.type === 'cors')) {
+                                        const resClone = res.clone();
+                                        caches.open(CACHE_NAME).then(cache => cache.put(req, resClone));
+                                    }
+                                    return res;
+                                });
+                            })
+                        );
+                    }
+                });
+            `;
+            const blob = new Blob([swCode], {type: 'application/javascript'});
+            const swUrl = URL.createObjectURL(blob);
+            navigator.serviceWorker.register(swUrl).catch(err => console.log('SW registration failed:', err));
+        }
+    </script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -128,16 +160,6 @@
         .empty-state { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 50px 20px; text-align: center; color: var(--gray); background: white; border-radius: 12px; box-shadow: var(--shadow); width: 100%; }
         .empty-state i { font-size: 3rem; margin-bottom: 15px; color: #cbd5e1; }
         .empty-state h3 { font-size: 1.2rem; color: var(--dark); margin-bottom: 5px; }
-
-        .offers { padding: 60px 0; background-color: white; }
-        .offer-banner { background: linear-gradient(120deg, var(--primary), #8b5cf6); color: white; border-radius: 20px; padding: 50px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; box-shadow: 0 20px 40px rgba(37, 99, 235, 0.2); }
-        .offer-banner::before, .offer-banner::after { content: ''; position: absolute; width: 200px; height: 200px; background: rgba(255, 255, 255, 0.1); border-radius: 50%; }
-        .offer-banner::before { top: -50px; left: -50px; }
-        .offer-banner::after { bottom: -50px; right: -50px; }
-        .offer-text h2 { font-size: 2.5rem; margin-bottom: 15px; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .timer { display: flex; gap: 15px; text-align: center; z-index: 2; }
-        .time-unit { background-color: rgba(255, 255, 255, 0.25); backdrop-filter: blur(5px); padding: 15px; border-radius: 12px; min-width: 80px; border: 1px solid rgba(255, 255, 255, 0.3); }
-        .time-value { font-size: 2.2rem; font-weight: 700; line-height: 1; margin-bottom: 5px; }
         
         .product-details-container { padding: 40px 0; background-color: white; min-height: 80vh; padding-bottom: 120px; }
         .back-btn { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px; color: var(--gray); text-decoration: none; cursor: pointer; font-weight: 500; }
@@ -414,6 +436,19 @@
         .variant-layer-panel { max-height: 85vh; overflow-y: auto; padding-bottom: 80px; }
         .variant-panel-btn-wrapper { position: absolute; bottom: 0; left: 0; width: 100%; padding: 15px 20px; background: white; border-top: 1px solid #eee; z-index: 10; }
 
+        /* Order Summary Page specific styles */
+        .summary-container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: var(--shadow); }
+        .summary-item { display: flex; gap: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
+        .summary-item img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; }
+        .summary-item-info { flex: 1; }
+        .summary-item-title { font-weight: 600; font-size: 1rem; color: var(--dark); margin-bottom: 5px; }
+        .summary-item-meta { font-size: 0.85rem; color: var(--gray); margin-bottom: 5px; }
+        .summary-item-prices { display: flex; align-items: baseline; gap: 10px; }
+        .summary-real-price { text-decoration: line-through; color: var(--gray); font-size: 0.85rem; }
+        .summary-discount-price { color: var(--primary); font-weight: 700; font-size: 1.1rem; }
+        .coupon-section { display: flex; gap: 10px; margin: 20px 0; padding-top: 20px; border-top: 1px dashed #ddd; }
+        .coupon-section input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Poppins', sans-serif; }
+
         /* COD Confirm Page specific styles */
         .cod-confirm-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 3000; display: flex; justify-content: center; transform: translateX(100%); transition: transform 0.3s ease; }
         .cod-confirm-overlay.active { transform: translateX(0); }
@@ -421,17 +456,18 @@
         .cod-header { background: white; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; }
         .cod-header h2 { font-size: 1.1rem; font-weight: 600; margin: 0; color: #111; }
         .cod-header i { font-size: 1.2rem; cursor: pointer; color: #333; }
-        .cod-banner { background: #e0f2fe; color: #0369a1; padding: 15px 20px; font-size: 0.9rem; display: flex; align-items: center; gap: 12px; font-weight: 500; }
+        .cod-banner { background: #eff6ff; color: var(--primary); padding: 15px 20px; font-size: 0.9rem; display: flex; align-items: center; gap: 12px; font-weight: 500; }
         .cod-info-section { padding: 25px 20px; display: flex; gap: 15px; background: white; margin-top: 10px; flex-grow: 1; align-items: flex-start; }
+        .cod-icon i { color: var(--primary); font-size: 24px; }
         .cod-text p { margin-bottom: 18px; font-size: 0.95rem; color: #333; line-height: 1.6; }
         .cod-footer { background: white; padding: 25px 20px; border-top: 1px solid #eee; margin-top: auto; }
         .cod-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.95rem; color: #555; }
         .cod-total { font-weight: 700; font-size: 1.15rem; color: #111; margin-top: 15px; border-top: 1px dashed #ddd; padding-top: 15px; }
-        .cod-total span:last-child { color: #f97316; }
-        #codConfirmPlaceOrderBtn { width: 100%; background-color: #f97316; border-color: #f97316; margin-top: 20px; padding: 14px; font-size: 1.1rem; font-weight: 600; border-radius: 8px; color: white; border:none; cursor: pointer; }
-        #codConfirmPlaceOrderBtn:hover { background-color: #ea580c; }
+        .cod-total span:last-child { color: var(--primary); }
+        #codConfirmPlaceOrderBtn { width: 100%; background-color: var(--primary); border-color: var(--primary); margin-top: 20px; padding: 14px; font-size: 1.1rem; font-weight: 600; border-radius: 8px; color: white; border:none; cursor: pointer; transition: background 0.3s; }
+        #codConfirmPlaceOrderBtn:hover { background-color: #1d4ed8; }
 
-        @media (max-width: 992px) { .details-wrapper { grid-template-columns: 1fr; } .offer-banner { flex-direction: column; text-align: center; gap: 30px; } .profile-container { flex-direction: column; } .sidebar { width: 100%; } .form-row { flex-direction: column; gap: 0; } }
+        @media (max-width: 992px) { .details-wrapper { grid-template-columns: 1fr; } .profile-container { flex-direction: column; } .sidebar { width: 100%; } .form-row { flex-direction: column; gap: 0; } }
         @media (max-width: 768px) { 
             .header-actions .auth-buttons, .search-container { display: none; } 
             .body.user-logged-in .header-actions .auth-buttons { display: none; } 
@@ -445,7 +481,7 @@
         @media (max-width: 576px) { 
             .product-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } 
             
-            #searchResultsGrid.product-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+            #searchResultsGrid.product-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             #searchResultsGrid .product-card { border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
             #searchResultsGrid .card-info { padding: 0.4rem; }
             #searchResultsGrid .product-title { font-size: 0.65rem; margin-bottom: 0.2rem; -webkit-line-clamp: 2; line-height: 1.2; }
@@ -455,7 +491,6 @@
             #searchResultsGrid .btn-view { font-size: 0.6rem; padding: 0.3rem 0; gap: 2px; }
             #searchResultsGrid .off-badge { font-size: 0.6rem; padding: 2px 4px; top: 5px; right: 5px; }
             
-            .timer { flex-wrap: wrap; justify-content: center; } 
             .category-card { width: 80px; height: 80px; border-radius: 12px; } 
             .category-icon { font-size: 1.2rem; } 
             .category-card h3 { font-size: 0.7rem; } 
@@ -500,7 +535,17 @@
             <div class="mobile-menu" id="mobileMenu">
                 <div id="menuProfileSection" style="display: none; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; text-align: center;">
                     <div class="profile-picture" style="width: 60px; height: 60px; margin: 0 auto 10px; font-size: 24px; border-radius: 50%; background-color: #eef2ff; color: var(--primary); display: flex; align-items: center; justify-content: center; border: 2px solid var(--primary); overflow: hidden;">
-                        <i class="fa-solid fa-face-grin"></i>
+                        <svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="50" cy="50" r="48" fill="#ffffff" stroke="#e0e0e0" stroke-width="1"/>
+                            <path d="M 32 40 L 42 45 L 32 50" fill="none" stroke="#1c5fc9" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M 68 40 L 58 45" fill="none" stroke="#e83a45" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M 58 45 L 68 50" fill="none" stroke="#1c5fc9" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M 35 60 Q 50 75 65 60" fill="none" stroke="#1c5fc9" stroke-width="6" stroke-linecap="round"/>
+                            <circle cx="78" cy="78" r="16" fill="#5a6270"/>
+                            <rect x="69" y="73" width="18" height="12" rx="2" fill="#ffffff"/>
+                            <circle cx="78" cy="79" r="3.5" fill="#5a6270"/>
+                            <path d="M 74 73 L 75 70 L 81 70 L 82 73 Z" fill="#ffffff"/>
+                        </svg>
                     </div>
                     <h4 id="menuProfileName" style="margin-bottom: 5px;">User Name</h4>
                     <button class="btn btn-outline" onclick="navigateTo('profile'); toggleMenu()" style="width: 100%; font-size: 0.9rem; padding: 8px;">My Profile</button>
@@ -511,7 +556,6 @@
                     <li><a href="javascript:void(0)" onclick="navigateTo('search'); toggleMenu()">Search</a></li>
                     <li><a href="javascript:void(0)" onclick="navigateTo('home'); toggleMenu(); setTimeout(()=>document.getElementById('shop').scrollIntoView(),300)">Shop</a></li>
                     <li><a href="javascript:void(0)" onclick="navigateTo('home'); toggleMenu(); setTimeout(()=>document.getElementById('categories').scrollIntoView(),300)">Categories</a></li>
-                    <li><a href="javascript:void(0)" onclick="navigateTo('home'); toggleMenu(); setTimeout(()=>document.getElementById('offers').scrollIntoView(),300)">Offers</a></li>
                     <li><a href="javascript:void(0)" onclick="navigateTo('home'); toggleMenu(); setTimeout(()=>document.getElementById('contact').scrollIntoView(),300)">About</a></li>
                     <li><a href="javascript:void(0)" onclick="navigateTo('home'); toggleMenu(); setTimeout(()=>document.getElementById('contact').scrollIntoView(),300)">Contact</a></li>
                 </ul>
@@ -563,37 +607,6 @@
                         </div>
                     </div>
                     <div class="product-grid" id="productGrid"></div>
-                </div>
-            </section>
-
-            <section class="offers" id="offers">
-                <div class="container">
-                    <h2 class="section-title">Special Offers</h2>
-                    <div class="offer-banner">
-                        <div class="offer-text">
-                            <h2 id="offerTitle"></h2>
-                            <p id="offerSubtitle"></p>
-                            <p id="offerDesc"></p>
-                        </div>
-                        <div class="timer">
-                            <div class="time-unit">
-                                <div class="time-value" id="days">00</div>
-                                <div>Days</div>
-                            </div>
-                            <div class="time-unit">
-                                <div class="time-value" id="hours">00</div>
-                                <div>Hours</div>
-                            </div>
-                            <div class="time-unit">
-                                <div class="time-value" id="minutes">00</div>
-                                <div>Minutes</div>
-                            </div>
-                            <div class="time-unit">
-                                <div class="time-value" id="seconds">00</div>
-                                <div>Seconds</div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </section>
         </div>
@@ -659,7 +672,7 @@
             
             <section class="suggested-products-section">
                 <div class="container">
-                    <h2 class="suggested-title" style="font-size: 1.1rem; font-weight: 300; border-bottom: 1px solid #eee; padding-bottom: 10px;">Best Match For You</h2>
+                    <h2 class="suggested-title" style="font-size: 1.1rem; font-weight: 300; border-bottom: 1px solid #eee; padding-bottom: 10px;"><i class="fas fa-magic" style="color: var(--primary); margin-right: 8px;"></i>Best Match For You</h2>
                     <div class="suggested-products-grid" id="suggestedProductsGrid"></div>
                 </div>
             </section>
@@ -719,6 +732,40 @@
                 </div>
                 <div class="product-grid" id="searchResultsGrid"></div>
             </div>
+        </div>
+
+        <!-- ORDER SUMMARY PAGE SECTION (Requirement 4) -->
+        <div id="order-summary-page" class="page-section">
+            <section class="checkout">
+                <div class="container">
+                    <div class="back-btn" onclick="goBack()">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </div>
+                    <h2 class="section-title">Order Summary</h2>
+                    <div class="summary-container">
+                        <div id="orderSummaryItems"></div>
+                        <div class="coupon-section">
+                            <input type="text" id="couponCode" placeholder="Enter Coupon Code">
+                            <button class="btn btn-outline" id="applyCouponBtn">Apply</button>
+                        </div>
+                        <div class="summary-totals" style="margin-top: 20px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #555;">
+                                <span>Subtotal:</span>
+                                <span id="osSubtotal">৳0.00</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #10b981;">
+                                <span>Discount:</span>
+                                <span id="osDiscount">-৳0.00</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 1.2rem; font-weight: 700; color: var(--dark); border-top: 1px solid #eee; padding-top: 10px;">
+                                <span>Total:</span>
+                                <span id="osTotal">৳0.00</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" id="osProceedBtn" style="width: 100%; padding: 15px; font-size: 1.1rem;">Proceed to Payment</button>
+                    </div>
+                </div>
+            </section>
         </div>
 
         <!-- CHECKOUT PAGE SECTION -->
@@ -881,7 +928,17 @@
                     <div class="sidebar">
                         <div class="profile-card">
                             <div class="profile-picture">
-                                <i class="fa-solid fa-face-grin"></i>
+                                <svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="50" cy="50" r="48" fill="#ffffff" stroke="#e0e0e0" stroke-width="1"/>
+                                    <path d="M 32 40 L 42 45 L 32 50" fill="none" stroke="#1c5fc9" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M 68 40 L 58 45" fill="none" stroke="#e83a45" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M 58 45 L 68 50" fill="none" stroke="#1c5fc9" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M 35 60 Q 50 75 65 60" fill="none" stroke="#1c5fc9" stroke-width="6" stroke-linecap="round"/>
+                                    <circle cx="78" cy="78" r="16" fill="#5a6270"/>
+                                    <rect x="69" y="73" width="18" height="12" rx="2" fill="#ffffff"/>
+                                    <circle cx="78" cy="79" r="3.5" fill="#5a6270"/>
+                                    <path d="M 74 73 L 75 70 L 81 70 L 82 73 Z" fill="#ffffff"/>
+                                </svg>
                             </div>
                             <h2 class="profile-name" id="profileNameDisplay">User Name</h2>
                             <p class="profile-email" id="profileEmailDisplay">user@email.com</p>
@@ -1026,7 +1083,6 @@
                     <ul>
                         <li><a href="javascript:void(0)" onclick="navigateTo('home')">Home</a></li>
                         <li><a href="javascript:void(0)" onclick="navigateTo('home')">Shop</a></li>
-                        <li><a href="javascript:void(0)" onclick="navigateTo('home')">Offers</a></li>
                         <li><a href="javascript:void(0)" onclick="navigateTo('home')">Contact</a></li>
                     </ul>
                 </div>
@@ -1051,14 +1107,17 @@
             <button class="close-cart" id="closeCart">&times;</button>
         </div>
         <div class="cart-items" id="cartItems">
-            <p class="empty-cart-message" id="emptyCartMessage">Your cart is empty</p>
+            <div class="empty-state" style="padding:20px; box-shadow:none; margin-top:50px;">
+                <i class="fas fa-shopping-cart" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 15px;"></i>
+                <p>Your cart is empty.</p>
+            </div>
         </div>
         <div class="cart-footer">
             <div class="cart-total">
                 <span>Total:</span>
                 <span id="cartTotalPrice">৳0.00</span>
             </div>
-            <button class="btn btn-primary btn-block" id="checkoutBtn" style="width: 100%;">Proceed to Checkout</button>
+            <button class="btn btn-primary btn-block" id="checkoutBtn" style="width: 100%;" disabled>Proceed to Checkout</button>
         </div>
     </div>
     
@@ -1079,7 +1138,7 @@
                 <i class="fas fa-info-circle"></i> Collect payment voucher & get extra savings on your purchase!
             </div>
             <div class="cod-info-section">
-                <div class="cod-icon"><i class="fas fa-money-bill-wave" style="color: #3b82f6; font-size: 24px;"></i></div>
+                <div class="cod-icon"><i class="fas fa-money-bill-wave"></i></div>
                 <div class="cod-text">
                     <p>- You may pay in cash to our courier upon receiving your parcel at the doorstep</p>
                     <p>- Before agreeing to receive the parcel, check if your delivery status has been updated to 'Out for Delivery'</p>
@@ -1091,7 +1150,7 @@
                 <div class="cod-row"><span>Subtotal</span><span id="codConfirmSubtotal">৳ 0</span></div>
                 <div class="cod-row"><span>Cash Payment Fee</span><span id="codConfirmFee">৳ 0</span></div>
                 <div class="cod-row cod-total"><span>Total Amount</span><span id="codConfirmTotal">৳ 0</span></div>
-                <button class="btn btn-primary" id="codConfirmPlaceOrderBtn">Confirm Order</button>
+                <button class="btn" id="codConfirmPlaceOrderBtn">Confirm Order</button>
             </div>
         </div>
     </div>
@@ -1118,7 +1177,7 @@
             <button class="ad-close-btn" id="closeWelcomeOverlay" style="position: static; margin-top: 20px; background: transparent; border: 2px solid white; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; padding: 0; color: white;">
                 <i class="fas fa-times" style="font-size: 22px;"></i>
             </button>
-            <div id="adCountdown" style="color: white; margin-top: 10px; font-size: 14px; text-align: center;">Auto close in 5s</div>
+            <div id="adCountdown" style="color: white; margin-top: 10px; font-size: 14px; text-align: center;">close in 5s</div>
         </div>
     </div>
 
@@ -1146,6 +1205,7 @@
             <div class="od-section" style="border-bottom: 8px solid #f5f5f5;">
                 <h4 style="margin-bottom: 15px; font-size: 1rem;">Order Summary</h4>
                 <div class="od-row"><span>Subtotal</span><span id="odSubtotal"></span></div>
+                <div class="od-row" id="odCouponRow" style="display:none; color:#10b981;"><span>Coupon Discount</span><span id="odCoupon"></span></div>
                 <div class="od-row"><span>Shipping Fee</span><span id="odShipping"></span></div>
                 <div class="od-row"><span>COD Handling Fee</span><span id="odCOD"></span></div>
                 <div class="od-total od-row"><span style="color:#333;">Total</span><span id="odTotal"></span></div>
@@ -1222,6 +1282,20 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
+        const defaultProfileSvgStr = `
+            <svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="48" fill="#ffffff" stroke="#e0e0e0" stroke-width="1"/>
+                <path d="M 32 40 L 42 45 L 32 50" fill="none" stroke="#1c5fc9" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M 68 40 L 58 45" fill="none" stroke="#e83a45" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M 58 45 L 68 50" fill="none" stroke="#1c5fc9" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M 35 60 Q 50 75 65 60" fill="none" stroke="#1c5fc9" stroke-width="6" stroke-linecap="round"/>
+                <circle cx="78" cy="78" r="16" fill="#5a6270"/>
+                <rect x="69" y="73" width="18" height="12" rx="2" fill="#ffffff"/>
+                <circle cx="78" cy="79" r="3.5" fill="#5a6270"/>
+                <path d="M 74 73 L 75 70 L 81 70 L 82 73 Z" fill="#ffffff"/>
+            </svg>
+        `;
+
         let products = [];
         let heroSlidesData = [];
         let cart =[];
@@ -1239,6 +1313,8 @@
         let randomPopups = []; 
         let searchHistory = JSON.parse(localStorage.getItem('searchHistory')) || [];
 
+        window.appliedCouponDiscount = 0;
+
         let appDomainName = window.location.origin;
         let appCodHandlingFee = 0;
         let appDeliveryInside = 60;
@@ -1250,7 +1326,6 @@
         const cartOverlay = document.getElementById('cartOverlay');
         const closeCart = document.getElementById('closeCart');
         const cartItems = document.getElementById('cartItems');
-        const emptyCartMessage = document.getElementById('emptyCartMessage');
         const cartTotalPrice = document.getElementById('cartTotalPrice');
         const cartCount = document.querySelector('.cart-count');
         const checkoutBtn = document.getElementById('checkoutBtn');
@@ -1307,9 +1382,7 @@
                     
                     document.getElementById('heroTitle').textContent = data.heroTitle || '';
                     document.getElementById('heroDesc').textContent = data.heroDesc || '';
-                    document.getElementById('offerTitle').textContent = data.offerTitle || '';
-                    document.getElementById('offerSubtitle').textContent = data.offerSubtitle || '';
-                    document.getElementById('offerDesc').textContent = data.offerDesc || '';
+                    
                     appDeliveryInside = parseFloat(data.deliveryInside) || 60;
                     appDeliveryOutside = parseFloat(data.deliveryOutside) || 120;
                     
@@ -1332,7 +1405,7 @@
                     else if(p.section === 'random-product') randomPopups.push(p);
                 });
 
-                if(openingPopup) {
+                if(openingPopup && !sessionStorage.getItem('popupShown')) {
                     const welcomeLogo = document.getElementById('welcomeLogo');
                     welcomeLogo.src = openingPopup.bannerLogo || '';
                     
@@ -1410,7 +1483,6 @@
             }, 1500);
             
             setupEventListeners();
-            startOfferTimer();
             updateCartCount();
             initHeroSlider();
 
@@ -1431,7 +1503,7 @@
                         savedAddresses = [];
                     }
 
-                    let profilePicHtml = '<i class="fa-solid fa-face-grin"></i>';
+                    let profilePicHtml = defaultProfileSvgStr;
                     if (user.photoURL) {
                         profilePicHtml = `<img src="${user.photoURL}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" alt="Profile Picture">`;
                     }
@@ -1457,7 +1529,7 @@
                     let path = window.location.pathname.substring(1);
                     if(path === '' || path === 'user.html') path = 'home';
                     const pageId = path.split('?')[0];
-                    if (!isLoggedIn && (pageId === 'profile' || pageId === 'checkout')) {
+                    if (!isLoggedIn && (pageId === 'profile' || pageId === 'checkout' || pageId === 'order-summary')) {
                         navigateTo('login');
                     } else if (isLoggedIn && (pageId === 'login' || pageId === 'register')) {
                         navigateTo('profile');
@@ -1482,6 +1554,61 @@
             }, 500); 
         }
 
+        function renderOrderSummary() {
+            window.appliedCouponDiscount = 0;
+            document.getElementById('couponCode').value = '';
+            document.getElementById('osDiscount').textContent = `-৳0.00`;
+            
+            const container = document.getElementById('orderSummaryItems');
+            const selectedItems = cart.filter(item => item.selected);
+            
+            if(selectedItems.length === 0) {
+                container.innerHTML = '<p style="color:var(--gray);">No items selected for checkout.</p>';
+                document.getElementById('osProceedBtn').disabled = true;
+                return;
+            }
+            
+            document.getElementById('osProceedBtn').disabled = false;
+            container.innerHTML = '';
+            let subtotal = 0;
+            
+            selectedItems.forEach(item => {
+                const prod = products.find(p => p.id === item.id);
+                let originalPrice = item.price;
+                if (prod && prod.originalPrice) originalPrice = prod.originalPrice;
+                if (item.variant && item.variant.originalPrice) originalPrice = item.variant.originalPrice;
+                if (originalPrice < item.price) originalPrice = item.price;
+                
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+                
+                const variantText = (item.color !== 'N/A' ? `Color: ${item.color}` : '') + 
+                                  (item.color !== 'N/A' && item.size !== 'N/A' ? ', ' : '') + 
+                                  (item.size !== 'N/A' ? `Size: ${item.size}` : '');
+                
+                const discountPct = originalPrice > item.price ? Math.round(((originalPrice - item.price) / originalPrice) * 100) : 0;
+                
+                container.innerHTML += `
+                    <div class="summary-item">
+                        <img src="${item.image}" alt="">
+                        <div class="summary-item-info">
+                            <div class="summary-item-title">${item.name}</div>
+                            ${variantText ? `<div class="summary-item-meta">${variantText}</div>` : ''}
+                            <div class="summary-item-meta">Qty: ${item.quantity}</div>
+                            <div class="summary-item-prices">
+                                <span class="summary-discount-price">৳${item.price.toFixed(0)}</span>
+                                ${originalPrice > item.price ? `<span class="summary-real-price">৳${originalPrice.toFixed(0)}</span> <span style="font-size:0.75rem; color:#10b981; font-weight:bold;">(-${discountPct}%)</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('osSubtotal').textContent = `৳${subtotal.toFixed(0)}`;
+            document.getElementById('osTotal').textContent = `৳${subtotal.toFixed(0)}`;
+            window.currentOrderSubtotal = subtotal;
+        }
+
         function handleRouteChange(isInitialLoad = false) {
             if (!isAuthResolved) return;
             
@@ -1492,8 +1619,8 @@
             const params = new URLSearchParams(searchParams);
 
             const displayPageAndData = () => {
-                let finalPageId = path;
-                if (!isLoggedIn && (finalPageId === 'profile' || finalPageId === 'checkout')) {
+                let finalPageId = path.split('?')[0];
+                if (!isLoggedIn && (finalPageId === 'profile' || finalPageId === 'checkout' || finalPageId === 'order-summary')) {
                     finalPageId = 'login';
                 }
 
@@ -1531,6 +1658,8 @@
                 } else if (finalPageId === 'search') {
                     renderSearchHistory();
                     searchPageInput.focus();
+                } else if (finalPageId === 'order-summary') {
+                    renderOrderSummary();
                 }
             };
             
@@ -1544,9 +1673,10 @@
         function navigateTo(path) {
             path = path.replace(/^\//, '');
             let currentPath = window.location.pathname.substring(1);
-            if(currentPath === '' || currentPath === 'user.html') currentPath = 'home';
+            let currentFull = currentPath + window.location.search;
+            if(currentPath === '' || currentPath === 'user.html') currentFull = 'home';
             
-            if (currentPath.split('?')[0] === path.split('?')[0]) {
+            if (currentFull === path) {
                  handleRouteChange(); return;
             }
             history.pushState(null, '', '/' + path);
@@ -1844,6 +1974,7 @@
             document.getElementById('odSubtotal').parentNode.style.display = 'none';
             document.getElementById('odShipping').parentNode.style.display = 'none';
             document.getElementById('odCOD').parentNode.style.display = 'none';
+            if(document.getElementById('odCoupon')) document.getElementById('odCoupon').parentNode.style.display = 'none';
             
             document.getElementById('odTotal').textContent = `৳ ${order.amount}`;
             document.getElementById('odPaidAmount').textContent = `৳ ${order.amount}`;
@@ -2372,13 +2503,12 @@
         function renderCartItems() {
             cartItems.innerHTML = '';
             if (cart.length === 0) {
-                cartItems.innerHTML = `<div class="empty-state" style="padding:20px; box-shadow:none;"><i class="fas fa-shopping-cart"></i><p>Your cart is empty.</p></div>`;
+                cartItems.innerHTML = `<div class="empty-state" style="padding:20px; box-shadow:none; margin-top:50px;"><i class="fas fa-shopping-cart" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 15px;"></i><p>Your cart is empty.</p></div>`;
                 cartTotalPrice.textContent = '৳0.00';
                 checkoutBtn.disabled = true;
                 return;
             }
             
-            emptyCartMessage.style.display = 'none';
             checkoutBtn.disabled = false;
             let total = 0;
             
@@ -2899,12 +3029,12 @@
             }
         }
 
-        function executeOrderPlacement(orderAddress, selectedItems, paymentMethodText, subtotal, shippingFee, codFee) {
+        function executeOrderPlacement(orderAddress, selectedItems, paymentMethodText, subtotal, shippingFee, codFee, couponDiscount = 0) {
             const orderNo = Math.floor(Math.random() * 1000000000000) + 1000000000000;
             const dateObj = new Date();
             const date = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + dateObj.toLocaleTimeString('en-GB', { hour12: false });
             
-            const total = subtotal + shippingFee + codFee;
+            const total = subtotal - couponDiscount + shippingFee + codFee;
             
             let itemsHtml = '';
             selectedItems.forEach(item => {
@@ -2954,6 +3084,13 @@
             document.getElementById('odShipping').parentNode.style.display = 'flex';
             document.getElementById('odCOD').parentNode.style.display = 'flex';
             
+            if (couponDiscount > 0) {
+                document.getElementById('odCouponRow').style.display = 'flex';
+                document.getElementById('odCoupon').textContent = `-৳ ${couponDiscount.toFixed(0)}`;
+            } else {
+                document.getElementById('odCouponRow').style.display = 'none';
+            }
+            
             document.getElementById('odSubtotal').textContent = `৳ ${subtotal.toFixed(0)}`;
             document.getElementById('odShipping').textContent = `৳ ${shippingFee}`;
             document.getElementById('odCOD').textContent = codFee === 0 ? 'Free' : `৳ ${codFee}`;
@@ -2986,18 +3123,21 @@
 
             document.getElementById('closeWelcomeOverlay').addEventListener('click', closeAdBanner);
             
-            if (document.getElementById('welcomeOverlay').style.display !== 'none') {
+            const hasSeenPopup = sessionStorage.getItem('popupShown');
+            if (document.getElementById('welcomeOverlay').style.display !== 'none' && !hasSeenPopup) {
+                 sessionStorage.setItem('popupShown', 'true');
                  timeLeft = 5;
-                 document.getElementById('adCountdown').textContent = `Auto close in ${timeLeft}s`;
+                 document.getElementById('adCountdown').textContent = `close in ${timeLeft}s`;
                  welcomeOverlay.classList.add('active'); 
                  adTimer = setInterval(() => {
                     timeLeft--;
-                    document.getElementById('adCountdown').textContent = `Auto close in ${timeLeft}s`;
+                    document.getElementById('adCountdown').textContent = `close in ${timeLeft}s`;
                     if (timeLeft <= 0) {
                         closeAdBanner();
                     }
                 }, 1000);
             } else {
+                 document.getElementById('welcomeOverlay').style.display = 'none';
                  setTimeout(showPromoPopup, 8000);
                  setInterval(showPromoPopupWithCheck, 120000);
             }
@@ -3066,7 +3206,7 @@
 
                 if (pendingActionToConfirm === 'buy') {
                     cartOverlay.classList.remove('active');
-                    navigateTo('checkout');
+                    navigateTo('order-summary');
                 }
             });
             
@@ -3077,7 +3217,7 @@
                     addToCart(currentProduct.id, parseInt(detailQty.value), null);
                     if (action === 'buy') {
                         cartOverlay.classList.remove('active');
-                        navigateTo('checkout');
+                        navigateTo('order-summary');
                     }
                 }
             };
@@ -3093,8 +3233,29 @@
                         return;
                     }
                     cartOverlay.classList.remove('active');
-                    navigateTo('checkout');
+                    navigateTo('order-summary');
                 });
+            });
+            
+            document.getElementById('applyCouponBtn')?.addEventListener('click', () => {
+                const code = document.getElementById('couponCode').value.trim().toUpperCase();
+                if(code === 'DISCOUNT10') {
+                    window.appliedCouponDiscount = window.currentOrderSubtotal * 0.1;
+                    showNotification('Coupon applied! 10% off.');
+                } else if(code === 'DISCOUNT50') {
+                    window.appliedCouponDiscount = 50;
+                    showNotification('Coupon applied! ৳50 off.');
+                } else {
+                    window.appliedCouponDiscount = 0;
+                    showCustomAlert('Invalid Coupon', 'The coupon code is invalid or expired.');
+                }
+                document.getElementById('osDiscount').textContent = `-৳${window.appliedCouponDiscount.toFixed(2)}`;
+                const newTotal = window.currentOrderSubtotal - window.appliedCouponDiscount;
+                document.getElementById('osTotal').textContent = `৳${Math.max(0, newTotal).toFixed(2)}`;
+            });
+
+            document.getElementById('osProceedBtn')?.addEventListener('click', () => {
+                navigateTo('checkout');
             });
             
             // ------------------------------------------------------------------------------------------
@@ -3151,21 +3312,23 @@
                 
                 let subtotal = 0;
                 selectedItems.forEach(item => subtotal += item.price * item.quantity);
+                const finalSubtotal = Math.max(0, subtotal - (window.appliedCouponDiscount || 0));
+                
                 const shippingFee = (orderAddress.region === 'Outside Dhaka') ? appDeliveryOutside : appDeliveryInside; 
                 
                 if (paymentMethodText === 'Cash on Delivery') {
                     const codFee = appCodHandlingFee;
-                    const totalBase = subtotal + shippingFee;
+                    const totalBase = finalSubtotal + shippingFee;
                     
                     document.getElementById('codStoreNameSpan').textContent = document.getElementById('pageTitle').textContent;
                     document.getElementById('codConfirmSubtotal').textContent = `৳ ${totalBase.toFixed(0)}`;
                     document.getElementById('codConfirmFee').textContent = codFee === 0 ? 'Free' : `৳ ${codFee.toFixed(0)}`;
                     document.getElementById('codConfirmTotal').textContent = `৳ ${(totalBase + codFee).toFixed(0)}`;
                     
-                    pendingOrderParams = { orderAddress, selectedItems, paymentMethodText, subtotal, shippingFee, codFee };
+                    pendingOrderParams = { orderAddress, selectedItems, paymentMethodText, subtotal, shippingFee, codFee, couponDiscount: window.appliedCouponDiscount };
                     document.getElementById('codConfirmOverlay').classList.add('active');
                 } else {
-                    executeOrderPlacement(orderAddress, selectedItems, paymentMethodText, subtotal, shippingFee, 0);
+                    executeOrderPlacement(orderAddress, selectedItems, paymentMethodText, subtotal, shippingFee, 0, window.appliedCouponDiscount);
                 }
             });
 
@@ -3178,7 +3341,8 @@
                         pendingOrderParams.paymentMethodText, 
                         pendingOrderParams.subtotal, 
                         pendingOrderParams.shippingFee, 
-                        pendingOrderParams.codFee
+                        pendingOrderParams.codFee,
+                        pendingOrderParams.couponDiscount
                     );
                     pendingOrderParams = null;
                 }
@@ -3506,10 +3670,13 @@
                 const h = Math.floor((distance % (1000*60*60*24))/(1000*60*60)).toString().padStart(2,'0');
                 const m = Math.floor((distance % (1000*60*60))/(1000*60)).toString().padStart(2,'0');
                 const s = Math.floor((distance % (1000*60))/1000).toString().padStart(2,'0');
-                document.getElementById('days').textContent = d;
-                document.getElementById('hours').textContent = h;
-                document.getElementById('minutes').textContent = m;
-                document.getElementById('seconds').textContent = s;
+                
+                if(document.getElementById('days')) {
+                    document.getElementById('days').textContent = d;
+                    document.getElementById('hours').textContent = h;
+                    document.getElementById('minutes').textContent = m;
+                    document.getElementById('seconds').textContent = s;
+                }
             }
             updateTimer();
         }
@@ -3517,6 +3684,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             await loadInitialData();
             init();
+            startOfferTimer();
         });
     </script>
 </body>
