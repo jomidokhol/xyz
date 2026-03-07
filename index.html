@@ -33,7 +33,6 @@
                 self.addEventListener('fetch', e => {
                     const req = e.request;
                     const url = new URL(req.url);
-                    // Intercept images, videos, audio, and Firebase storage files
                     if (req.method === 'GET' && (req.destination === 'image' || req.destination === 'video' || req.destination === 'audio' || url.pathname.match(/\\.(png|jpg|jpeg|gif|webp|svg|mp4|mp3)$/i) || url.hostname.includes('firebasestorage.googleapis.com'))) {
                         e.respondWith(
                             caches.match(req).then(cached => {
@@ -139,8 +138,10 @@
         .old-price { font-size: 0.85rem; color: #6c819e; text-decoration: line-through; font-weight: 500; }
         .rating-section { display: flex; align-items: center; gap: 0.4rem; margin: 0.2rem 0 0.7rem 0; }
         .star-set { display: flex; align-items: center; gap: 1px; }
-        .material-symbols-outlined.star { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20; font-size: 1rem; color: #1973e8; }
-        .material-symbols-outlined.star-empty { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20; font-size: 1rem; color: #c1d9fc; }
+        /* Golden Stars Update */
+        .material-symbols-outlined.star { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20; font-size: 1rem; color: #f59e0b; }
+        .material-symbols-outlined.star-empty { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20; font-size: 1rem; color: #e5e7eb; }
+        
         .rater-count { background: #ebf3fe; color: #1e519a; font-size: 0.75rem; font-weight: 600; padding: 3px 8px; border-radius: 60px; border: 1px solid #c5ddff; }
         .btn-view { background: #1f6ff0; border: none; color: white; width: 100%; padding: 0.6rem 0; font-size: 0.9rem; font-weight: 600; border-radius: 50px; cursor: pointer; transition: 0.15s; box-shadow: 0 6px 16px -6px #1f6ff0cc; border: 1px solid #5495ff; display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: auto; }
         .btn-view:hover { background: #0d5bdf; box-shadow: 0 10px 22px -8px #0d5bdf; }
@@ -296,7 +297,7 @@
         .footer-content { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; margin-bottom: 40px; }
         .footer-logo { display: flex; align-items: center; max-width: 180px; cursor: pointer; margin-bottom: 20px; }
         .footer-logo img { max-height: 50px; width: auto; object-fit: contain; filter: brightness(0) invert(1); }
-        .footer-about p { margin-bottom: 20px; opacity: 0.8; }
+        .footer-about p { margin-bottom: 20px; opacity: 0.8; white-space: pre-wrap; }
         .footer-links h3, .footer-contact h3 { font-size: 1.2rem; margin-bottom: 20px; }
         .footer-links ul { list-style: none; }
         .footer-links li { margin-bottom: 10px; }
@@ -496,7 +497,11 @@
         .review-user-name { font-weight: 600; font-size: 0.95rem; }
         .review-date { font-size: 0.8rem; color: var(--gray); display: block;}
         .review-stars { color: #f59e0b; font-size: 0.85rem; margin-bottom: 8px; }
-        .review-comment { font-size: 0.95rem; color: #444; line-height: 1.5; }
+        
+        /* Updated for descriptions and reviews formatting */
+        .review-comment { font-size: 0.95rem; color: #444; line-height: 1.5; white-space: pre-wrap; }
+        #detailDesc { white-space: pre-wrap; word-wrap: break-word; color: #4b5563; font-size: 1.1rem; line-height: 1.6; }
+        .footer-about p { margin-bottom: 20px; opacity: 0.8; white-space: pre-wrap; }
 
         @media (max-width: 992px) { .details-wrapper { grid-template-columns: 1fr; } .profile-container { flex-direction: column; } .sidebar { width: 100%; } .form-row { flex-direction: column; gap: 0; } }
         @media (max-width: 768px) { 
@@ -692,7 +697,8 @@
                         </div>
 
                         <div class="details-description">
-                            <p id="detailDesc">Description goes here...</p>
+                            <h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 10px; color: var(--dark);">Description</h3>
+                            <div id="detailDesc">Description goes here...</div>
                         </div>
 
                         <div class="details-actions">
@@ -1374,6 +1380,7 @@
         window.userReviewedProducts = new Set();
         window.deliveryToggleInterval = null;
         let currentReviewProductId = null;
+        let currentReviewOrderId = null; // Added for multiple reviews functionality
         let currentReviewRating = 5;
 
         let appDomainName = window.location.origin;
@@ -1524,7 +1531,7 @@
                 socialGrid.innerHTML = '';
                 socialSnap.forEach(doc => {
                     const social = doc.data();
-                    socialGrid.innerHTML += `<a href="${social.url}" class="social-icon" target="_blank"><i class="${social.iconClass}"></i></a>`;
+                    socialGrid.innerHTML += `<a href="${social.url}" class="social-icon" target="_blank" rel="noopener noreferrer"><i class="${social.iconClass}"></i></a>`;
                 });
 
                 const slidesSnap = await db.collection('heroSlides').orderBy('order').get();
@@ -1624,7 +1631,11 @@
             if(!auth.currentUser) return;
             try {
                 const snap = await db.collection('reviews').where('userId', '==', auth.currentUser.uid).get();
-                window.userReviewedProducts = new Set(snap.docs.map(doc => doc.data().productId));
+                // Store combination of orderId and productId so multiple orders of same product can be reviewed
+                window.userReviewedProducts = new Set(snap.docs.map(doc => {
+                    const data = doc.data();
+                    return data.orderId ? `${data.orderId}_${data.productId}` : data.productId;
+                }));
             } catch(e) {
                 console.error("Error fetching user reviews", e);
             }
@@ -2024,8 +2035,9 @@
                                     }
                                 }
                                 
-                                if(!window.userReviewedProducts.has(navId)) {
-                                    reviewBtnHtml = `<div style="margin-top: 8px; display: inline-block;"><button class="btn btn-primary" style="padding: 4px 12px; font-size: 0.75rem; border-radius: 4px;" onclick="openReviewPage('${navId}')"><i class="fas fa-star"></i> Write Review</button></div>`;
+                                let reviewKey = order.id ? `${order.id}_${navId}` : navId;
+                                if(!window.userReviewedProducts.has(reviewKey)) {
+                                    reviewBtnHtml = `<div style="margin-top: 8px; display: inline-block;"><button class="btn btn-primary" style="padding: 4px 12px; font-size: 0.75rem; border-radius: 4px;" onclick="openReviewPage('${navId}', '${order.id}')"><i class="fas fa-star"></i> Write Review</button></div>`;
                                 }
                             }
                             
@@ -2383,8 +2395,13 @@
             const price = currentProduct.variants && currentProduct.variants.length > 0 ? currentProduct.variants[0].price : (currentProduct.price || 0);
             detailPrice.textContent = `৳${price.toFixed(2)}`;
             detailOldPrice.textContent = currentProduct.originalPrice > price ? `৳${currentProduct.originalPrice.toFixed(2)}` : '';
-            detailDesc.textContent = currentProduct.description;
-            detailRating.innerHTML = `${getStarRating(currentProduct.rating || 5)} <span>(${currentProduct.rating || 5})</span>`;
+            
+            // Render Description HTML
+            detailDesc.innerHTML = currentProduct.description || '';
+            detailDesc.querySelectorAll('a').forEach(a => a.setAttribute('target', '_blank'));
+
+            // initial rating, will update dynamically after fetching reviews
+            detailRating.innerHTML = `${getStarRating(currentProduct.rating || 5)} <span style="font-size: 0.9rem; color: var(--gray); margin-left: 5px;">(${currentProduct.rating || 5})</span>`;
             detailQty.value = 1;
             
             const totalStock = currentProduct.variants && currentProduct.variants.length > 0 
@@ -2490,6 +2507,7 @@
                     bigRating.textContent = defaultRating.toFixed(1);
                     bigStars.innerHTML = getStarRating(defaultRating);
                     totalCountText.textContent = "0 Reviews";
+                    detailRating.innerHTML = `${getStarRating(defaultRating)} <span style="font-size: 0.9rem; color: var(--gray); margin-left: 5px;">(0 Reviews)</span>`;
                     return;
                 }
 
@@ -2498,11 +2516,15 @@
 
                 let totalStars = 0;
                 allReviews.forEach(r => totalStars += (r.rating || 5));
-                let avgRating = (totalStars / allReviews.length).toFixed(1);
+                let avgRating = (totalStars / allReviews.length);
+                let avgRatingFixed = avgRating.toFixed(1);
 
-                bigRating.textContent = avgRating;
-                bigStars.innerHTML = getStarRating(parseFloat(avgRating));
+                bigRating.textContent = avgRatingFixed;
+                bigStars.innerHTML = getStarRating(avgRating);
                 totalCountText.textContent = `${allReviews.length} Reviews`;
+
+                // Update the real rating at the top of the details page
+                detailRating.innerHTML = `${getStarRating(parseFloat(avgRatingFixed))} <span style="font-size: 0.9rem; color: var(--gray); margin-left: 5px;">(${avgRatingFixed} / ${allReviews.length} Reviews)</span>`;
 
                 listContainer.innerHTML = '';
                 const maxDisplay = 5;
@@ -2578,11 +2600,12 @@
             }
         };
 
-        window.openReviewPage = function(productId) {
+        window.openReviewPage = function(productId, orderId = null) {
             const prod = products.find(p => p.id === productId || p.pid === productId);
             if(!prod) return;
 
             currentReviewProductId = prod.id;
+            currentReviewOrderId = orderId; 
             currentReviewRating = 5;
 
             document.getElementById('wrProductName').textContent = prod.name;
@@ -2637,6 +2660,7 @@
                 try {
                     await db.collection('reviews').add({
                         productId: currentReviewProductId,
+                        orderId: currentReviewOrderId, 
                         userId: auth.currentUser.uid,
                         userName: currentUser.name,
                         userImage: auth.currentUser.photoURL || '',
@@ -2645,7 +2669,9 @@
                         date: new Date().toISOString()
                     });
                     
-                    window.userReviewedProducts.add(currentReviewProductId);
+                    let reviewKey = currentReviewOrderId ? `${currentReviewOrderId}_${currentReviewProductId}` : currentReviewProductId;
+                    window.userReviewedProducts.add(reviewKey);
+
                     navigateTo('review-success');
                 } catch(e) {
                     console.error("Review Submit Error:", e);
@@ -3285,8 +3311,9 @@
                      if(order.status === 'Delivered') {
                          for(let item of order.cartItems) {
                              let pid = item.id || item.pid;
-                             if(!window.userReviewedProducts.has(pid)) {
-                                 unreviewedProduct = item; break;
+                             let reviewKey = `${order.id}_${pid}`;
+                             if(!window.userReviewedProducts.has(reviewKey)) {
+                                 unreviewedProduct = {...item, orderId: order.id}; break;
                              }
                          }
                      }
@@ -3303,7 +3330,7 @@
                  document.getElementById('promoPopupAction').textContent = "Review Now";
                  document.getElementById('promoPopupAction').style.display = 'block';
                  document.getElementById('promoPopupAction').onclick = () => {
-                     openReviewPage(unreviewedProduct.id || unreviewedProduct.pid);
+                     openReviewPage(unreviewedProduct.id || unreviewedProduct.pid, unreviewedProduct.orderId);
                      hidePromoPopup();
                  };
                  promoPopup.classList.add('visible');
@@ -3709,275 +3736,275 @@
 
                 if (password !== confirmPassword) {
                     showCustomAlert('Error', 'Passwords do not match');
-return;
-}
-try {
-const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-await userCredential.user.updateProfile({ displayName: name });
-await db.collection('users').doc(userCredential.user.uid).set({ name, email, phone });
-showCustomAlert('Registration Successful', 'Your account has been created successfully.', () => navigateTo('profile'));
-} catch(error) {
-showCustomAlert('Registration Failed', error.message);
-}
-});
-document.querySelectorAll('.google-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                e.preventDefault();
-                const provider = new firebase.auth.GoogleAuthProvider();
+                    return;
+                }
                 try {
-                    const result = await auth.signInWithPopup(provider);
-                    const userDoc = await db.collection('users').doc(result.user.uid).get();
-                    if (!userDoc.exists) {
-                        await db.collection('users').doc(result.user.uid).set({
-                            name: result.user.displayName,
-                            email: result.user.email,
-                            phone: ''
+                    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                    await userCredential.user.updateProfile({ displayName: name });
+                    await db.collection('users').doc(userCredential.user.uid).set({ name, email, phone });
+                    showCustomAlert('Registration Successful', 'Your account has been created successfully.', () => navigateTo('profile'));
+                } catch(error) {
+                    showCustomAlert('Registration Failed', error.message);
+                }
+            });
+
+            document.querySelectorAll('.google-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    const provider = new firebase.auth.GoogleAuthProvider();
+                    try {
+                        const result = await auth.signInWithPopup(provider);
+                        const userDoc = await db.collection('users').doc(result.user.uid).get();
+                        if (!userDoc.exists) {
+                            await db.collection('users').doc(result.user.uid).set({
+                                name: result.user.displayName,
+                                email: result.user.email,
+                                phone: ''
+                            });
+                        }
+                        showCustomAlert('Login Successful', 'Welcome!', () => navigateTo('profile'));
+                    } catch(error) {
+                        showCustomAlert('Login Failed', error.message);
+                    }
+                });
+            });
+            
+            document.getElementById('profileSetupForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if(!auth.currentUser) return;
+                const newName = document.getElementById('profileName').value;
+                const newPhone = document.getElementById('profilePhone').value;
+                try {
+                    await auth.currentUser.updateProfile({ displayName: newName });
+                    await db.collection('users').doc(auth.currentUser.uid).update({ name: newName, phone: newPhone });
+                    currentUser.name = newName;
+                    currentUser.phone = newPhone;populateProfileData();
+                    showNotification("Profile updated successfully!");
+                } catch(error) {
+                    showCustomAlert('Error', error.message);
+                }
+            });
+
+            document.getElementById('showAddAddressFormBtn').addEventListener('click', () => {
+                openAddressForm(null);
+            });
+            
+            document.getElementById('cancelAddressBtn').addEventListener('click', () => {
+                document.getElementById('newAddressForm').style.display = 'none';
+                document.getElementById('addressListContainer').style.display = 'block';
+            });
+            
+            document.getElementById('newAddressForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const postCode = document.getElementById('addrPostCode').value;
+                if(postCode < 1000 || postCode > 9999) {
+                    showCustomAlert('Invalid Post Code', 'Post code must be between 1000 and 9999.');
+                    return;
+                }
+
+                const addr = {
+                    title: document.getElementById('addrTitle').value,
+                    name: document.getElementById('addrName').value,
+                    phone: document.getElementById('addrPhone').value,
+                    email: document.getElementById('addrEmail').value,
+                    region: document.getElementById('addrRegion').value,
+                    postcode: postCode,
+                    address: document.getElementById('addrFull').value,
+                    isDefault: savedAddresses.length === 0
+                };
+
+                const editId = document.getElementById('editAddressId').value;
+                if (editId !== '') {
+                    savedAddresses[editId] = addr;
+                } else {
+                    savedAddresses.push(addr);
+                }
+                
+                await saveAddressesToFirebase();
+                document.getElementById('newAddressForm').style.display = 'none';
+                document.getElementById('addressListContainer').style.display = 'block';
+                renderSavedAddressesList();
+                updateDeliveryDisplay();
+                showNotification("Address saved successfully!");
+                
+                if(document.getElementById('order-summary-page').classList.contains('active')) {
+                    renderOrderSummary();
+                }
+                if(document.getElementById('checkout-page').classList.contains('active')) {
+                    renderPaymentPage();
+                }
+            });
+
+            ['homeFilterOptions', 'searchFilterOptions'].forEach(id => {
+                 document.getElementById(id).addEventListener('click', e => {
+                    if (e.target.tagName === 'BUTTON') {
+                        const filter = e.target.dataset.filter;
+                        document.querySelectorAll(`#${id} button`).forEach(btn => btn.classList.remove('active'));
+                        e.target.classList.add('active');
+                        const grid = id === 'homeFilterOptions' ? productGrid : searchResultsGrid;
+                        const productSource = id === 'homeFilterOptions' ? products : currentlyDisplayedProducts;
+                        applyFilterAndRender(productSource, filter, grid);
+                        document.getElementById(id).classList.remove('active'); 
+                    }
+                });
+            });
+            
+            document.addEventListener('click', (e) => {
+                if(!e.target.closest('.filter-dropdown-container')) {
+                    document.querySelectorAll('.filter-options-dropdown').forEach(d => d.classList.remove('active'));
+                }
+            });
+
+            document.querySelectorAll('.category-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const category = card.dataset.category;
+                    navigateTo('home');
+                    setTimeout(() => { 
+                        const shopSection = document.getElementById('shop');
+                        shopSection.scrollIntoView({ behavior: 'smooth' });
+                        document.getElementById('shopTitle').textContent = `Products in: ${category.charAt(0).toUpperCase() + category.slice(1)}`;
+                        currentlyDisplayedProducts = products.filter(p => p.category === category);
+                        applyFilterAndRender(currentlyDisplayedProducts, 'default', productGrid);
+                    }, 600);
+                });
+            });
+
+            menuToggle.addEventListener('click', () => { menuToggle.classList.toggle('active'); mobileMenu.classList.toggle('active'); });
+            cartOverlay.addEventListener('click', (e) => { if (e.target === cartOverlay) cartOverlay.classList.remove('active'); });
+            shopNowBtn.addEventListener('click', () => { document.getElementById('shop').scrollIntoView({ behavior: 'smooth' }); });
+
+            document.addEventListener('click', (e) => {
+                if (mobileMenu.classList.contains('active') && !mobileMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+                    mobileMenu.classList.remove('active');
+                    menuToggle.classList.remove('active');
+                }
+            });
+            
+            searchPageForm.addEventListener('submit', handleSearch);
+            
+            const searchClearBtn = document.getElementById('searchClearBtn');
+            
+            searchPageInput.addEventListener('input', () => {
+                const term = searchPageInput.value.toLowerCase().trim();
+                if(term.length > 0) { searchClearBtn.style.display = 'block'; } else { searchClearBtn.style.display = 'none'; }
+                searchSuggestionsList.innerHTML = '';
+                
+                if(term.length < 2) {
+                    searchSuggestionsList.style.display = 'none';
+                    return;
+                }
+
+                const matchedSuggestions = new Set();
+                
+                products.forEach(p => {
+                    if(p.name.toLowerCase().includes(term)) {
+                        matchedSuggestions.add(p.name);
+                    }
+                    if (p.seo_tag) {
+                        let tags = typeof p.seo_tag === 'string' ? p.seo_tag.split(',').map(s=>s.trim()) : p.seo_tag;
+                        tags.forEach(tag => {
+                            if(tag.toLowerCase().includes(term)) {
+                                matchedSuggestions.add(tag);
+                            }
                         });
                     }
-                    showCustomAlert('Login Successful', 'Welcome!', () => navigateTo('profile'));
-                } catch(error) {
-                    showCustomAlert('Login Failed', error.message);
-                }
-            });
-        });
-        
-        document.getElementById('profileSetupForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if(!auth.currentUser) return;
-            const newName = document.getElementById('profileName').value;
-            const newPhone = document.getElementById('profilePhone').value;
-            try {
-                await auth.currentUser.updateProfile({ displayName: newName });
-                await db.collection('users').doc(auth.currentUser.uid).update({ name: newName, phone: newPhone });
-                currentUser.name = newName;
-                currentUser.phone = newPhone;
-                populateProfileData();
-                showNotification("Profile updated successfully!");
-            } catch(error) {
-                showCustomAlert('Error', error.message);
-            }
-        });
-
-        document.getElementById('showAddAddressFormBtn').addEventListener('click', () => {
-            openAddressForm(null);
-        });
-        
-        document.getElementById('cancelAddressBtn').addEventListener('click', () => {
-            document.getElementById('newAddressForm').style.display = 'none';
-            document.getElementById('addressListContainer').style.display = 'block';
-        });
-        
-        document.getElementById('newAddressForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const postCode = document.getElementById('addrPostCode').value;
-            if(postCode < 1000 || postCode > 9999) {
-                showCustomAlert('Invalid Post Code', 'Post code must be between 1000 and 9999.');
-                return;
-            }
-
-            const addr = {
-                title: document.getElementById('addrTitle').value,
-                name: document.getElementById('addrName').value,
-                phone: document.getElementById('addrPhone').value,
-                email: document.getElementById('addrEmail').value,
-                region: document.getElementById('addrRegion').value,
-                postcode: postCode,
-                address: document.getElementById('addrFull').value,
-                isDefault: savedAddresses.length === 0
-            };
-
-            const editId = document.getElementById('editAddressId').value;
-            if (editId !== '') {
-                savedAddresses[editId] = addr;
-            } else {
-                savedAddresses.push(addr);
-            }
-            
-            await saveAddressesToFirebase();
-            document.getElementById('newAddressForm').style.display = 'none';
-            document.getElementById('addressListContainer').style.display = 'block';
-            renderSavedAddressesList();
-            updateDeliveryDisplay();
-            showNotification("Address saved successfully!");
-            
-            if(document.getElementById('order-summary-page').classList.contains('active')) {
-                renderOrderSummary();
-            }
-            if(document.getElementById('checkout-page').classList.contains('active')) {
-                renderPaymentPage();
-            }
-        });
-
-        ['homeFilterOptions', 'searchFilterOptions'].forEach(id => {
-             document.getElementById(id).addEventListener('click', e => {
-                if (e.target.tagName === 'BUTTON') {
-                    const filter = e.target.dataset.filter;
-                    document.querySelectorAll(`#${id} button`).forEach(btn => btn.classList.remove('active'));
-                    e.target.classList.add('active');
-                    const grid = id === 'homeFilterOptions' ? productGrid : searchResultsGrid;
-                    const productSource = id === 'homeFilterOptions' ? products : currentlyDisplayedProducts;
-                    applyFilterAndRender(productSource, filter, grid);
-                    document.getElementById(id).classList.remove('active'); 
-                }
-            });
-        });
-        
-        document.addEventListener('click', (e) => {
-            if(!e.target.closest('.filter-dropdown-container')) {
-                document.querySelectorAll('.filter-options-dropdown').forEach(d => d.classList.remove('active'));
-            }
-        });
-
-        document.querySelectorAll('.category-card').forEach(card => {
-            card.addEventListener('click', () => {
-                const category = card.dataset.category;
-                navigateTo('home');
-                setTimeout(() => { 
-                    const shopSection = document.getElementById('shop');
-                    shopSection.scrollIntoView({ behavior: 'smooth' });
-                    document.getElementById('shopTitle').textContent = `Products in: ${category.charAt(0).toUpperCase() + category.slice(1)}`;
-                    currentlyDisplayedProducts = products.filter(p => p.category === category);
-                    applyFilterAndRender(currentlyDisplayedProducts, 'default', productGrid);
-                }, 600);
-            });
-        });
-
-        menuToggle.addEventListener('click', () => { menuToggle.classList.toggle('active'); mobileMenu.classList.toggle('active'); });
-        cartOverlay.addEventListener('click', (e) => { if (e.target === cartOverlay) cartOverlay.classList.remove('active'); });
-        shopNowBtn.addEventListener('click', () => { document.getElementById('shop').scrollIntoView({ behavior: 'smooth' }); });
-
-        document.addEventListener('click', (e) => {
-            if (mobileMenu.classList.contains('active') && !mobileMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-                mobileMenu.classList.remove('active');
-                menuToggle.classList.remove('active');
-            }
-        });
-        
-        searchPageForm.addEventListener('submit', handleSearch);
-        
-        const searchClearBtn = document.getElementById('searchClearBtn');
-        
-        searchPageInput.addEventListener('input', () => {
-            const term = searchPageInput.value.toLowerCase().trim();
-            if(term.length > 0) { searchClearBtn.style.display = 'block'; } else { searchClearBtn.style.display = 'none'; }
-            searchSuggestionsList.innerHTML = '';
-            
-            if(term.length < 2) {
-                searchSuggestionsList.style.display = 'none';
-                return;
-            }
-
-            const matchedSuggestions = new Set();
-            
-            products.forEach(p => {
-                if(p.name.toLowerCase().includes(term)) {
-                    matchedSuggestions.add(p.name);
-                }
-                if (p.seo_tag) {
-                    let tags = typeof p.seo_tag === 'string' ? p.seo_tag.split(',').map(s=>s.trim()) : p.seo_tag;
-                    tags.forEach(tag => {
-                        if(tag.toLowerCase().includes(term)) {
-                            matchedSuggestions.add(tag);
-                        }
-                    });
-                }
-                if (p.keywords) {
-                    p.keywords.forEach(k => {
-                        if(k.toLowerCase().includes(term)) {
-                            matchedSuggestions.add(k);
-                        }
-                    });
-                }
-            });
-
-            if (matchedSuggestions.size > 0) {
-                searchSuggestionsList.style.display = 'block';
-                matchedSuggestions.forEach(suggestionText => {
-                    const item = document.createElement('div');
-                    item.className = 'suggestion-item';
-                    item.innerHTML = `<i class="fas fa-search" style="margin-right:8px; color:var(--gray); font-size:0.85rem;"></i> ${suggestionText}`;
-                    item.onclick = () => { 
-                        searchPageInput.value = suggestionText; 
-                        searchSuggestionsList.innerHTML = ''; 
-                        searchSuggestionsList.style.display = 'none';
-                        handleSearch(new Event('submit'), suggestionText);
-                    };
-                    searchSuggestionsList.appendChild(item);
+                    if (p.keywords) {
+                        p.keywords.forEach(k => {
+                            if(k.toLowerCase().includes(term)) {
+                                matchedSuggestions.add(k);
+                            }
+                        });
+                    }
                 });
-            } else {
-                searchSuggestionsList.style.display = 'none';
-            }
-        });
-        
-        searchClearBtn.addEventListener('click', () => {
-            searchPageInput.value = '';
-            searchClearBtn.style.display = 'none';
-            searchSuggestionsList.innerHTML = '';
-            searchSuggestionsList.style.display = 'none';
-            searchPageInput.focus();
-        });
 
-        searchPageInput.addEventListener('blur', () => {
-            setTimeout(() => { searchSuggestionsList.style.display = 'none'; }, 200);
-        });
-        
-        searchPageInput.addEventListener('focus', () => {
-            if(searchSuggestionsList.children.length > 0) searchSuggestionsList.style.display = 'block';
-        });
-
-        detailMainImg.addEventListener('click', () => {
-            lightbox.style.display = 'flex';
-            lightboxImg.src = detailMainImg.src;
-        });
-
-        function closeAndResetLightbox() {
-            lightbox.style.display = 'none';
-            lightboxImg.classList.remove('zoomed');
-        }
-
-        closeLightbox.addEventListener('click', closeAndResetLightbox);
-        lightbox.addEventListener('click', (e) => { if(e.target === lightbox) { closeAndResetLightbox(); } });
-        lightboxImg.addEventListener('click', (e) => { e.stopPropagation(); lightboxImg.classList.toggle('zoomed'); });
-
-        document.querySelectorAll('.password-toggle-icon').forEach(icon => {
-            icon.addEventListener('click', function() {
-                const input = this.previousElementSibling;
-                const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
-                input.setAttribute('type', type);
-                this.classList.toggle('fa-eye');
-                this.classList.toggle('fa-eye-slash');
+                if (matchedSuggestions.size > 0) {
+                    searchSuggestionsList.style.display = 'block';
+                    matchedSuggestions.forEach(suggestionText => {
+                        const item = document.createElement('div');
+                        item.className = 'suggestion-item';
+                        item.innerHTML = `<i class="fas fa-search" style="margin-right:8px; color:var(--gray); font-size:0.85rem;"></i> ${suggestionText}`;
+                        item.onclick = () => { 
+                            searchPageInput.value = suggestionText; 
+                            searchSuggestionsList.innerHTML = ''; 
+                            searchSuggestionsList.style.display = 'none';
+                            handleSearch(new Event('submit'), suggestionText);
+                        };
+                        searchSuggestionsList.appendChild(item);
+                    });
+                } else {
+                    searchSuggestionsList.style.display = 'none';
+                }
             });
-        });
-    }
-
-    function startOfferTimer() {
-        const endDate = new Date();
-        endDate.setDate(endDate.getDate() + 3);
-        const timerInterval = setInterval(updateTimer, 1000);
-        function updateTimer() {
-            const distance = endDate - new Date().getTime();
-            if (distance < 0) { clearInterval(timerInterval); return; };
-            const d = Math.floor(distance / (1000*60*60*24)).toString().padStart(2,'0');
-            const h = Math.floor((distance % (1000*60*60*24))/(1000*60*60)).toString().padStart(2,'0');
-            const m = Math.floor((distance % (1000*60*60))/(1000*60)).toString().padStart(2,'0');
-            const s = Math.floor((distance % (1000*60))/1000).toString().padStart(2,'0');
             
-            if(document.getElementById('days')) {
-                document.getElementById('days').textContent = d;
-                document.getElementById('hours').textContent = h;
-                document.getElementById('minutes').textContent = m;
-                document.getElementById('seconds').textContent = s;
-            }
-        }
-        updateTimer();
-    }
+            searchClearBtn.addEventListener('click', () => {
+                searchPageInput.value = '';
+                searchClearBtn.style.display = 'none';
+                searchSuggestionsList.innerHTML = '';
+                searchSuggestionsList.style.display = 'none';
+                searchPageInput.focus();
+            });
 
-    document.addEventListener('DOMContentLoaded', async () => {
-        showInitialSkeletons();
-        await loadInitialData();
-        init();
-        startOfferTimer();
-    });
+            searchPageInput.addEventListener('blur', () => {
+                setTimeout(() => { searchSuggestionsList.style.display = 'none'; }, 200);
+            });
+            
+            searchPageInput.addEventListener('focus', () => {
+                if(searchSuggestionsList.children.length > 0) searchSuggestionsList.style.display = 'block';
+            });
+
+            detailMainImg.addEventListener('click', () => {
+                lightbox.style.display = 'flex';
+                lightboxImg.src = detailMainImg.src;
+            });
+
+            function closeAndResetLightbox() {
+                lightbox.style.display = 'none';
+                lightboxImg.classList.remove('zoomed');
+            }
+
+            closeLightbox.addEventListener('click', closeAndResetLightbox);
+            lightbox.addEventListener('click', (e) => { if(e.target === lightbox) { closeAndResetLightbox(); } });
+            lightboxImg.addEventListener('click', (e) => { e.stopPropagation(); lightboxImg.classList.toggle('zoomed'); });
+
+            document.querySelectorAll('.password-toggle-icon').forEach(icon => {
+                icon.addEventListener('click', function() {
+                    const input = this.previousElementSibling;
+                    const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                    input.setAttribute('type', type);
+                    this.classList.toggle('fa-eye');
+                    this.classList.toggle('fa-eye-slash');
+                });
+            });
+        }
+
+        function startOfferTimer() {
+            const endDate = new Date();
+            endDate.setDate(endDate.getDate() + 3);
+            const timerInterval = setInterval(updateTimer, 1000);
+            function updateTimer() {
+                const distance = endDate - new Date().getTime();
+                if (distance < 0) { clearInterval(timerInterval); return; };
+                const d = Math.floor(distance / (1000*60*60*24)).toString().padStart(2,'0');
+                const h = Math.floor((distance % (1000*60*60*24))/(1000*60*60)).toString().padStart(2,'0');
+                const m = Math.floor((distance % (1000*60*60))/(1000*60)).toString().padStart(2,'0');
+                const s = Math.floor((distance % (1000*60))/1000).toString().padStart(2,'0');
+                
+                if(document.getElementById('days')) {
+                    document.getElementById('days').textContent = d;
+                    document.getElementById('hours').textContent = h;
+                    document.getElementById('minutes').textContent = m;
+                    document.getElementById('seconds').textContent = s;
+                }
+            }
+            updateTimer();
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            showInitialSkeletons();
+            await loadInitialData();
+            init();
+            startOfferTimer();
+        });
     </script>
 </body>
-</html>
+</html>            
