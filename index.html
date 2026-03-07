@@ -139,8 +139,8 @@
         .rating-section { display: flex; align-items: center; gap: 0.4rem; margin: 0.2rem 0 0.7rem 0; }
         .star-set { display: flex; align-items: center; gap: 1px; }
         /* Golden Stars Update */
-        .material-symbols-outlined.star { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20; font-size: 1rem; color: #f59e0b; }
-        .material-symbols-outlined.star-empty { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20; font-size: 1rem; color: #e5e7eb; }
+        .star-set i { color: #f59e0b; font-size: 0.95rem; }
+        .star-set i.far { color: #e5e7eb; }
         
         .rater-count { background: #ebf3fe; color: #1e519a; font-size: 0.75rem; font-weight: 600; padding: 3px 8px; border-radius: 60px; border: 1px solid #c5ddff; }
         .btn-view { background: #1f6ff0; border: none; color: white; width: 100%; padding: 0.6rem 0; font-size: 0.9rem; font-weight: 600; border-radius: 50px; cursor: pointer; transition: 0.15s; box-shadow: 0 6px 16px -6px #1f6ff0cc; border: 1px solid #5495ff; display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: auto; }
@@ -374,14 +374,16 @@
         .main-content .form-control:focus { outline: none; border-color: var(--primary); }
         .locations-list { margin-top: 20px; }
         
-        .skeleton { background-color: #e2e8f0; background: linear-gradient(90deg, #e2e8f0 25%, #f8fafc 50%, #e2e8f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; color: transparent !important; }
+        /* Skeleton & Branded Skeleton Styles */
+        .skeleton { background: #e2e8f0; background: linear-gradient(90deg, #e2e8f0 25%, #f8fafc 50%, #e2e8f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; color: transparent !important; position: relative; overflow: hidden; }
         .skeleton * { visibility: hidden; }
+        .skeleton-brand { position: relative; }
+        .skeleton-brand::after { content: "\f03e"; font-family: "Font Awesome 6 Free"; font-weight: 900; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2.5rem; color: rgba(200,200,200,0.3); z-index: 1; }
         
         .skeleton-card { background-color: white; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); width: 100%; max-width: 240px; border: 1px solid rgba(0, 119, 255, 0.1); }
-        .skeleton-img, .skeleton-line { background-color: #e2e8f0; background: linear-gradient(90deg, #e2e8f0 25%, #f8fafc 50%, #e2e8f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
-        .skeleton-img { aspect-ratio: 6/8; }
+        .skeleton-img { aspect-ratio: 6/8; background: #e2e8f0; background: linear-gradient(90deg, #e2e8f0 25%, #f8fafc 50%, #e2e8f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        .skeleton-line { background: #e2e8f0; background: linear-gradient(90deg, #e2e8f0 25%, #f8fafc 50%, #e2e8f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; height: 16px; border-radius: 4px; margin-bottom: 10px; }
         .skeleton-info { padding: 20px; }
-        .skeleton-line { height: 16px; border-radius: 4px; margin-bottom: 10px; }
         .skeleton-line.short { width: 60%; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         
@@ -489,16 +491,26 @@
         .review-success-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; text-align: center; }
         .success-check-circle { width: 80px; height: 80px; background-color: #22c55e; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 10px; box-shadow: 0 10px 20px rgba(34, 197, 94, 0.2); }
         .success-shadow { width: 60px; height: 10px; background: rgba(0,0,0,0.05); border-radius: 50%; margin: 0 auto 20px auto; }
-        .review-card { padding: 15px; border-bottom: 1px solid #eee; margin-bottom: 15px; }
+        .review-card { padding: 15px; border-bottom: 1px solid #eee; margin-bottom: 15px; position: relative; z-index: 2; }
         .review-card:last-child { border-bottom: none; }
         .review-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
         .review-user-info { display: flex; align-items: center; gap: 10px; }
         .review-user-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #eef2ff; color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: bold; }
         .review-user-name { font-weight: 600; font-size: 0.95rem; }
         .review-date { font-size: 0.8rem; color: var(--gray); display: block;}
-        .review-stars { color: #f59e0b; font-size: 0.85rem; margin-bottom: 8px; }
+        .review-stars { display: flex; gap: 2px; font-size: 0.85rem; margin-bottom: 8px; }
+        .review-stars i { color: #f59e0b; }
+        .review-stars i.far { color: #e5e7eb; }
         
-        /* Updated for descriptions and reviews formatting */
+        .rating-summary-box { display: flex; align-items: center; justify-content: space-between; background: #f9fafb; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        .rating-summary-box .big-rating { font-size: 3rem; font-weight: 800; color: #111; line-height: 1; }
+        .rating-summary-box .stars { color: #f59e0b; font-size: 1.5rem; display: flex; gap: 2px; }
+        .rating-summary-box .count { color: #6b7280; font-size: 1.1rem; font-weight: 500; }
+
+        /* See More Button styling for reviews */
+        .btn-see-more { background: transparent; border: none; color: var(--primary); font-weight: 600; font-size: 0.95rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; cursor: pointer; position: relative; z-index: 3; }
+        .btn-see-more:hover { text-decoration: underline; background: transparent; }
+
         .review-comment { font-size: 0.95rem; color: #444; line-height: 1.5; white-space: pre-wrap; }
         #detailDesc { white-space: pre-wrap; word-wrap: break-word; color: #4b5563; font-size: 1.1rem; line-height: 1.6; }
         .footer-about p { margin-bottom: 20px; opacity: 0.8; white-space: pre-wrap; }
@@ -653,7 +665,7 @@
                             <h1 id="detailName" style="margin-bottom: 0; line-height: 1.2; flex: 1;">Product Name</h1>
                             <button id="shareProductBtn" class="btn-outline" style="padding: 8px 12px; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 15px;" title="Share Product"><i class="fas fa-share-alt"></i></button>
                         </div>
-                        <div class="rating" id="detailRating"></div>
+                        <div class="rating" id="detailRating" style="display:flex; align-items:center;"></div>
                         <div class="price">
                             <span class="current-price" id="detailPrice">৳0.00</span>
                             <span class="original-price" id="detailOldPrice">৳0.00</span>
@@ -681,19 +693,19 @@
                         </div>
                         
                         <div id="productReviewsSection" style="margin-top: 30px; margin-bottom: 30px; border-top: 1px solid #eee; padding-top: 20px;">
-                            <div class="review-summary-header" style="background: #f9fafb; border-radius: 12px; padding: 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                            <div class="rating-summary-box">
                                 <div style="display: flex; align-items: center; gap: 15px;">
-                                    <span id="overallRatingBig" style="font-size: 3rem; font-weight: 800; color: #111; line-height: 1;">0.0</span>
-                                    <div id="overallRatingStars" style="color: #f59e0b; font-size: 1.5rem; display:flex; gap: 2px;">
+                                    <span id="overallRatingBig" class="big-rating">0.0</span>
+                                    <div id="overallRatingStars" class="stars">
                                         <!-- stars will be injected here -->
                                     </div>
                                 </div>
-                                <div id="totalReviewCount" style="color: #6b7280; font-size: 1.1rem; font-weight: 500;">0 Reviews</div>
+                                <div id="totalReviewCount" class="count">0 Reviews</div>
                             </div>
-                            <div id="productReviewsList">
+                            <div id="productReviewsList" style="position: relative; padding-bottom: 20px;">
                                 <p style="color: var(--gray); font-size: 0.9rem;">No reviews yet.</p>
                             </div>
-                            <button id="seeAllReviewsBtn" class="btn btn-outline" style="width: 100%; display: none; margin-top: 15px;" onclick="openAllReviewsPage()">See All Reviews</button>
+                            <button id="seeAllReviewsBtn" class="btn-see-more" style="display: none;" onclick="openAllReviewsPage()">See All Reviews <i class="fas fa-chevron-right" style="font-size: 0.8rem; margin-top:2px;"></i></button>
                         </div>
 
                         <div class="details-description">
@@ -1006,10 +1018,6 @@
                                     <path d="M 68 40 L 58 45" fill="none" stroke="#e83a45" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
                                     <path d="M 58 45 L 68 50" fill="none" stroke="#1c5fc9" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
                                     <path d="M 35 60 Q 50 75 65 60" fill="none" stroke="#1c5fc9" stroke-width="6" stroke-linecap="round"/>
-                                    <circle cx="78" cy="78" r="16" fill="#5a6270"/>
-                                    <rect x="69" y="73" width="18" height="12" rx="2" fill="#ffffff"/>
-                                    <circle cx="78" cy="79" r="3.5" fill="#5a6270"/>
-                                    <path d="M 74 73 L 75 70 L 81 70 L 82 73 Z" fill="#ffffff"/>
                                 </svg>
                             </div>
                             <h2 class="profile-name" id="profileNameDisplay">User Name</h2>
@@ -1352,10 +1360,6 @@
                 <path d="M 68 40 L 58 45" fill="none" stroke="#e83a45" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M 58 45 L 68 50" fill="none" stroke="#1c5fc9" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M 35 60 Q 50 75 65 60" fill="none" stroke="#1c5fc9" stroke-width="6" stroke-linecap="round"/>
-                <circle cx="78" cy="78" r="16" fill="#5a6270"/>
-                <rect x="69" y="73" width="18" height="12" rx="2" fill="#ffffff"/>
-                <circle cx="78" cy="79" r="3.5" fill="#5a6270"/>
-                <path d="M 74 73 L 75 70 L 81 70 L 82 73 Z" fill="#ffffff"/>
             </svg>
         `;
 
@@ -1442,7 +1446,7 @@
             headerLogo.style.width = '120px'; headerLogo.style.height = '35px';
             headerLogo.onload = () => { headerLogo.classList.remove('skeleton'); headerLogo.style.width = ''; headerLogo.style.height = ''; };
 
-            heroBg.innerHTML = '<div class="skeleton" style="width:100%; height:100%;"></div>';
+            heroBg.innerHTML = '<div class="skeleton skeleton-brand" style="width:100%; height:100%; position:absolute; top:0; left:0; z-index:0;"></div>';
             
             const categoryGrid = document.getElementById('categoryGrid');
             categoryGrid.innerHTML = Array(6).fill('<div class="category-card skeleton" style="border:none;"><div class="category-icon skeleton" style="width:50px; height:50px; border-radius:50%; margin-bottom:5px;"></div><h3 class="skeleton" style="width:60px; height:12px;"></h3></div>').join('');
@@ -1919,7 +1923,7 @@
                 const skeletonCard = document.createElement('div');
                 skeletonCard.className = 'skeleton-card';
                 skeletonCard.innerHTML = `
-                    <div class="skeleton-img"></div>
+                    <div class="skeleton-img skeleton-brand"></div>
                     <div class="skeleton-info">
                         <div class="skeleton-line"></div>
                         <div class="skeleton-line short"></div>
@@ -2342,9 +2346,11 @@
         function getStarRatingHTML(rating) {
             let stars = '';
             const fullStars = Math.floor(rating);
-            for (let i = 0; i < fullStars; i++) stars += '<span class="material-symbols-outlined star">star</span>';
+            const halfStar = rating % 1 >= 0.5;
+            for (let i = 0; i < fullStars; i++) stars += '<i class="fas fa-star"></i>';
+            if (halfStar) stars += '<i class="fas fa-star-half-alt"></i>';
             const emptyStars = 5 - Math.ceil(rating);
-            for (let i = 0; i < emptyStars; i++) stars += '<span class="material-symbols-outlined star-empty">star</span>';
+            for (let i = 0; i < emptyStars; i++) stars += '<i class="far fa-star"></i>';
             return stars;
         }
 
@@ -2367,6 +2373,9 @@
             }
             selectedVariant = null;
             
+            detailMainImg.classList.add('skeleton', 'skeleton-brand');
+            detailMainImg.onload = () => detailMainImg.classList.remove('skeleton', 'skeleton-brand');
+
             document.title = currentProduct.name + " - " + document.getElementById('pageTitle').textContent;
             document.getElementById('ogTitle').content = currentProduct.name;
             document.getElementById('ogDesc').content = currentProduct.name; 
@@ -2401,7 +2410,7 @@
             detailDesc.querySelectorAll('a').forEach(a => a.setAttribute('target', '_blank'));
 
             // initial rating, will update dynamically after fetching reviews
-            detailRating.innerHTML = `${getStarRating(currentProduct.rating || 5)} <span style="font-size: 0.9rem; color: var(--gray); margin-left: 5px;">(${currentProduct.rating || 5})</span>`;
+            detailRating.innerHTML = `<div class="review-stars" style="margin:0; font-size:1.1rem;">${getStarRating(currentProduct.rating || 5)}</div> <span style="font-size: 0.9rem; color: var(--gray); margin-left: 5px;">(${currentProduct.rating || 5})</span>`;
             detailQty.value = 1;
             
             const totalStock = currentProduct.variants && currentProduct.variants.length > 0 
@@ -2507,7 +2516,7 @@
                     bigRating.textContent = defaultRating.toFixed(1);
                     bigStars.innerHTML = getStarRating(defaultRating);
                     totalCountText.textContent = "0 Reviews";
-                    detailRating.innerHTML = `${getStarRating(defaultRating)} <span style="font-size: 0.9rem; color: var(--gray); margin-left: 5px;">(0 Reviews)</span>`;
+                    detailRating.innerHTML = `<div class="review-stars" style="margin:0; font-size:1.1rem;">${getStarRating(defaultRating)}</div> <span style="font-size: 0.9rem; color: var(--gray); margin-left: 5px;">(0 Reviews)</span>`;
                     return;
                 }
 
@@ -2524,16 +2533,20 @@
                 totalCountText.textContent = `${allReviews.length} Reviews`;
 
                 // Update the real rating at the top of the details page
-                detailRating.innerHTML = `${getStarRating(parseFloat(avgRatingFixed))} <span style="font-size: 0.9rem; color: var(--gray); margin-left: 5px;">(${avgRatingFixed} / ${allReviews.length} Reviews)</span>`;
+                detailRating.innerHTML = `<div class="review-stars" style="margin:0; font-size:1.1rem;">${getStarRating(parseFloat(avgRatingFixed))}</div> <span style="font-size: 0.9rem; color: var(--gray); margin-left: 5px;">(${avgRatingFixed} / ${allReviews.length} Reviews)</span>`;
 
                 listContainer.innerHTML = '';
-                const maxDisplay = 5;
+                const maxDisplay = 4;
                 for(let i=0; i<Math.min(allReviews.length, maxDisplay); i++) {
                     listContainer.appendChild(createReviewCard(allReviews[i]));
                 }
 
                 if(allReviews.length > maxDisplay) {
-                    seeAllBtn.style.display = 'block';
+                    const fade = document.createElement('div');
+                    fade.style.cssText = 'position: absolute; bottom: 0; left: 0; width: 100%; height: 100px; background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1)); pointer-events: none; z-index: 3;';
+                    listContainer.appendChild(fade);
+                    
+                    seeAllBtn.style.display = 'flex';
                 }
             } catch(e) {
                 console.error("Error fetching reviews", e);
@@ -2586,8 +2599,28 @@
                     return new Date(b.date) - new Date(a.date);
                 });
 
-                container.innerHTML = '';
-                allReviews.forEach(r => container.appendChild(createReviewCard(r)));
+                let totalStars = 0;
+                allReviews.forEach(r => totalStars += (r.rating || 5));
+                let avgRating = allReviews.length > 0 ? (totalStars / allReviews.length) : (currentProduct.rating || 5);
+                let avgRatingFixed = avgRating.toFixed(1);
+
+                container.innerHTML = `
+                    <div class="rating-summary-box">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <span class="big-rating">${avgRatingFixed}</span>
+                            <div class="stars">
+                                ${getStarRating(avgRating)}
+                            </div>
+                        </div>
+                        <div class="count">${allReviews.length} Reviews</div>
+                    </div>
+                `;
+                
+                if (allReviews.length === 0) {
+                    container.innerHTML += '<p style="color: var(--gray); text-align:center;">No reviews yet.</p>';
+                } else {
+                    allReviews.forEach(r => container.appendChild(createReviewCard(r)));
+                }
 
             } catch(e) {
                 container.innerHTML = '<p style="color: var(--gray); text-align:center;">Failed to load reviews.</p>';
@@ -3745,266 +3778,265 @@
                     showCustomAlert('Registration Successful', 'Your account has been created successfully.', () => navigateTo('profile'));
                 } catch(error) {
                     showCustomAlert('Registration Failed', error.message);
-                }
-            });
-
-            document.querySelectorAll('.google-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    const provider = new firebase.auth.GoogleAuthProvider();
-                    try {
-                        const result = await auth.signInWithPopup(provider);
-                        const userDoc = await db.collection('users').doc(result.user.uid).get();
-                        if (!userDoc.exists) {
-                            await db.collection('users').doc(result.user.uid).set({
-                                name: result.user.displayName,
-                                email: result.user.email,
-                                phone: ''
-                            });
-                        }
-                        showCustomAlert('Login Successful', 'Welcome!', () => navigateTo('profile'));
-                    } catch(error) {
-                        showCustomAlert('Login Failed', error.message);
-                    }
-                });
-            });
-            
-            document.getElementById('profileSetupForm').addEventListener('submit', async (e) => {
+}
+});
+document.querySelectorAll('.google-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
                 e.preventDefault();
-                if(!auth.currentUser) return;
-                const newName = document.getElementById('profileName').value;
-                const newPhone = document.getElementById('profilePhone').value;
+                const provider = new firebase.auth.GoogleAuthProvider();
                 try {
-                    await auth.currentUser.updateProfile({ displayName: newName });
-                    await db.collection('users').doc(auth.currentUser.uid).update({ name: newName, phone: newPhone });
-                    currentUser.name = newName;
-                    currentUser.phone = newPhone;populateProfileData();
-                    showNotification("Profile updated successfully!");
+                    const result = await auth.signInWithPopup(provider);
+                    const userDoc = await db.collection('users').doc(result.user.uid).get();
+                    if (!userDoc.exists) {
+                        await db.collection('users').doc(result.user.uid).set({
+                            name: result.user.displayName,
+                            email: result.user.email,
+                            phone: ''
+                        });
+                    }
+                    showCustomAlert('Login Successful', 'Welcome!', () => navigateTo('profile'));
                 } catch(error) {
-                    showCustomAlert('Error', error.message);
+                    showCustomAlert('Login Failed', error.message);
                 }
             });
-
-            document.getElementById('showAddAddressFormBtn').addEventListener('click', () => {
-                openAddressForm(null);
-            });
-            
-            document.getElementById('cancelAddressBtn').addEventListener('click', () => {
-                document.getElementById('newAddressForm').style.display = 'none';
-                document.getElementById('addressListContainer').style.display = 'block';
-            });
-            
-            document.getElementById('newAddressForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const postCode = document.getElementById('addrPostCode').value;
-                if(postCode < 1000 || postCode > 9999) {
-                    showCustomAlert('Invalid Post Code', 'Post code must be between 1000 and 9999.');
-                    return;
-                }
-
-                const addr = {
-                    title: document.getElementById('addrTitle').value,
-                    name: document.getElementById('addrName').value,
-                    phone: document.getElementById('addrPhone').value,
-                    email: document.getElementById('addrEmail').value,
-                    region: document.getElementById('addrRegion').value,
-                    postcode: postCode,
-                    address: document.getElementById('addrFull').value,
-                    isDefault: savedAddresses.length === 0
-                };
-
-                const editId = document.getElementById('editAddressId').value;
-                if (editId !== '') {
-                    savedAddresses[editId] = addr;
-                } else {
-                    savedAddresses.push(addr);
-                }
-                
-                await saveAddressesToFirebase();
-                document.getElementById('newAddressForm').style.display = 'none';
-                document.getElementById('addressListContainer').style.display = 'block';
-                renderSavedAddressesList();
-                updateDeliveryDisplay();
-                showNotification("Address saved successfully!");
-                
-                if(document.getElementById('order-summary-page').classList.contains('active')) {
-                    renderOrderSummary();
-                }
-                if(document.getElementById('checkout-page').classList.contains('active')) {
-                    renderPaymentPage();
-                }
-            });
-
-            ['homeFilterOptions', 'searchFilterOptions'].forEach(id => {
-                 document.getElementById(id).addEventListener('click', e => {
-                    if (e.target.tagName === 'BUTTON') {
-                        const filter = e.target.dataset.filter;
-                        document.querySelectorAll(`#${id} button`).forEach(btn => btn.classList.remove('active'));
-                        e.target.classList.add('active');
-                        const grid = id === 'homeFilterOptions' ? productGrid : searchResultsGrid;
-                        const productSource = id === 'homeFilterOptions' ? products : currentlyDisplayedProducts;
-                        applyFilterAndRender(productSource, filter, grid);
-                        document.getElementById(id).classList.remove('active'); 
-                    }
-                });
-            });
-            
-            document.addEventListener('click', (e) => {
-                if(!e.target.closest('.filter-dropdown-container')) {
-                    document.querySelectorAll('.filter-options-dropdown').forEach(d => d.classList.remove('active'));
-                }
-            });
-
-            document.querySelectorAll('.category-card').forEach(card => {
-                card.addEventListener('click', () => {
-                    const category = card.dataset.category;
-                    navigateTo('home');
-                    setTimeout(() => { 
-                        const shopSection = document.getElementById('shop');
-                        shopSection.scrollIntoView({ behavior: 'smooth' });
-                        document.getElementById('shopTitle').textContent = `Products in: ${category.charAt(0).toUpperCase() + category.slice(1)}`;
-                        currentlyDisplayedProducts = products.filter(p => p.category === category);
-                        applyFilterAndRender(currentlyDisplayedProducts, 'default', productGrid);
-                    }, 600);
-                });
-            });
-
-            menuToggle.addEventListener('click', () => { menuToggle.classList.toggle('active'); mobileMenu.classList.toggle('active'); });
-            cartOverlay.addEventListener('click', (e) => { if (e.target === cartOverlay) cartOverlay.classList.remove('active'); });
-            shopNowBtn.addEventListener('click', () => { document.getElementById('shop').scrollIntoView({ behavior: 'smooth' }); });
-
-            document.addEventListener('click', (e) => {
-                if (mobileMenu.classList.contains('active') && !mobileMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-                    mobileMenu.classList.remove('active');
-                    menuToggle.classList.remove('active');
-                }
-            });
-            
-            searchPageForm.addEventListener('submit', handleSearch);
-            
-            const searchClearBtn = document.getElementById('searchClearBtn');
-            
-            searchPageInput.addEventListener('input', () => {
-                const term = searchPageInput.value.toLowerCase().trim();
-                if(term.length > 0) { searchClearBtn.style.display = 'block'; } else { searchClearBtn.style.display = 'none'; }
-                searchSuggestionsList.innerHTML = '';
-                
-                if(term.length < 2) {
-                    searchSuggestionsList.style.display = 'none';
-                    return;
-                }
-
-                const matchedSuggestions = new Set();
-                
-                products.forEach(p => {
-                    if(p.name.toLowerCase().includes(term)) {
-                        matchedSuggestions.add(p.name);
-                    }
-                    if (p.seo_tag) {
-                        let tags = typeof p.seo_tag === 'string' ? p.seo_tag.split(',').map(s=>s.trim()) : p.seo_tag;
-                        tags.forEach(tag => {
-                            if(tag.toLowerCase().includes(term)) {
-                                matchedSuggestions.add(tag);
-                            }
-                        });
-                    }
-                    if (p.keywords) {
-                        p.keywords.forEach(k => {
-                            if(k.toLowerCase().includes(term)) {
-                                matchedSuggestions.add(k);
-                            }
-                        });
-                    }
-                });
-
-                if (matchedSuggestions.size > 0) {
-                    searchSuggestionsList.style.display = 'block';
-                    matchedSuggestions.forEach(suggestionText => {
-                        const item = document.createElement('div');
-                        item.className = 'suggestion-item';
-                        item.innerHTML = `<i class="fas fa-search" style="margin-right:8px; color:var(--gray); font-size:0.85rem;"></i> ${suggestionText}`;
-                        item.onclick = () => { 
-                            searchPageInput.value = suggestionText; 
-                            searchSuggestionsList.innerHTML = ''; 
-                            searchSuggestionsList.style.display = 'none';
-                            handleSearch(new Event('submit'), suggestionText);
-                        };
-                        searchSuggestionsList.appendChild(item);
-                    });
-                } else {
-                    searchSuggestionsList.style.display = 'none';
-                }
-            });
-            
-            searchClearBtn.addEventListener('click', () => {
-                searchPageInput.value = '';
-                searchClearBtn.style.display = 'none';
-                searchSuggestionsList.innerHTML = '';
-                searchSuggestionsList.style.display = 'none';
-                searchPageInput.focus();
-            });
-
-            searchPageInput.addEventListener('blur', () => {
-                setTimeout(() => { searchSuggestionsList.style.display = 'none'; }, 200);
-            });
-            
-            searchPageInput.addEventListener('focus', () => {
-                if(searchSuggestionsList.children.length > 0) searchSuggestionsList.style.display = 'block';
-            });
-
-            detailMainImg.addEventListener('click', () => {
-                lightbox.style.display = 'flex';
-                lightboxImg.src = detailMainImg.src;
-            });
-
-            function closeAndResetLightbox() {
-                lightbox.style.display = 'none';
-                lightboxImg.classList.remove('zoomed');
-            }
-
-            closeLightbox.addEventListener('click', closeAndResetLightbox);
-            lightbox.addEventListener('click', (e) => { if(e.target === lightbox) { closeAndResetLightbox(); } });
-            lightboxImg.addEventListener('click', (e) => { e.stopPropagation(); lightboxImg.classList.toggle('zoomed'); });
-
-            document.querySelectorAll('.password-toggle-icon').forEach(icon => {
-                icon.addEventListener('click', function() {
-                    const input = this.previousElementSibling;
-                    const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
-                    input.setAttribute('type', type);
-                    this.classList.toggle('fa-eye');
-                    this.classList.toggle('fa-eye-slash');
-                });
-            });
-        }
-
-        function startOfferTimer() {
-            const endDate = new Date();
-            endDate.setDate(endDate.getDate() + 3);
-            const timerInterval = setInterval(updateTimer, 1000);
-            function updateTimer() {
-                const distance = endDate - new Date().getTime();
-                if (distance < 0) { clearInterval(timerInterval); return; };
-                const d = Math.floor(distance / (1000*60*60*24)).toString().padStart(2,'0');
-                const h = Math.floor((distance % (1000*60*60*24))/(1000*60*60)).toString().padStart(2,'0');
-                const m = Math.floor((distance % (1000*60*60))/(1000*60)).toString().padStart(2,'0');
-                const s = Math.floor((distance % (1000*60))/1000).toString().padStart(2,'0');
-                
-                if(document.getElementById('days')) {
-                    document.getElementById('days').textContent = d;
-                    document.getElementById('hours').textContent = h;
-                    document.getElementById('minutes').textContent = m;
-                    document.getElementById('seconds').textContent = s;
-                }
-            }
-            updateTimer();
-        }
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            showInitialSkeletons();
-            await loadInitialData();
-            init();
-            startOfferTimer();
         });
-    </script>
+        
+        document.getElementById('profileSetupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!auth.currentUser) return;
+            const newName = document.getElementById('profileName').value;
+            const newPhone = document.getElementById('profilePhone').value;
+            try {
+                await auth.currentUser.updateProfile({ displayName: newName });
+                await db.collection('users').doc(auth.currentUser.uid).update({ name: newName, phone: newPhone });
+                currentUser.name = newName;
+                currentUser.phone = newPhone;populateProfileData();
+                showNotification("Profile updated successfully!");
+            } catch(error) {
+                showCustomAlert('Error', error.message);
+            }
+        });
+
+        document.getElementById('showAddAddressFormBtn').addEventListener('click', () => {
+            openAddressForm(null);
+        });
+        
+        document.getElementById('cancelAddressBtn').addEventListener('click', () => {
+            document.getElementById('newAddressForm').style.display = 'none';
+            document.getElementById('addressListContainer').style.display = 'block';
+        });
+        
+        document.getElementById('newAddressForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const postCode = document.getElementById('addrPostCode').value;
+            if(postCode < 1000 || postCode > 9999) {
+                showCustomAlert('Invalid Post Code', 'Post code must be between 1000 and 9999.');
+                return;
+            }
+
+            const addr = {
+                title: document.getElementById('addrTitle').value,
+                name: document.getElementById('addrName').value,
+                phone: document.getElementById('addrPhone').value,
+                email: document.getElementById('addrEmail').value,
+                region: document.getElementById('addrRegion').value,
+                postcode: postCode,
+                address: document.getElementById('addrFull').value,
+                isDefault: savedAddresses.length === 0
+            };
+
+            const editId = document.getElementById('editAddressId').value;
+            if (editId !== '') {
+                savedAddresses[editId] = addr;
+            } else {
+                savedAddresses.push(addr);
+            }
+            
+            await saveAddressesToFirebase();
+            document.getElementById('newAddressForm').style.display = 'none';
+            document.getElementById('addressListContainer').style.display = 'block';
+            renderSavedAddressesList();
+            updateDeliveryDisplay();
+            showNotification("Address saved successfully!");
+            
+            if(document.getElementById('order-summary-page').classList.contains('active')) {
+                renderOrderSummary();
+            }
+            if(document.getElementById('checkout-page').classList.contains('active')) {
+                renderPaymentPage();
+            }
+        });
+
+        ['homeFilterOptions', 'searchFilterOptions'].forEach(id => {
+             document.getElementById(id).addEventListener('click', e => {
+                if (e.target.tagName === 'BUTTON') {
+                    const filter = e.target.dataset.filter;
+                    document.querySelectorAll(`#${id} button`).forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                    const grid = id === 'homeFilterOptions' ? productGrid : searchResultsGrid;
+                    const productSource = id === 'homeFilterOptions' ? products : currentlyDisplayedProducts;
+                    applyFilterAndRender(productSource, filter, grid);
+                    document.getElementById(id).classList.remove('active'); 
+                }
+            });
+        });
+        
+        document.addEventListener('click', (e) => {
+            if(!e.target.closest('.filter-dropdown-container')) {
+                document.querySelectorAll('.filter-options-dropdown').forEach(d => d.classList.remove('active'));
+            }
+        });
+
+        document.querySelectorAll('.category-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const category = card.dataset.category;
+                navigateTo('home');
+                setTimeout(() => { 
+                    const shopSection = document.getElementById('shop');
+                    shopSection.scrollIntoView({ behavior: 'smooth' });
+                    document.getElementById('shopTitle').textContent = `Products in: ${category.charAt(0).toUpperCase() + category.slice(1)}`;
+                    currentlyDisplayedProducts = products.filter(p => p.category === category);
+                    applyFilterAndRender(currentlyDisplayedProducts, 'default', productGrid);
+                }, 600);
+            });
+        });
+
+        menuToggle.addEventListener('click', () => { menuToggle.classList.toggle('active'); mobileMenu.classList.toggle('active'); });
+        cartOverlay.addEventListener('click', (e) => { if (e.target === cartOverlay) cartOverlay.classList.remove('active'); });
+        shopNowBtn.addEventListener('click', () => { document.getElementById('shop').scrollIntoView({ behavior: 'smooth' }); });
+
+        document.addEventListener('click', (e) => {
+            if (mobileMenu.classList.contains('active') && !mobileMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+                mobileMenu.classList.remove('active');
+                menuToggle.classList.remove('active');
+            }
+        });
+        
+        searchPageForm.addEventListener('submit', handleSearch);
+        
+        const searchClearBtn = document.getElementById('searchClearBtn');
+        
+        searchPageInput.addEventListener('input', () => {
+            const term = searchPageInput.value.toLowerCase().trim();
+            if(term.length > 0) { searchClearBtn.style.display = 'block'; } else { searchClearBtn.style.display = 'none'; }
+            searchSuggestionsList.innerHTML = '';
+            
+            if(term.length < 2) {
+                searchSuggestionsList.style.display = 'none';
+                return;
+            }
+
+            const matchedSuggestions = new Set();
+            
+            products.forEach(p => {
+                if(p.name.toLowerCase().includes(term)) {
+                    matchedSuggestions.add(p.name);
+                }
+                if (p.seo_tag) {
+                    let tags = typeof p.seo_tag === 'string' ? p.seo_tag.split(',').map(s=>s.trim()) : p.seo_tag;
+                    tags.forEach(tag => {
+                        if(tag.toLowerCase().includes(term)) {
+                            matchedSuggestions.add(tag);
+                        }
+                    });
+                }
+                if (p.keywords) {
+                    p.keywords.forEach(k => {
+                        if(k.toLowerCase().includes(term)) {
+                            matchedSuggestions.add(k);
+                        }
+                    });
+                }
+            });
+
+            if (matchedSuggestions.size > 0) {
+                searchSuggestionsList.style.display = 'block';
+                matchedSuggestions.forEach(suggestionText => {
+                    const item = document.createElement('div');
+                    item.className = 'suggestion-item';
+                    item.innerHTML = `<i class="fas fa-search" style="margin-right:8px; color:var(--gray); font-size:0.85rem;"></i> ${suggestionText}`;
+                    item.onclick = () => { 
+                        searchPageInput.value = suggestionText; 
+                        searchSuggestionsList.innerHTML = ''; 
+                        searchSuggestionsList.style.display = 'none';
+                        handleSearch(new Event('submit'), suggestionText);
+                    };
+                    searchSuggestionsList.appendChild(item);
+                });
+            } else {
+                searchSuggestionsList.style.display = 'none';
+            }
+        });
+        
+        searchClearBtn.addEventListener('click', () => {
+            searchPageInput.value = '';
+            searchClearBtn.style.display = 'none';
+            searchSuggestionsList.innerHTML = '';
+            searchSuggestionsList.style.display = 'none';
+            searchPageInput.focus();
+        });
+
+        searchPageInput.addEventListener('blur', () => {
+            setTimeout(() => { searchSuggestionsList.style.display = 'none'; }, 200);
+        });
+        
+        searchPageInput.addEventListener('focus', () => {
+            if(searchSuggestionsList.children.length > 0) searchSuggestionsList.style.display = 'block';
+        });
+
+        detailMainImg.addEventListener('click', () => {
+            lightbox.style.display = 'flex';
+            lightboxImg.src = detailMainImg.src;
+        });
+
+        function closeAndResetLightbox() {
+            lightbox.style.display = 'none';
+            lightboxImg.classList.remove('zoomed');
+        }
+
+        closeLightbox.addEventListener('click', closeAndResetLightbox);
+        lightbox.addEventListener('click', (e) => { if(e.target === lightbox) { closeAndResetLightbox(); } });
+        lightboxImg.addEventListener('click', (e) => { e.stopPropagation(); lightboxImg.classList.toggle('zoomed'); });
+
+        document.querySelectorAll('.password-toggle-icon').forEach(icon => {
+            icon.addEventListener('click', function() {
+                const input = this.previousElementSibling;
+                const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                input.setAttribute('type', type);
+                this.classList.toggle('fa-eye');
+                this.classList.toggle('fa-eye-slash');
+            });
+        });
+    }
+
+    function startOfferTimer() {
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + 3);
+        const timerInterval = setInterval(updateTimer, 1000);
+        function updateTimer() {
+            const distance = endDate - new Date().getTime();
+            if (distance < 0) { clearInterval(timerInterval); return; };
+            const d = Math.floor(distance / (1000*60*60*24)).toString().padStart(2,'0');
+            const h = Math.floor((distance % (1000*60*60*24))/(1000*60*60)).toString().padStart(2,'0');
+            const m = Math.floor((distance % (1000*60*60))/(1000*60)).toString().padStart(2,'0');
+            const s = Math.floor((distance % (1000*60))/1000).toString().padStart(2,'0');
+            
+            if(document.getElementById('days')) {
+                document.getElementById('days').textContent = d;
+                document.getElementById('hours').textContent = h;
+                document.getElementById('minutes').textContent = m;
+                document.getElementById('seconds').textContent = s;
+            }
+        }
+        updateTimer();
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        showInitialSkeletons();
+        await loadInitialData();
+        init();
+        startOfferTimer();
+    });
+</script>
 </body>
-</html>            
+</html>
