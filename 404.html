@@ -387,6 +387,26 @@
         .skeleton-line.short { width: 60%; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         
+        /* Profile UI New Styles */
+        .app-profile-header-card { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .app-profile-orders-card, .app-profile-recent-card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 3px 15px rgba(0,0,0,0.05); }
+        .orders-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .orders-header h3 { font-size: 1.1rem; font-weight: 600; color: #111; }
+        .orders-header span { font-size: 0.85rem; color: var(--gray); cursor: pointer; }
+        .orders-status-grid { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .order-status-item { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 0.75rem; color: #333; cursor: pointer; position: relative; width: 18%; text-align: center; }
+        .order-status-item i { font-size: 22px; color: #f97316; margin-bottom: 5px; }
+        .order-badge-count { position: absolute; top: -8px; right: 0px; background: #ef4444; color: white; font-size: 0.65rem; font-weight: bold; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1.5px solid white; }
+        .latest-order-snippet { background: #f9fafb; padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 15px; font-size: 0.85rem; color: #555; cursor: pointer; border: 1px solid #f3f4f6;}
+        .latest-order-snippet img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover;}
+        .app-profile-recent-card h3 { font-size: 1.1rem; font-weight: 600; color: #111; margin-bottom: 15px; }
+        .recently-viewed-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .rv-card { border: 1px solid #eee; border-radius: 8px; overflow: hidden; position: relative; cursor: pointer; background: white;}
+        .rv-card img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+        .rv-price { padding: 8px; font-weight: bold; color: #ef4444; font-size: 0.9rem;}
+        .rv-old-price { color: #9ca3af; text-decoration: line-through; font-size: 0.75rem; font-weight: normal; margin-left: 5px;}
+        .rv-discount { position: absolute; top: 0; left: 0; background: #ef4444; color: white; padding: 2px 6px; font-size: 0.7rem; border-bottom-right-radius: 8px; font-weight: bold;}
+
         .suggested-products-section { padding: 40px 0; background-color: #f9fafb; }
         .suggested-products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; justify-items: center; }
         
@@ -543,10 +563,36 @@
             .category-icon { font-size: 1.2rem; } 
             .category-card h3 { font-size: 0.7rem; } 
             .suggested-products-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } 
+            .recently-viewed-grid { grid-template-columns: repeat(3, 1fr); gap: 8px;}
         }
     </style>
 </head>
 <body>
+    <!-- Global Dark Skeleton Overlay -->
+    <div id="globalSkeletonOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#0a0a0a; z-index:999999; display:flex; flex-direction:column; padding:15px; box-sizing:border-box; transition:opacity 0.5s ease;">
+        <style>
+            .skel-dark-box { background: #1a1a1a; border-radius: 8px; animation: pulseDark 1.5s infinite; }
+            @keyframes pulseDark { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        </style>
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px; align-items:center; height:40px;">
+            <div class="skel-dark-box" style="width:40px; height:40px; border-radius:50%;"></div>
+            <div class="skel-dark-box" style="flex:1; height:35px; border-radius:20px; margin:0 15px;"></div>
+            <div style="display:flex; gap:10px;">
+                <div class="skel-dark-box" style="width:35px; height:35px; border-radius:50%;"></div>
+            </div>
+        </div>
+        <div class="skel-dark-box" style="width:100%; height:200px; border-radius:12px; margin-bottom:25px;"></div>
+        <div style="display:flex; gap:15px; margin-bottom:25px;">
+            <div class="skel-dark-box" style="width:80px; height:30px; border-radius:15px;"></div>
+            <div class="skel-dark-box" style="width:80px; height:30px; border-radius:15px;"></div>
+            <div class="skel-dark-box" style="width:80px; height:30px; border-radius:15px;"></div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+            <div class="skel-dark-box" style="height:250px; border-radius:12px;"></div>
+            <div class="skel-dark-box" style="height:250px; border-radius:12px;"></div>
+        </div>
+    </div>
+
     <header>
         <div class="container">
             <div class="header-content">
@@ -1008,10 +1054,10 @@
 
         <div id="profile-page" class="page-section">
             <div class="container">
-                <div class="profile-container">
+                <div class="profile-container dashboard-layout">
                     <div class="sidebar">
-                        <div class="profile-card">
-                            <div class="profile-picture">
+                        <div class="profile-card app-profile-header-card" style="text-align:left;">
+                            <div class="profile-picture" id="dashboardProfilePic" style="margin:0; width:60px; height:60px;">
                                 <svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
                                     <circle cx="50" cy="50" r="48" fill="#ffffff" stroke="#e0e0e0" stroke-width="1"/>
                                     <path d="M 32 40 L 42 45 L 32 50" fill="none" stroke="#1c5fc9" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1020,12 +1066,18 @@
                                     <path d="M 35 60 Q 50 75 65 60" fill="none" stroke="#1c5fc9" stroke-width="6" stroke-linecap="round"/>
                                 </svg>
                             </div>
-                            <h2 class="profile-name" id="profileNameDisplay">User Name</h2>
-                            <p class="profile-email" id="profileEmailDisplay">user@email.com</p>
+                            <div class="profile-info" style="flex:1;">
+                                <h2 class="profile-name" id="profileNameDisplay" style="font-size:18px;">User Name</h2>
+                            </div>
+                            <i class="fas fa-cog" style="font-size:22px; color:#555; cursor:pointer;" onclick="showProfileSection('setup')"></i>
                         </div>
                         
                         <div class="nav-menu" id="profileNav">
-                            <a href="javascript:void(0)" class="nav-item active" onclick="showProfileSection('setup')">
+                            <a href="javascript:void(0)" class="nav-item active" onclick="showProfileSection('dashboard')">
+                                <i class="fas fa-home"></i>
+                                Dashboard
+                            </a>
+                            <a href="javascript:void(0)" class="nav-item" onclick="showProfileSection('setup')">
                                 <i class="fas fa-user-cog"></i>
                                 Profile Setup
                             </a>
@@ -1045,7 +1097,49 @@
                     </div>
                     
                     <div class="main-content">
-                        <section id="profile-section-setup" class="content-section active">
+                        <!-- Dashboard View -->
+                        <section id="profile-section-dashboard" class="content-section active" style="background:transparent; box-shadow:none; padding:0;">
+                            <div class="app-profile-orders-card">
+                                <div class="orders-header">
+                                    <h3>My Orders</h3>
+                                    <span onclick="showProfileSection('tracking')">View All Orders &gt;</span>
+                                </div>
+                                <div class="orders-status-grid">
+                                    <div class="order-status-item" onclick="showProfileSection('tracking')">
+                                        <i class="fas fa-wallet"></i>
+                                        <span>To Pay</span>
+                                        <div class="order-badge-count" id="badgeToPay" style="display:none;">0</div>
+                                    </div>
+                                    <div class="order-status-item" onclick="showProfileSection('tracking')">
+                                        <i class="fas fa-box"></i>
+                                        <span>To Ship</span>
+                                        <div class="order-badge-count" id="badgeToShip" style="display:none;">0</div>
+                                    </div>
+                                    <div class="order-status-item" onclick="showProfileSection('tracking')">
+                                        <i class="fas fa-truck"></i>
+                                        <span>To Receive</span>
+                                        <div class="order-badge-count" id="badgeToReceive" style="display:none;">0</div>
+                                    </div>
+                                    <div class="order-status-item" onclick="showProfileSection('tracking')">
+                                        <i class="fas fa-comment-dots"></i>
+                                        <span>To Review</span>
+                                        <div class="order-badge-count" id="badgeToReview" style="display:none;">0</div>
+                                    </div>
+                                    <div class="order-status-item" onclick="showProfileSection('tracking')">
+                                        <i class="fas fa-undo"></i>
+                                        <span>Returns &<br>Cancellations</span>
+                                    </div>
+                                </div>
+                                <div class="latest-order-snippet" id="latestOrderSnippet" onclick="showProfileSection('tracking')" style="display:none;"></div>
+                            </div>
+                            
+                            <div class="app-profile-recent-card">
+                                <h3>Recently Viewed</h3>
+                                <div class="recently-viewed-grid" id="recentlyViewedGrid"></div>
+                            </div>
+                        </section>
+
+                        <section id="profile-section-setup" class="content-section">
                             <div class="section-header">
                                 <h2 class="section-title">Profile Information</h2>
                             </div>
@@ -1566,9 +1660,17 @@
 
         function init() {
             renderSkeletons(4, productGrid);
+            
+            // Hide global dark skeleton loader smoothly
+            const darkOverlay = document.getElementById('globalSkeletonOverlay');
+            if (darkOverlay) {
+                darkOverlay.style.opacity = '0';
+                setTimeout(() => darkOverlay.remove(), 500);
+            }
+
             setTimeout(() => {
                 applyFilterAndRender(products, 'default', productGrid);
-            }, 1500);
+            }, 1000);
             
             setupEventListeners();
             updateCartCount();
@@ -1597,9 +1699,9 @@
                         profilePicHtml = `<img src="${user.photoURL}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" alt="Profile Picture">`;
                     }
                     const menuPic = document.querySelector('#menuProfileSection .profile-picture');
-                    const profileCardPic = document.querySelector('.profile-card .profile-picture');
+                    const dashboardPic = document.querySelector('#dashboardProfilePic');
                     if (menuPic) menuPic.innerHTML = profilePicHtml;
-                    if (profileCardPic) profileCardPic.innerHTML = profilePicHtml;
+                    if (dashboardPic) dashboardPic.innerHTML = profilePicHtml;
 
                     isLoggedIn = true;
                     updateDeliveryDisplay();
@@ -1938,7 +2040,8 @@
             document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
             document.getElementById(`profile-section-${sectionId}`).classList.add('active');
             document.querySelectorAll('#profileNav .nav-item').forEach(item => item.classList.remove('active'));
-            document.querySelector(`#profileNav .nav-item[onclick*="'${sectionId}'"]`).classList.add('active');
+            const targetNav = document.querySelector(`#profileNav .nav-item[onclick*="'${sectionId}'"]`);
+            if(targetNav) targetNav.classList.add('active');
         }
 
         function updateAuthStateUI() {
@@ -1968,13 +2071,42 @@
         function populateProfileData() {
             if (currentUser) {
                 document.getElementById('profileNameDisplay').textContent = currentUser.name;
-                document.getElementById('profileEmailDisplay').textContent = currentUser.email;
                 document.getElementById('profileName').value = currentUser.name;
                 document.getElementById('profileEmail').value = currentUser.email;
                 document.getElementById('profilePhone').value = currentUser.phone;
                 fetchUserOrders();
                 renderSavedAddressesList();
+                renderRecentlyViewed();
             }
+        }
+
+        function renderRecentlyViewed() {
+            const grid = document.getElementById('recentlyViewedGrid');
+            if(!grid) return;
+            grid.innerHTML = '';
+            let recentIds = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+            let recentProds = recentIds.map(id => products.find(p => p.id == id)).filter(p => p);
+            
+            if(recentProds.length === 0) {
+                grid.innerHTML = '<p style="color:#9ca3af; font-size:0.9rem; grid-column:1/-1; padding: 10px;">No recent views yet.</p>';
+                return;
+            }
+            
+            recentProds.slice(0,6).forEach(p => {
+                const price = p.variants && p.variants.length > 0 ? p.variants[0].price : (p.price || 0);
+                const oldPrice = p.originalPrice || 0;
+                const discount = oldPrice > price ? Math.round(((oldPrice-price)/oldPrice)*100) : 0;
+                const discountHtml = discount > 0 ? `<div class="rv-discount"><i class="fas fa-arrow-down" style="font-size:0.6rem;"></i> ${discount}%</div>` : '';
+                const oldPriceHtml = oldPrice > price ? `<span class="rv-old-price">৳${oldPrice}</span>` : '';
+                
+                grid.innerHTML += `
+                    <div class="rv-card" onclick="navigateToProduct('${p.id}')">
+                        ${discountHtml}
+                        <img src="${p.images ? p.images[0] : ''}">
+                        <div class="rv-price">৳${price}<br>${oldPriceHtml}</div>
+                    </div>
+                `;
+            });
         }
         
         async function fetchUserOrders() {
@@ -1996,8 +2128,16 @@
                 window.userOrders = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
                 window.userOrders.sort((a,b) => new Date(b.date) - new Date(a.date));
 
+                let toPay = 0, toShip = 0, toReceive = 0, toReview = 0;
+                let latestOrder = window.userOrders[0];
+
                 let ordersHtml = '';
                 window.userOrders.forEach(order => {
+                    if(order.status === 'Pending') toPay++;
+                    if(order.status === 'Processing') toShip++;
+                    if(order.status === 'Shipped') toReceive++;
+                    if(order.status === 'Delivered') toReview++; // Simplified review count
+
                     let itemsHtml = '';
                     if (order.cartItems && order.cartItems.length > 0) {
                         order.cartItems.forEach(item => {
@@ -2087,6 +2227,33 @@
                         </div>
                     `;
                 });
+                
+                // Update Dashboard badges
+                document.getElementById('badgeToPay').style.display = toPay > 0 ? 'flex' : 'none';
+                document.getElementById('badgeToPay').textContent = toPay;
+                document.getElementById('badgeToShip').style.display = toShip > 0 ? 'flex' : 'none';
+                document.getElementById('badgeToShip').textContent = toShip;
+                document.getElementById('badgeToReceive').style.display = toReceive > 0 ? 'flex' : 'none';
+                document.getElementById('badgeToReceive').textContent = toReceive;
+                document.getElementById('badgeToReview').style.display = toReview > 0 ? 'flex' : 'none';
+                document.getElementById('badgeToReview').textContent = toReview;
+
+                const snippet = document.getElementById('latestOrderSnippet');
+                if(latestOrder && latestOrder.cartItems.length > 0) {
+                    snippet.style.display = 'flex';
+                    let snippetText = latestOrder.status === 'Delivered' ? 'Package delivered!' : (latestOrder.status === 'Cancelled' ? 'Order cancelled' : 'Your package is on the way.');
+                    snippet.innerHTML = `
+                        <img src="${latestOrder.cartItems[0].image}">
+                        <div style="flex:1;">
+                            <div style="font-weight:600; color:#111; font-size: 0.95rem;">${latestOrder.status} &gt;</div>
+                            <div style="font-size:0.8rem; color:#6b7280;">${snippetText}</div>
+                        </div>
+                        <div style="font-size:0.75rem; color:#9ca3af;">${latestOrder.date.split(' ')[0]}</div>
+                    `;
+                } else {
+                    snippet.style.display = 'none';
+                }
+
                 ordersContainer.innerHTML = ordersHtml;
             } catch (e) {
                 console.error("Error fetching orders:", e);
@@ -2239,6 +2406,10 @@
                 const watermark = isOutOfStock ? `<div class="out-of-stock-banner">OUT OF STOCK</div>` : '';
                 const displayImg = (product.images && product.images.length > 0) ? product.images[0] : 'https://via.placeholder.com/200';
 
+                // Added authentic rating and review count from database
+                const rating = product.rating || 0;
+                const reviewCount = product.reviewCount || 0;
+
                 productCard.innerHTML = `
                     <div class="img-frame">
                         <img src="${displayImg}" alt="${product.name}" class="product-img">
@@ -2253,9 +2424,9 @@
                         </div>
                         <div class="rating-section">
                             <div class="star-set">
-                                ${getStarRatingHTML(product.rating || 5)}
+                                ${getStarRatingHTML(rating)}
                             </div>
-                            <span class="rater-count">(${product.rating || 5})</span>
+                            <span class="rater-count">(${reviewCount})</span>
                         </div>
                         <button class="btn-view">View more &rarr;</button>
                     </div>`;
@@ -2315,6 +2486,10 @@
                 const watermark = isOutOfStock ? `<div class="out-of-stock-banner">OUT OF STOCK</div>` : '';
                 const displayImg = (product.images && product.images.length > 0) ? product.images[0] : 'https://via.placeholder.com/200';
 
+                // Added authentic rating and review count from database
+                const rating = product.rating || 0;
+                const reviewCount = product.reviewCount || 0;
+
                 card.innerHTML = `
                     <div class="img-frame">
                         <img src="${displayImg}" alt="${product.name}" class="product-img">
@@ -2329,9 +2504,9 @@
                         </div>
                         <div class="rating-section">
                             <div class="star-set">
-                                ${getStarRatingHTML(product.rating || 5)}
+                                ${getStarRatingHTML(rating)}
                             </div>
-                            <span class="rater-count">(${product.rating || 5})</span>
+                            <span class="rater-count">(${reviewCount})</span>
                         </div>
                         <button class="btn-view">View more &rarr;</button>
                     </div>`;
@@ -2373,6 +2548,13 @@
             }
             selectedVariant = null;
             
+            // Save to Recently Viewed
+            let recent = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+            recent = recent.filter(id => id !== productId);
+            recent.unshift(productId);
+            if(recent.length > 10) recent.pop();
+            localStorage.setItem('recentlyViewed', JSON.stringify(recent));
+            
             detailMainImg.classList.add('skeleton', 'skeleton-brand');
             detailMainImg.onload = () => detailMainImg.classList.remove('skeleton', 'skeleton-brand');
 
@@ -2410,7 +2592,7 @@
             detailDesc.querySelectorAll('a').forEach(a => a.setAttribute('target', '_blank'));
 
             // initial rating, will update dynamically after fetching reviews
-            detailRating.innerHTML = `<div class="review-stars" style="margin:0; font-size:1.1rem;">${getStarRating(currentProduct.rating || 5)}</div> <span style="font-size: 0.9rem; color: var(--gray); margin-left: 5px;">(${currentProduct.rating || 5})</span>`;
+            detailRating.innerHTML = `<div class="review-stars" style="margin:0; font-size:1.1rem;">${getStarRating(currentProduct.rating || 0)}</div> <span style="font-size: 0.9rem; color: var(--gray); margin-left: 5px;">(${currentProduct.reviewCount || 0})</span>`;
             detailQty.value = 1;
             
             const totalStock = currentProduct.variants && currentProduct.variants.length > 0 
@@ -2440,9 +2622,17 @@
                 stickyActionsBar.classList.remove('sold-out-mode');
             }
             
+            // Update Return Policy UI
             const returnPolicyContainer = document.getElementById('detailReturnPolicy');
             if (currentProduct.hasReturnPolicy && currentProduct.returnTime) {
-                returnPolicyContainer.innerHTML = `<div style="margin: 10px 0; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #ecfdf5; color: #10b981; border-radius: 6px; font-weight: 600; font-size: 0.85rem; border: 1px solid #a7f3d0;"><i class="fas fa-undo"></i> ${currentProduct.returnTime} Easy Return</div>`;
+                returnPolicyContainer.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 12px; background: #fff; border-bottom: 1px solid #f3f4f6; margin: 5px 0 15px 0; cursor: pointer; color: #111; font-weight: 500; font-size: 1rem; border-top: 1px solid #f3f4f6;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="#8c92a4" stroke="#8c92a4" stroke-width="0"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+                        <span style="font-size: 1.05rem;">${currentProduct.returnTime} easy return</span>
+                    </div>
+                    <i class="fas fa-chevron-right" style="color: #a0a5b1; font-size: 0.9rem;"></i>
+                </div>`;
             } else {
                 returnPolicyContainer.innerHTML = '';
             }
@@ -2512,7 +2702,7 @@
                 const snap = await db.collection('reviews').where('productId', '==', productId).get();
                 if(snap.empty) {
                     listContainer.innerHTML = '<p style="color: var(--gray); font-size: 0.9rem;">No reviews yet.</p>';
-                    let defaultRating = currentProduct.rating || 5.0;
+                    let defaultRating = currentProduct.rating || 0.0;
                     bigRating.textContent = defaultRating.toFixed(1);
                     bigStars.innerHTML = getStarRating(defaultRating);
                     totalCountText.textContent = "0 Reviews";
@@ -2533,7 +2723,7 @@
                 totalCountText.textContent = `${allReviews.length} Reviews`;
 
                 // Update the real rating at the top of the details page
-                detailRating.innerHTML = `<div class="review-stars" style="margin:0; font-size:1.1rem;">${getStarRating(parseFloat(avgRatingFixed))}</div> <span style="font-size: 0.9rem; color: var(--gray); margin-left: 5px;">(${avgRatingFixed} / ${allReviews.length} Reviews)</span>`;
+                detailRating.innerHTML = `<div class="review-stars" style="margin:0; font-size:1.1rem;">${getStarRating(parseFloat(avgRatingFixed))}</div> <span style="font-size: 0.9rem; color: var(--gray); margin-left: 5px;">(${allReviews.length} Reviews)</span>`;
 
                 listContainer.innerHTML = '';
                 const maxDisplay = 4;
@@ -2601,7 +2791,7 @@
 
                 let totalStars = 0;
                 allReviews.forEach(r => totalStars += (r.rating || 5));
-                let avgRating = allReviews.length > 0 ? (totalStars / allReviews.length) : (currentProduct.rating || 5);
+                let avgRating = allReviews.length > 0 ? (totalStars / allReviews.length) : (currentProduct.rating || 0);
                 let avgRatingFixed = avgRating.toFixed(1);
 
                 container.innerHTML = `
@@ -2857,7 +3047,6 @@
             const firstColor = container.querySelector('.color-option:not(.out-of-stock)');
             if(firstColor) firstColor.click();
         }
-
 
         function addToCart(productId, quantity, variant) {
             const product = products.find(p => p.id == productId);
@@ -3778,265 +3967,266 @@
                     showCustomAlert('Registration Successful', 'Your account has been created successfully.', () => navigateTo('profile'));
                 } catch(error) {
                     showCustomAlert('Registration Failed', error.message);
-}
-});
-document.querySelectorAll('.google-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
+                }
+            });
+            
+            document.querySelectorAll('.google-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    const provider = new firebase.auth.GoogleAuthProvider();
+                    try {
+                        const result = await auth.signInWithPopup(provider);
+                        const userDoc = await db.collection('users').doc(result.user.uid).get();
+                        if (!userDoc.exists) {
+                            await db.collection('users').doc(result.user.uid).set({
+                                name: result.user.displayName,
+                                email: result.user.email,
+                                phone: ''
+                            });
+                        }
+                        showCustomAlert('Login Successful', 'Welcome!', () => navigateTo('profile'));
+                    } catch(error) {
+                        showCustomAlert('Login Failed', error.message);
+                    }
+                });
+            });
+        
+            document.getElementById('profileSetupForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const provider = new firebase.auth.GoogleAuthProvider();
+                if(!auth.currentUser) return;
+                const newName = document.getElementById('profileName').value;
+                const newPhone = document.getElementById('profilePhone').value;
                 try {
-                    const result = await auth.signInWithPopup(provider);
-                    const userDoc = await db.collection('users').doc(result.user.uid).get();
-                    if (!userDoc.exists) {
-                        await db.collection('users').doc(result.user.uid).set({
-                            name: result.user.displayName,
-                            email: result.user.email,
-                            phone: ''
+                    await auth.currentUser.updateProfile({ displayName: newName });
+                    await db.collection('users').doc(auth.currentUser.uid).update({ name: newName, phone: newPhone });
+                    currentUser.name = newName;
+                    currentUser.phone = newPhone;populateProfileData();
+                    showNotification("Profile updated successfully!");
+                } catch(error) {
+                    showCustomAlert('Error', error.message);
+                }
+            });
+
+            document.getElementById('showAddAddressFormBtn').addEventListener('click', () => {
+                openAddressForm(null);
+            });
+            
+            document.getElementById('cancelAddressBtn').addEventListener('click', () => {
+                document.getElementById('newAddressForm').style.display = 'none';
+                document.getElementById('addressListContainer').style.display = 'block';
+            });
+            
+            document.getElementById('newAddressForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const postCode = document.getElementById('addrPostCode').value;
+                if(postCode < 1000 || postCode > 9999) {
+                    showCustomAlert('Invalid Post Code', 'Post code must be between 1000 and 9999.');
+                    return;
+                }
+
+                const addr = {
+                    title: document.getElementById('addrTitle').value,
+                    name: document.getElementById('addrName').value,
+                    phone: document.getElementById('addrPhone').value,
+                    email: document.getElementById('addrEmail').value,
+                    region: document.getElementById('addrRegion').value,
+                    postcode: postCode,
+                    address: document.getElementById('addrFull').value,
+                    isDefault: savedAddresses.length === 0
+                };
+
+                const editId = document.getElementById('editAddressId').value;
+                if (editId !== '') {
+                    savedAddresses[editId] = addr;
+                } else {
+                    savedAddresses.push(addr);
+                }
+                
+                await saveAddressesToFirebase();
+                document.getElementById('newAddressForm').style.display = 'none';
+                document.getElementById('addressListContainer').style.display = 'block';
+                renderSavedAddressesList();
+                updateDeliveryDisplay();
+                showNotification("Address saved successfully!");
+                
+                if(document.getElementById('order-summary-page').classList.contains('active')) {
+                    renderOrderSummary();
+                }
+                if(document.getElementById('checkout-page').classList.contains('active')) {
+                    renderPaymentPage();
+                }
+            });
+
+            ['homeFilterOptions', 'searchFilterOptions'].forEach(id => {
+                 document.getElementById(id).addEventListener('click', e => {
+                    if (e.target.tagName === 'BUTTON') {
+                        const filter = e.target.dataset.filter;
+                        document.querySelectorAll(`#${id} button`).forEach(btn => btn.classList.remove('active'));
+                        e.target.classList.add('active');
+                        const grid = id === 'homeFilterOptions' ? productGrid : searchResultsGrid;
+                        const productSource = id === 'homeFilterOptions' ? products : currentlyDisplayedProducts;
+                        applyFilterAndRender(productSource, filter, grid);
+                        document.getElementById(id).classList.remove('active'); 
+                    }
+                });
+            });
+            
+            document.addEventListener('click', (e) => {
+                if(!e.target.closest('.filter-dropdown-container')) {
+                    document.querySelectorAll('.filter-options-dropdown').forEach(d => d.classList.remove('active'));
+                }
+            });
+
+            document.querySelectorAll('.category-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const category = card.dataset.category;
+                    navigateTo('home');
+                    setTimeout(() => { 
+                        const shopSection = document.getElementById('shop');
+                        shopSection.scrollIntoView({ behavior: 'smooth' });
+                        document.getElementById('shopTitle').textContent = `Products in: ${category.charAt(0).toUpperCase() + category.slice(1)}`;
+                        currentlyDisplayedProducts = products.filter(p => p.category === category);
+                        applyFilterAndRender(currentlyDisplayedProducts, 'default', productGrid);
+                    }, 600);
+                });
+            });
+
+            menuToggle.addEventListener('click', () => { menuToggle.classList.toggle('active'); mobileMenu.classList.toggle('active'); });
+            cartOverlay.addEventListener('click', (e) => { if (e.target === cartOverlay) cartOverlay.classList.remove('active'); });
+            shopNowBtn.addEventListener('click', () => { document.getElementById('shop').scrollIntoView({ behavior: 'smooth' }); });
+
+            document.addEventListener('click', (e) => {
+                if (mobileMenu.classList.contains('active') && !mobileMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+                    mobileMenu.classList.remove('active');
+                    menuToggle.classList.remove('active');
+                }
+            });
+            
+            searchPageForm.addEventListener('submit', handleSearch);
+            
+            const searchClearBtn = document.getElementById('searchClearBtn');
+            
+            searchPageInput.addEventListener('input', () => {
+                const term = searchPageInput.value.toLowerCase().trim();
+                if(term.length > 0) { searchClearBtn.style.display = 'block'; } else { searchClearBtn.style.display = 'none'; }
+                searchSuggestionsList.innerHTML = '';
+                
+                if(term.length < 2) {
+                    searchSuggestionsList.style.display = 'none';
+                    return;
+                }
+
+                const matchedSuggestions = new Set();
+                
+                products.forEach(p => {
+                    if(p.name.toLowerCase().includes(term)) {
+                        matchedSuggestions.add(p.name);
+                    }
+                    if (p.seo_tag) {
+                        let tags = typeof p.seo_tag === 'string' ? p.seo_tag.split(',').map(s=>s.trim()) : p.seo_tag;
+                        tags.forEach(tag => {
+                            if(tag.toLowerCase().includes(term)) {
+                                matchedSuggestions.add(tag);
+                            }
                         });
                     }
-                    showCustomAlert('Login Successful', 'Welcome!', () => navigateTo('profile'));
-                } catch(error) {
-                    showCustomAlert('Login Failed', error.message);
-                }
-            });
-        });
-        
-        document.getElementById('profileSetupForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if(!auth.currentUser) return;
-            const newName = document.getElementById('profileName').value;
-            const newPhone = document.getElementById('profilePhone').value;
-            try {
-                await auth.currentUser.updateProfile({ displayName: newName });
-                await db.collection('users').doc(auth.currentUser.uid).update({ name: newName, phone: newPhone });
-                currentUser.name = newName;
-                currentUser.phone = newPhone;populateProfileData();
-                showNotification("Profile updated successfully!");
-            } catch(error) {
-                showCustomAlert('Error', error.message);
-            }
-        });
-
-        document.getElementById('showAddAddressFormBtn').addEventListener('click', () => {
-            openAddressForm(null);
-        });
-        
-        document.getElementById('cancelAddressBtn').addEventListener('click', () => {
-            document.getElementById('newAddressForm').style.display = 'none';
-            document.getElementById('addressListContainer').style.display = 'block';
-        });
-        
-        document.getElementById('newAddressForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const postCode = document.getElementById('addrPostCode').value;
-            if(postCode < 1000 || postCode > 9999) {
-                showCustomAlert('Invalid Post Code', 'Post code must be between 1000 and 9999.');
-                return;
-            }
-
-            const addr = {
-                title: document.getElementById('addrTitle').value,
-                name: document.getElementById('addrName').value,
-                phone: document.getElementById('addrPhone').value,
-                email: document.getElementById('addrEmail').value,
-                region: document.getElementById('addrRegion').value,
-                postcode: postCode,
-                address: document.getElementById('addrFull').value,
-                isDefault: savedAddresses.length === 0
-            };
-
-            const editId = document.getElementById('editAddressId').value;
-            if (editId !== '') {
-                savedAddresses[editId] = addr;
-            } else {
-                savedAddresses.push(addr);
-            }
-            
-            await saveAddressesToFirebase();
-            document.getElementById('newAddressForm').style.display = 'none';
-            document.getElementById('addressListContainer').style.display = 'block';
-            renderSavedAddressesList();
-            updateDeliveryDisplay();
-            showNotification("Address saved successfully!");
-            
-            if(document.getElementById('order-summary-page').classList.contains('active')) {
-                renderOrderSummary();
-            }
-            if(document.getElementById('checkout-page').classList.contains('active')) {
-                renderPaymentPage();
-            }
-        });
-
-        ['homeFilterOptions', 'searchFilterOptions'].forEach(id => {
-             document.getElementById(id).addEventListener('click', e => {
-                if (e.target.tagName === 'BUTTON') {
-                    const filter = e.target.dataset.filter;
-                    document.querySelectorAll(`#${id} button`).forEach(btn => btn.classList.remove('active'));
-                    e.target.classList.add('active');
-                    const grid = id === 'homeFilterOptions' ? productGrid : searchResultsGrid;
-                    const productSource = id === 'homeFilterOptions' ? products : currentlyDisplayedProducts;
-                    applyFilterAndRender(productSource, filter, grid);
-                    document.getElementById(id).classList.remove('active'); 
-                }
-            });
-        });
-        
-        document.addEventListener('click', (e) => {
-            if(!e.target.closest('.filter-dropdown-container')) {
-                document.querySelectorAll('.filter-options-dropdown').forEach(d => d.classList.remove('active'));
-            }
-        });
-
-        document.querySelectorAll('.category-card').forEach(card => {
-            card.addEventListener('click', () => {
-                const category = card.dataset.category;
-                navigateTo('home');
-                setTimeout(() => { 
-                    const shopSection = document.getElementById('shop');
-                    shopSection.scrollIntoView({ behavior: 'smooth' });
-                    document.getElementById('shopTitle').textContent = `Products in: ${category.charAt(0).toUpperCase() + category.slice(1)}`;
-                    currentlyDisplayedProducts = products.filter(p => p.category === category);
-                    applyFilterAndRender(currentlyDisplayedProducts, 'default', productGrid);
-                }, 600);
-            });
-        });
-
-        menuToggle.addEventListener('click', () => { menuToggle.classList.toggle('active'); mobileMenu.classList.toggle('active'); });
-        cartOverlay.addEventListener('click', (e) => { if (e.target === cartOverlay) cartOverlay.classList.remove('active'); });
-        shopNowBtn.addEventListener('click', () => { document.getElementById('shop').scrollIntoView({ behavior: 'smooth' }); });
-
-        document.addEventListener('click', (e) => {
-            if (mobileMenu.classList.contains('active') && !mobileMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-                mobileMenu.classList.remove('active');
-                menuToggle.classList.remove('active');
-            }
-        });
-        
-        searchPageForm.addEventListener('submit', handleSearch);
-        
-        const searchClearBtn = document.getElementById('searchClearBtn');
-        
-        searchPageInput.addEventListener('input', () => {
-            const term = searchPageInput.value.toLowerCase().trim();
-            if(term.length > 0) { searchClearBtn.style.display = 'block'; } else { searchClearBtn.style.display = 'none'; }
-            searchSuggestionsList.innerHTML = '';
-            
-            if(term.length < 2) {
-                searchSuggestionsList.style.display = 'none';
-                return;
-            }
-
-            const matchedSuggestions = new Set();
-            
-            products.forEach(p => {
-                if(p.name.toLowerCase().includes(term)) {
-                    matchedSuggestions.add(p.name);
-                }
-                if (p.seo_tag) {
-                    let tags = typeof p.seo_tag === 'string' ? p.seo_tag.split(',').map(s=>s.trim()) : p.seo_tag;
-                    tags.forEach(tag => {
-                        if(tag.toLowerCase().includes(term)) {
-                            matchedSuggestions.add(tag);
-                        }
-                    });
-                }
-                if (p.keywords) {
-                    p.keywords.forEach(k => {
-                        if(k.toLowerCase().includes(term)) {
-                            matchedSuggestions.add(k);
-                        }
-                    });
-                }
-            });
-
-            if (matchedSuggestions.size > 0) {
-                searchSuggestionsList.style.display = 'block';
-                matchedSuggestions.forEach(suggestionText => {
-                    const item = document.createElement('div');
-                    item.className = 'suggestion-item';
-                    item.innerHTML = `<i class="fas fa-search" style="margin-right:8px; color:var(--gray); font-size:0.85rem;"></i> ${suggestionText}`;
-                    item.onclick = () => { 
-                        searchPageInput.value = suggestionText; 
-                        searchSuggestionsList.innerHTML = ''; 
-                        searchSuggestionsList.style.display = 'none';
-                        handleSearch(new Event('submit'), suggestionText);
-                    };
-                    searchSuggestionsList.appendChild(item);
+                    if (p.keywords) {
+                        p.keywords.forEach(k => {
+                            if(k.toLowerCase().includes(term)) {
+                                matchedSuggestions.add(k);
+                            }
+                        });
+                    }
                 });
-            } else {
-                searchSuggestionsList.style.display = 'none';
-            }
-        });
-        
-        searchClearBtn.addEventListener('click', () => {
-            searchPageInput.value = '';
-            searchClearBtn.style.display = 'none';
-            searchSuggestionsList.innerHTML = '';
-            searchSuggestionsList.style.display = 'none';
-            searchPageInput.focus();
-        });
 
-        searchPageInput.addEventListener('blur', () => {
-            setTimeout(() => { searchSuggestionsList.style.display = 'none'; }, 200);
-        });
-        
-        searchPageInput.addEventListener('focus', () => {
-            if(searchSuggestionsList.children.length > 0) searchSuggestionsList.style.display = 'block';
-        });
-
-        detailMainImg.addEventListener('click', () => {
-            lightbox.style.display = 'flex';
-            lightboxImg.src = detailMainImg.src;
-        });
-
-        function closeAndResetLightbox() {
-            lightbox.style.display = 'none';
-            lightboxImg.classList.remove('zoomed');
-        }
-
-        closeLightbox.addEventListener('click', closeAndResetLightbox);
-        lightbox.addEventListener('click', (e) => { if(e.target === lightbox) { closeAndResetLightbox(); } });
-        lightboxImg.addEventListener('click', (e) => { e.stopPropagation(); lightboxImg.classList.toggle('zoomed'); });
-
-        document.querySelectorAll('.password-toggle-icon').forEach(icon => {
-            icon.addEventListener('click', function() {
-                const input = this.previousElementSibling;
-                const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
-                input.setAttribute('type', type);
-                this.classList.toggle('fa-eye');
-                this.classList.toggle('fa-eye-slash');
+                if (matchedSuggestions.size > 0) {
+                    searchSuggestionsList.style.display = 'block';
+                    matchedSuggestions.forEach(suggestionText => {
+                        const item = document.createElement('div');
+                        item.className = 'suggestion-item';
+                        item.innerHTML = `<i class="fas fa-search" style="margin-right:8px; color:var(--gray); font-size:0.85rem;"></i> ${suggestionText}`;
+                        item.onclick = () => { 
+                            searchPageInput.value = suggestionText; 
+                            searchSuggestionsList.innerHTML = ''; 
+                            searchSuggestionsList.style.display = 'none';
+                            handleSearch(new Event('submit'), suggestionText);
+                        };
+                        searchSuggestionsList.appendChild(item);
+                    });
+                } else {
+                    searchSuggestionsList.style.display = 'none';
+                }
             });
-        });
-    }
-
-    function startOfferTimer() {
-        const endDate = new Date();
-        endDate.setDate(endDate.getDate() + 3);
-        const timerInterval = setInterval(updateTimer, 1000);
-        function updateTimer() {
-            const distance = endDate - new Date().getTime();
-            if (distance < 0) { clearInterval(timerInterval); return; };
-            const d = Math.floor(distance / (1000*60*60*24)).toString().padStart(2,'0');
-            const h = Math.floor((distance % (1000*60*60*24))/(1000*60*60)).toString().padStart(2,'0');
-            const m = Math.floor((distance % (1000*60*60))/(1000*60)).toString().padStart(2,'0');
-            const s = Math.floor((distance % (1000*60))/1000).toString().padStart(2,'0');
             
-            if(document.getElementById('days')) {
-                document.getElementById('days').textContent = d;
-                document.getElementById('hours').textContent = h;
-                document.getElementById('minutes').textContent = m;
-                document.getElementById('seconds').textContent = s;
-            }
-        }
-        updateTimer();
-    }
+            searchClearBtn.addEventListener('click', () => {
+                searchPageInput.value = '';
+                searchClearBtn.style.display = 'none';
+                searchSuggestionsList.innerHTML = '';
+                searchSuggestionsList.style.display = 'none';
+                searchPageInput.focus();
+            });
 
-    document.addEventListener('DOMContentLoaded', async () => {
-        showInitialSkeletons();
-        await loadInitialData();
-        init();
-        startOfferTimer();
-    });
-</script>
+            searchPageInput.addEventListener('blur', () => {
+                setTimeout(() => { searchSuggestionsList.style.display = 'none'; }, 200);
+            });
+            
+            searchPageInput.addEventListener('focus', () => {
+                if(searchSuggestionsList.children.length > 0) searchSuggestionsList.style.display = 'block';
+            });
+
+            detailMainImg.addEventListener('click', () => {
+                lightbox.style.display = 'flex';
+                lightboxImg.src = detailMainImg.src;
+            });
+
+            function closeAndResetLightbox() {
+                lightbox.style.display = 'none';
+                lightboxImg.classList.remove('zoomed');
+            }
+
+            closeLightbox.addEventListener('click', closeAndResetLightbox);
+            lightbox.addEventListener('click', (e) => { if(e.target === lightbox) { closeAndResetLightbox(); } });
+            lightboxImg.addEventListener('click', (e) => { e.stopPropagation(); lightboxImg.classList.toggle('zoomed'); });
+
+            document.querySelectorAll('.password-toggle-icon').forEach(icon => {
+                icon.addEventListener('click', function() {
+                    const input = this.previousElementSibling;
+                    const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                    input.setAttribute('type', type);
+                    this.classList.toggle('fa-eye');
+                    this.classList.toggle('fa-eye-slash');
+                });
+            });
+        }
+
+        function startOfferTimer() {
+            const endDate = new Date();
+            endDate.setDate(endDate.getDate() + 3);
+            const timerInterval = setInterval(updateTimer, 1000);
+            function updateTimer() {
+                const distance = endDate - new Date().getTime();
+                if (distance < 0) { clearInterval(timerInterval); return; };
+                const d = Math.floor(distance / (1000*60*60*24)).toString().padStart(2,'0');
+                const h = Math.floor((distance % (1000*60*60*24))/(1000*60*60)).toString().padStart(2,'0');
+                const m = Math.floor((distance % (1000*60*60))/(1000*60)).toString().padStart(2,'0');
+                const s = Math.floor((distance % (1000*60))/1000).toString().padStart(2,'0');
+                
+                if(document.getElementById('days')) {
+                    document.getElementById('days').textContent = d;
+                    document.getElementById('hours').textContent = h;
+                    document.getElementById('minutes').textContent = m;
+                    document.getElementById('seconds').textContent = s;
+                }
+            }
+            updateTimer();
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            showInitialSkeletons();
+            await loadInitialData();
+            init();
+            startOfferTimer();
+        });
+    </script>
 </body>
 </html>
