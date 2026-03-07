@@ -467,6 +467,27 @@
         .cod-total span:last-child { color: var(--primary); }
         #codConfirmPlaceOrderBtn { width: 100%; background-color: var(--primary); border-color: var(--primary); margin-top: 20px; padding: 14px; font-size: 1.1rem; font-weight: 600; border-radius: 8px; color: white; border:none; cursor: pointer; transition: background 0.3s; }
         #codConfirmPlaceOrderBtn:hover { background-color: #1d4ed8; }
+        
+        /* Review System Styles */
+        .review-stars-input { display: flex; gap: 10px; font-size: 2rem; color: #cbd5e1; cursor: pointer; margin: 15px 0; justify-content: center; flex-direction: row-reverse;}
+        .review-stars-input i { transition: color 0.2s; }
+        .review-stars-input i:hover, .review-stars-input i:hover ~ i, .review-stars-input i.active, .review-stars-input i.active ~ i { color: #f59e0b; }
+        .review-textarea-container { position: relative; margin-bottom: 20px; }
+        .review-textarea { width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 15px; font-family: 'Poppins', sans-serif; resize: vertical; min-height: 120px; outline: none; transition: border-color 0.3s; }
+        .review-textarea:focus { border-color: var(--primary); }
+        .char-counter { position: absolute; bottom: 10px; right: 15px; font-size: 0.8rem; color: var(--gray); background: white; padding: 0 5px;}
+        .review-success-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; text-align: center; }
+        .success-check-circle { width: 80px; height: 80px; background-color: #22c55e; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 10px; box-shadow: 0 10px 20px rgba(34, 197, 94, 0.2); }
+        .success-shadow { width: 60px; height: 10px; background: rgba(0,0,0,0.05); border-radius: 50%; margin: 0 auto 20px auto; }
+        .review-card { padding: 15px; border-bottom: 1px solid #eee; margin-bottom: 15px; }
+        .review-card:last-child { border-bottom: none; }
+        .review-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .review-user-info { display: flex; align-items: center; gap: 10px; }
+        .review-user-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #eef2ff; color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .review-user-name { font-weight: 600; font-size: 0.95rem; }
+        .review-date { font-size: 0.8rem; color: var(--gray); display: block;}
+        .review-stars { color: #f59e0b; font-size: 0.85rem; margin-bottom: 8px; }
+        .review-comment { font-size: 0.95rem; color: #444; line-height: 1.5; }
 
         @media (max-width: 992px) { .details-wrapper { grid-template-columns: 1fr; } .profile-container { flex-direction: column; } .sidebar { width: 100%; } .form-row { flex-direction: column; gap: 0; } }
         @media (max-width: 768px) { 
@@ -659,6 +680,15 @@
                             <span id="detailStockStatus" style="margin-left: 10px; font-size: 0.9rem; color: var(--gray); display: none !important;"></span>
                         </div>
                         
+                        <!-- PRODUCT REVIEWS SECTION (INJECTED) -->
+                        <div id="productReviewsSection" style="margin-top: 30px; margin-bottom: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+                            <h3 style="font-size: 1.2rem; margin-bottom: 15px;">Product Reviews</h3>
+                            <div id="productReviewsList">
+                                <p style="color: var(--gray); font-size: 0.9rem;">No reviews yet.</p>
+                            </div>
+                            <button id="seeAllReviewsBtn" class="btn btn-outline" style="width: 100%; display: none; margin-top: 15px;" onclick="openAllReviewsPage()">See All Reviews</button>
+                        </div>
+
                         <div class="details-description">
                             <p id="detailDesc">Description goes here...</p>
                         </div>
@@ -840,6 +870,66 @@
                     </div>
                 </div>
             </section>
+        </div>
+        
+        <!-- WRITE REVIEW PAGE -->
+        <div id="write-review-page" class="page-section">
+            <div class="container" style="max-width: 600px; padding: 40px 20px;">
+                <div class="back-btn" onclick="goBack()">
+                    <i class="fas fa-chevron-left"></i> Write Review
+                </div>
+                <div style="background: white; border-radius: 8px; box-shadow: var(--shadow); padding: 25px; margin-top: 20px;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
+                        <img id="wrProductImg" src="" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 1px solid #eee;">
+                        <div>
+                            <h4 id="wrProductName" style="font-size: 1rem; margin: 0; line-height: 1.3;">Product Name</h4>
+                            <p id="wrProductVariant" style="font-size: 0.8rem; color: var(--gray); margin: 0;"></p>
+                        </div>
+                    </div>
+                    
+                    <h3 style="text-align: center; font-size: 1.1rem; margin-bottom: 5px;">Overall Rating</h3>
+                    <div class="review-stars-input" id="reviewStarInput">
+                        <i class="fas fa-star" data-val="5"></i>
+                        <i class="fas fa-star" data-val="4"></i>
+                        <i class="fas fa-star" data-val="3"></i>
+                        <i class="fas fa-star" data-val="2"></i>
+                        <i class="fas fa-star active" data-val="1"></i>
+                    </div>
+
+                    <p style="font-size: 0.85rem; color: var(--gray); margin-bottom: 5px;">Please enter at least 30 characters</p>
+                    <div class="review-textarea-container">
+                        <textarea id="reviewTextarea" class="review-textarea" placeholder="What do you think of the quality and appearance?"></textarea>
+                        <span class="char-counter" id="reviewCharCount">0 / 30</span>
+                    </div>
+
+                    <button class="btn btn-primary" id="submitReviewBtn" style="width: 100%; padding: 12px; font-size: 1rem; border-radius: 6px;" disabled>Rate only</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- REVIEW SUCCESS PAGE -->
+        <div id="review-success-page" class="page-section">
+            <div class="container">
+                <div class="review-success-container">
+                    <div class="success-check-circle"><i class="fas fa-check"></i></div>
+                    <div class="success-shadow"></div>
+                    <h2 style="color: #22c55e; font-size: 1.8rem; margin-bottom: 30px;">Thank you for your review!</h2>
+                    <button class="btn btn-outline" id="checkMyReviewBtn" style="border-radius: 30px; padding: 10px 30px; font-size: 1.1rem; border-color: #6b7280; color: #4b5563;">Check My Review</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ALL REVIEWS PAGE -->
+        <div id="all-reviews-page" class="page-section">
+            <div class="container" style="max-width: 800px; padding: 40px 20px;">
+                <div class="back-btn" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i> All Reviews
+                </div>
+                <h2 class="section-title" style="text-align: left; margin-bottom: 20px; font-size: 1.5rem;">All Reviews</h2>
+                <div style="background: white; border-radius: 8px; box-shadow: var(--shadow); padding: 20px;">
+                    <div id="allReviewsContainer"></div>
+                </div>
+            </div>
         </div>
 
         <!-- LOGIN PAGE SECTION -->
@@ -1315,6 +1405,9 @@
         let searchHistory = JSON.parse(localStorage.getItem('searchHistory')) || [];
 
         window.appliedCouponDiscount = 0;
+        window.userReviewedProducts = new Set();
+        let currentReviewProductId = null;
+        let currentReviewRating = 5;
 
         let appDomainName = window.location.origin;
         let appCodHandlingFee = 0;
@@ -1486,6 +1579,7 @@
             setupEventListeners();
             updateCartCount();
             initHeroSlider();
+            setupReviewEventListeners();
 
             window.addEventListener('popstate', handleRouteChange);
             
@@ -1515,10 +1609,12 @@
 
                     isLoggedIn = true;
                     updateDeliveryDisplay();
+                    await fetchUserReviewedProducts();
                 } else {
                     isLoggedIn = false;
                     currentUser = null;
                     savedAddresses = [];
+                    window.userReviewedProducts = new Set();
                     updateDeliveryDisplay();
                 }
                 updateAuthStateUI();
@@ -1539,6 +1635,16 @@
                     }
                 }
             });
+        }
+
+        async function fetchUserReviewedProducts() {
+            if(!auth.currentUser) return;
+            try {
+                const snap = await db.collection('reviews').where('userId', '==', auth.currentUser.uid).get();
+                window.userReviewedProducts = new Set(snap.docs.map(doc => doc.data().productId));
+            } catch(e) {
+                console.error("Error fetching user reviews", e);
+            }
         }
 
         function simulatePageLoad(pageLoadFunction) {
@@ -1621,7 +1727,7 @@
 
             const displayPageAndData = () => {
                 let finalPageId = path.split('?')[0];
-                if (!isLoggedIn && (finalPageId === 'profile' || finalPageId === 'checkout' || finalPageId === 'order-summary')) {
+                if (!isLoggedIn && (finalPageId === 'profile' || finalPageId === 'checkout' || finalPageId === 'order-summary' || finalPageId === 'write-review')) {
                     finalPageId = 'login';
                 }
 
@@ -1661,6 +1767,8 @@
                     searchPageInput.focus();
                 } else if (finalPageId === 'order-summary') {
                     renderOrderSummary();
+                } else if (finalPageId === 'all-reviews' && currentProduct) {
+                    renderAllReviewsPage();
                 }
             };
             
@@ -1833,35 +1941,41 @@
                             
                             let productData = products.find(p => p.id === item.id || p.pid === item.pid || p.name === item.name);
                             let returnBtnHtml = '';
+                            let reviewBtnHtml = '';
+                            let navId = productData ? productData.id : (item.id || item.pid);
                             
-                            if (order.status === 'Delivered' && productData && productData.hasReturnPolicy && productData.returnTime) {
-                                let isReturnValid = true;
-                                try {
-                                    let orderDate = new Date(order.date); 
-                                    if(!isNaN(orderDate.getTime())) {
-                                        let now = new Date();
-                                        let returnTimeParts = productData.returnTime.split(' ');
-                                        let timeValue = parseInt(returnTimeParts[0]);
-                                        let timeUnit = returnTimeParts[1] || '';
-                                        
-                                        let timeLimitMs = 0;
-                                        if(timeUnit.includes('day')) timeLimitMs = timeValue * 24 * 60 * 60 * 1000;
-                                        else if(timeUnit.includes('hour')) timeLimitMs = timeValue * 60 * 60 * 1000;
-                                        
-                                        let deliveryBufferMs = 3 * 24 * 60 * 60 * 1000; 
-                                        
-                                        if (now.getTime() - orderDate.getTime() > (timeLimitMs + deliveryBufferMs)) {
-                                            isReturnValid = false;
+                            if (order.status === 'Delivered') {
+                                if(productData && productData.hasReturnPolicy && productData.returnTime) {
+                                    let isReturnValid = true;
+                                    try {
+                                        let orderDate = new Date(order.date); 
+                                        if(!isNaN(orderDate.getTime())) {
+                                            let now = new Date();
+                                            let returnTimeParts = productData.returnTime.split(' ');
+                                            let timeValue = parseInt(returnTimeParts[0]);
+                                            let timeUnit = returnTimeParts[1] || '';
+                                            
+                                            let timeLimitMs = 0;
+                                            if(timeUnit.includes('day')) timeLimitMs = timeValue * 24 * 60 * 60 * 1000;
+                                            else if(timeUnit.includes('hour')) timeLimitMs = timeValue * 60 * 60 * 1000;
+                                            
+                                            let deliveryBufferMs = 3 * 24 * 60 * 60 * 1000; 
+                                            
+                                            if (now.getTime() - orderDate.getTime() > (timeLimitMs + deliveryBufferMs)) {
+                                                isReturnValid = false;
+                                            }
                                         }
-                                    }
-                                } catch(e){}
+                                    } catch(e){}
 
-                                if(isReturnValid) {
-                                    returnBtnHtml = `<div style="margin-top: 8px;"><button class="btn btn-outline" style="padding: 4px 12px; font-size: 0.75rem; color: #10b981; border-color: #10b981; border-radius: 4px;" onclick="requestReturn('${order.id}', '${productData.id}')"><i class="fas fa-undo"></i> Return & Refund</button></div>`;
+                                    if(isReturnValid) {
+                                        returnBtnHtml = `<div style="margin-top: 8px; display: inline-block; margin-right: 10px;"><button class="btn btn-outline" style="padding: 4px 12px; font-size: 0.75rem; color: #10b981; border-color: #10b981; border-radius: 4px;" onclick="requestReturn('${order.id}', '${productData.id}')"><i class="fas fa-undo"></i> Return</button></div>`;
+                                    }
+                                }
+                                
+                                if(!window.userReviewedProducts.has(navId)) {
+                                    reviewBtnHtml = `<div style="margin-top: 8px; display: inline-block;"><button class="btn btn-primary" style="padding: 4px 12px; font-size: 0.75rem; border-radius: 4px;" onclick="openReviewPage('${navId}')"><i class="fas fa-star"></i> Write Review</button></div>`;
                                 }
                             }
-                            
-                            let navId = productData ? productData.id : (item.id || item.pid);
                             
                             itemsHtml += `
                                 <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:12px;">
@@ -1869,7 +1983,7 @@
                                     <div style="flex:1;">
                                         <div style="font-weight:600; font-size:0.95rem; cursor:pointer; color: var(--dark); line-height:1.2;" onclick="navigateToProduct('${navId}')" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--dark)'">${item.name}${vStr}</div>
                                         <div style="font-size:0.85rem; color:var(--gray); margin-top:4px;">Qty: ${item.qty} | ৳${item.price}</div>
-                                        ${returnBtnHtml}
+                                        <div>${returnBtnHtml}${reviewBtnHtml}</div>
                                     </div>
                                 </div>
                             `;
@@ -1971,7 +2085,7 @@
                 `;
             });
             
-            document.querySelector('.od-actions').style.display = 'none'; // Profile History theke open hole hide thakbe
+            document.querySelector('.od-actions').style.display = 'none'; 
             
             document.getElementById('odBody').innerHTML = itemsHtml;
             document.getElementById('odSubtotal').parentNode.style.display = 'none';
@@ -2181,7 +2295,7 @@
             return stars;
         }
 
-        function openProductPage(productId) {
+        async function openProductPage(productId) {
             currentProduct = products.find(p => p.id == productId);
             if (!currentProduct) {
                 navigateTo('home');
@@ -2294,6 +2408,7 @@
             renderVariantPreview(currentProduct, detailVariantSelectors);
             renderSuggestedProducts(currentProduct);
             updateDeliveryDisplay(); 
+            fetchAndRenderProductReviews(currentProduct.id);
             
             let currentImageIndex = 0;
             const thumbnails = detailThumbnails.querySelectorAll('.thumbnail');
@@ -2306,6 +2421,186 @@
                     if(thumbnails[currentImageIndex]) thumbnails[currentImageIndex].classList.add('active');
                 }, 3000);
             }
+        }
+        
+        async function fetchAndRenderProductReviews(productId) {
+            const listContainer = document.getElementById('productReviewsList');
+            const seeAllBtn = document.getElementById('seeAllReviewsBtn');
+            listContainer.innerHTML = '<p style="color: var(--gray); font-size: 0.9rem;">Loading reviews...</p>';
+            seeAllBtn.style.display = 'none';
+
+            try {
+                const snap = await db.collection('reviews').where('productId', '==', productId).get();
+                if(snap.empty) {
+                    listContainer.innerHTML = '<p style="color: var(--gray); font-size: 0.9rem;">No reviews yet.</p>';
+                    return;
+                }
+
+                let allReviews = snap.docs.map(doc => doc.data());
+                allReviews.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+                listContainer.innerHTML = '';
+                const maxDisplay = 5;
+                for(let i=0; i<Math.min(allReviews.length, maxDisplay); i++) {
+                    listContainer.appendChild(createReviewCard(allReviews[i]));
+                }
+
+                if(allReviews.length > maxDisplay) {
+                    seeAllBtn.style.display = 'block';
+                }
+            } catch(e) {
+                console.error("Error fetching reviews", e);
+                listContainer.innerHTML = '<p style="color: var(--gray); font-size: 0.9rem;">Failed to load reviews.</p>';
+            }
+        }
+
+        function createReviewCard(review) {
+            const div = document.createElement('div');
+            div.className = 'review-card';
+            
+            let dateStr = 'Unknown date';
+            if(review.date) {
+                const d = new Date(review.date);
+                if(!isNaN(d.getTime())) {
+                    dateStr = d.toLocaleDateString('en-US', {day: 'numeric', month: 'short', year: 'numeric'});
+                }
+            }
+
+            const initial = review.userName ? review.userName.charAt(0).toUpperCase() : 'U';
+            const imgHtml = review.userImage ? `<img src="${review.userImage}" class="review-user-img">` : `<div class="review-user-img">${initial}</div>`;
+
+            div.innerHTML = `
+                <div class="review-header">
+                    <div class="review-user-info">
+                        ${imgHtml}
+                        <div>
+                            <div class="review-user-name">${review.userName || 'Anonymous'}</div>
+                            <span class="review-date">${dateStr}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="review-stars">${getStarRating(review.rating || 5)}</div>
+                <div class="review-comment">${review.comment}</div>
+            `;
+            return div;
+        }
+
+        async function renderAllReviewsPage() {
+            if(!currentProduct) return;
+            const container = document.getElementById('allReviewsContainer');
+            container.innerHTML = '<div style="text-align:center; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+            
+            try {
+                const snap = await db.collection('reviews').where('productId', '==', currentProduct.id).get();
+                let allReviews = snap.docs.map(doc => doc.data());
+                
+                // Sort by rating (high to low), then by date
+                allReviews.sort((a,b) => {
+                    if(b.rating !== a.rating) return b.rating - a.rating;
+                    return new Date(b.date) - new Date(a.date);
+                });
+
+                container.innerHTML = '';
+                allReviews.forEach(r => container.appendChild(createReviewCard(r)));
+
+            } catch(e) {
+                container.innerHTML = '<p style="color: var(--gray); text-align:center;">Failed to load reviews.</p>';
+            }
+        }
+
+        window.openAllReviewsPage = function() {
+            if(currentProduct) {
+                navigateTo('all-reviews');
+            }
+        };
+
+        window.openReviewPage = function(productId) {
+            const prod = products.find(p => p.id === productId || p.pid === productId);
+            if(!prod) return;
+
+            currentReviewProductId = prod.id;
+            currentReviewRating = 5;
+
+            document.getElementById('wrProductName').textContent = prod.name;
+            document.getElementById('wrProductImg').src = prod.images && prod.images.length > 0 ? prod.images[0] : '';
+            
+            // Reset stars
+            const stars = document.querySelectorAll('#reviewStarInput i');
+            stars.forEach(s => s.classList.remove('active'));
+            stars[0].classList.add('active'); // The first in flex row-reverse is the 5th star
+
+            // Reset textarea
+            const textarea = document.getElementById('reviewTextarea');
+            textarea.value = '';
+            document.getElementById('reviewCharCount').textContent = '0 / 30';
+            document.getElementById('reviewCharCount').style.color = 'var(--gray)';
+            document.getElementById('submitReviewBtn').disabled = true;
+
+            navigateTo('write-review');
+        };
+
+        function setupReviewEventListeners() {
+            const stars = document.querySelectorAll('#reviewStarInput i');
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    stars.forEach(s => s.classList.remove('active'));
+                    this.classList.add('active');
+                    currentReviewRating = parseInt(this.dataset.val);
+                });
+            });
+
+            const textarea = document.getElementById('reviewTextarea');
+            const charCount = document.getElementById('reviewCharCount');
+            const submitBtn = document.getElementById('submitReviewBtn');
+
+            textarea.addEventListener('input', () => {
+                const len = textarea.value.trim().length;
+                charCount.textContent = `${len} / 30`;
+                if(len >= 30) {
+                    submitBtn.disabled = false;
+                    charCount.style.color = '#22c55e';
+                } else {
+                    submitBtn.disabled = true;
+                    charCount.style.color = 'var(--gray)';
+                }
+            });
+
+            submitBtn.addEventListener('click', async () => {
+                const comment = textarea.value.trim();
+                if(comment.length < 30) return;
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+
+                try {
+                    await db.collection('reviews').add({
+                        productId: currentReviewProductId,
+                        userId: auth.currentUser.uid,
+                        userName: currentUser.name,
+                        userImage: auth.currentUser.photoURL || '',
+                        rating: currentReviewRating,
+                        comment: comment,
+                        date: new Date().toISOString()
+                    });
+                    
+                    window.userReviewedProducts.add(currentReviewProductId);
+                    navigateTo('review-success');
+                } catch(e) {
+                    console.error("Review Submit Error:", e);
+                    showCustomAlert("Error", "Failed to submit review. Try again.");
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Rate only';
+                }
+            });
+
+            document.getElementById('checkMyReviewBtn').addEventListener('click', () => {
+                navigateTo(`product-details?id=${currentReviewProductId}`);
+                setTimeout(() => {
+                    const revSection = document.getElementById('productReviewsSection');
+                    if(revSection) revSection.scrollIntoView({behavior: 'smooth'});
+                }, 800);
+            });
         }
         
         function renderVariantPreview(product, container) {
@@ -2963,6 +3258,38 @@
 
         function showPromoPopup() {
             if(randomPopups.length === 0) return;
+
+            let unreviewedProduct = null;
+            if (isLoggedIn && window.userOrders) {
+                 for(let order of window.userOrders) {
+                     if(order.status === 'Delivered') {
+                         for(let item of order.cartItems) {
+                             let pid = item.id || item.pid;
+                             if(!window.userReviewedProducts.has(pid)) {
+                                 unreviewedProduct = item; break;
+                             }
+                         }
+                     }
+                     if(unreviewedProduct) break;
+                 }
+            }
+
+            if (unreviewedProduct) {
+                 document.getElementById('promoPopupImg').src = unreviewedProduct.image;
+                 document.getElementById('promoPopupName').textContent = "Please review your recent purchase: " + unreviewedProduct.name;
+                 document.getElementById('promoPopupPrice').style.display = 'none';
+                 document.getElementById('promoPopupDiscount').style.display = 'none';
+                 document.getElementById('promoPopupOldPrice').style.display = 'none';
+                 document.getElementById('promoPopupAction').textContent = "Review Now";
+                 document.getElementById('promoPopupAction').style.display = 'block';
+                 document.getElementById('promoPopupAction').onclick = () => {
+                     openReviewPage(unreviewedProduct.id || unreviewedProduct.pid);
+                     hidePromoPopup();
+                 };
+                 promoPopup.classList.add('visible');
+                 return;
+            }
+
             const popupData = randomPopups[Math.floor(Math.random() * randomPopups.length)];
             
             if (popupData.type === 'product' && popupData.productId) {
@@ -3086,7 +3413,7 @@
                  db.collection('orders').doc(orderNo.toString()).set(orderData);
             }
             
-            document.querySelector('.od-actions').style.display = 'block'; // New Order er jonno action btn visible hobe
+            document.querySelector('.od-actions').style.display = 'block'; 
             
             document.getElementById('odBody').innerHTML = itemsHtml;
             document.getElementById('odSubtotal').parentNode.style.display = 'flex';
