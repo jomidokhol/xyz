@@ -327,7 +327,7 @@
         .search-tag:hover { background-color: var(--primary); color: white; border-color: var(--primary); }
         
         #search-suggestions-list { width: 100%; background: white; border-radius: 8px; box-shadow: var(--shadow); margin-top: -10px; margin-bottom: 20px; overflow: hidden; max-height: 300px; overflow-y: auto; display: none; }
-        .suggestion-item { padding: 12px 20px; cursor: pointer; transition: var(--transition); border-bottom: 1px solid #f3f4f6; }
+        .suggestion-item { padding: 12px 20px; cursor: pointer; transition: var(--transition); border-bottom: 1px solid #f3f4f6; font-size: 0.95rem; color: #333; }
         .suggestion-item:last-child { border-bottom: none; }
         .suggestion-item:hover { background-color: #f3f4f6; color: var(--primary); }
         
@@ -373,7 +373,12 @@
         .main-content .form-control { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; transition: border 0.3s ease; }
         .main-content .form-control:focus { outline: none; border-color: var(--primary); }
         .locations-list { margin-top: 20px; }
-        .skeleton-card { background-color: white; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); width: 100%; max-width: 240px; }
+        
+        /* Requirement 2: Global Skeleton Base CSS */
+        .skeleton { background-color: #e2e8f0; background: linear-gradient(90deg, #e2e8f0 25%, #f8fafc 50%, #e2e8f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; color: transparent !important; }
+        .skeleton * { visibility: hidden; }
+        
+        .skeleton-card { background-color: white; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); width: 100%; max-width: 240px; border: 1px solid rgba(0, 119, 255, 0.1); }
         .skeleton-img, .skeleton-line { background-color: #e2e8f0; background: linear-gradient(90deg, #e2e8f0 25%, #f8fafc 50%, #e2e8f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
         .skeleton-img { aspect-ratio: 6/8; }
         .skeleton-info { padding: 20px; }
@@ -439,6 +444,15 @@
 
         /* Order Summary Page specific styles */
         .summary-container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: var(--shadow); }
+        .summary-address-card { background: white; padding: 15px; border-bottom: 8px solid #f5f5f5; cursor: pointer; display: flex; align-items: flex-start; gap: 10px; margin: -30px -30px 20px -30px; }
+        @media(min-width: 768px) { .summary-address-card { margin: 0 0 20px 0; border: 1px solid #eee; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); } }
+        .summary-address-card .fa-map-marker-alt { color: var(--primary); font-size: 1.2rem; margin-top: 3px; }
+        .summary-address-content { flex: 1; }
+        .summary-address-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .summary-address-name { font-weight: 700; font-size: 1rem; color: #333; }
+        .summary-address-text { font-size: 0.85rem; color: #666; line-height: 1.4; }
+        .btn-plain-text { background: none; border: none; color: var(--primary); font-weight: 600; font-size: 0.9rem; cursor: pointer; }
+        
         .summary-item { display: flex; gap: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
         .summary-item img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; }
         .summary-item-info { flex: 1; }
@@ -557,17 +571,7 @@
             <div class="mobile-menu" id="mobileMenu">
                 <div id="menuProfileSection" style="display: none; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; text-align: center;">
                     <div class="profile-picture" style="width: 60px; height: 60px; margin: 0 auto 10px; font-size: 24px; border-radius: 50%; background-color: #eef2ff; color: var(--primary); display: flex; align-items: center; justify-content: center; border: 2px solid var(--primary); overflow: hidden;">
-                        <svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="50" cy="50" r="48" fill="#ffffff" stroke="#e0e0e0" stroke-width="1"/>
-                            <path d="M 32 40 L 42 45 L 32 50" fill="none" stroke="#1c5fc9" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M 68 40 L 58 45" fill="none" stroke="#e83a45" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M 58 45 L 68 50" fill="none" stroke="#1c5fc9" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M 35 60 Q 50 75 65 60" fill="none" stroke="#1c5fc9" stroke-width="6" stroke-linecap="round"/>
-                            <circle cx="78" cy="78" r="16" fill="#5a6270"/>
-                            <rect x="69" y="73" width="18" height="12" rx="2" fill="#ffffff"/>
-                            <circle cx="78" cy="79" r="3.5" fill="#5a6270"/>
-                            <path d="M 74 73 L 75 70 L 81 70 L 82 73 Z" fill="#ffffff"/>
-                        </svg>
+                        <!-- Initial Icon, replaced on auth -->
                     </div>
                     <h4 id="menuProfileName" style="margin-bottom: 5px;">User Name</h4>
                     <button class="btn btn-outline" onclick="navigateTo('profile'); toggleMenu()" style="width: 100%; font-size: 0.9rem; padding: 8px;">My Profile</button>
@@ -597,9 +601,9 @@
                 <div class="hero-bg" id="heroBg"></div>
                 <div class="container">
                     <div class="hero-content">
-                        <h1 id="heroTitle"></h1>
-                        <p id="heroDesc"></p>
-                        <button class="btn btn-secondary btn-shop">Start Shoping</button>
+                        <h1 id="heroTitle" class="skeleton skeleton-text" style="height:45px; width: 80%;"></h1>
+                        <p id="heroDesc" class="skeleton skeleton-text short" style="height:20px;"></p>
+                        <button class="btn btn-secondary btn-shop" style="opacity:0; transition:0.3s;">Start Shoping</button>
                     </div>
                 </div>
             </section>
@@ -765,7 +769,7 @@
             </div>
         </div>
 
-        <!-- ORDER SUMMARY PAGE SECTION (Requirement 4) -->
+        <!-- ORDER SUMMARY PAGE SECTION (Requirement 3) -->
         <div id="order-summary-page" class="page-section">
             <section class="checkout">
                 <div class="container">
@@ -774,6 +778,20 @@
                     </div>
                     <h2 class="section-title">Order Summary</h2>
                     <div class="summary-container">
+                        <!-- Address UI Injected dynamically in Order Summary -->
+                        <div class="summary-address-card" onclick="openDeliveryAddressSelect()">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div class="summary-address-content">
+                                <div class="summary-address-header">
+                                    <span class="badge-title" id="osAddressBadge" style="display:none;">HOME</span>
+                                    <button type="button" class="btn-plain-text">EDIT</button>
+                                </div>
+                                <div id="osAddressDetails">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                        </div>
+
                         <div id="orderSummaryItems"></div>
                         <div class="coupon-section">
                             <input type="text" id="couponCode" placeholder="Enter Coupon Code">
@@ -781,91 +799,65 @@
                         </div>
                         <div class="summary-totals" style="margin-top: 20px;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #555;">
-                                <span>Subtotal:</span>
+                                <span>Merchandise Subtotal:</span>
                                 <span id="osSubtotal">৳0.00</span>
                             </div>
                             <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #10b981;">
                                 <span>Discount:</span>
                                 <span id="osDiscount">-৳0.00</span>
                             </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #555;">
+                                <span>Shipping Fee Total:</span>
+                                <span id="osShippingFee">৳0.00</span>
+                            </div>
                             <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 1.2rem; font-weight: 700; color: var(--dark); border-top: 1px solid #eee; padding-top: 10px;">
                                 <span>Total:</span>
                                 <span id="osTotal">৳0.00</span>
                             </div>
                         </div>
-                        <button class="btn btn-primary" id="osProceedBtn" style="width: 100%; padding: 15px; font-size: 1.1rem;">Proceed to Payment</button>
+                        <button class="btn btn-primary" id="osProceedBtn" style="width: 100%; padding: 15px; font-size: 1.1rem;">Proceed to Pay</button>
                     </div>
                 </div>
             </section>
         </div>
 
-        <!-- CHECKOUT PAGE SECTION -->
+        <!-- CHECKOUT/PAYMENT PAGE SECTION (Requirement 3) -->
         <div id="checkout-page" class="page-section">
             <section class="checkout" id="checkout">
                 <div class="container">
                     <div class="back-btn" onclick="goBack()">
                         <i class="fas fa-arrow-left"></i> Back
                     </div>
-                    <h2 class="section-title">Checkout</h2>
                     <div class="checkout-form">
-                        <h3>Shipping Information</h3>
-                        <form id="checkoutForm">
-                            <div class="address-management" id="checkoutAddressManagement">
-                                <div id="checkoutSavedAddressesList"></div>
-                                <button type="button" class="add-address-btn" id="checkoutAddAddressBtn">+ Add new address</button>
-                            </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                            <h2 style="font-size: 1.5rem; margin:0; color: var(--dark);">Select Payment Method</h2>
+                            <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" onclick="goBack()"></i>
+                        </div>
+                        
+                        <div style="background:#eef2ff; color:var(--primary); padding:12px; border-radius:6px; font-size:0.9rem; margin-bottom:20px; display:flex; gap:10px; align-items:center;">
+                            <i class="fas fa-info-circle"></i>
+                            Collect payment voucher & get extra savings on your purchase!
+                        </div>
 
-                            <div id="shippingInfoForm" style="display: none;">
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="coAddressTitle">Location Title (e.g. Home, Office)</label>
-                                        <input type="text" id="coAddressTitle" class="form-control" placeholder="Home">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="coName">Full Name</label>
-                                        <input type="text" id="coName" class="form-control" required>
-                                    </div>
-                                </div>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="coPhone">Mobile Number</label>
-                                        <input type="tel" id="coPhone" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="coEmail">Email Address</label>
-                                        <input type="email" id="coEmail" class="form-control" readonly style="background-color: #f3f4f6;">
-                                    </div>
-                                </div>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="coRegion">Region</label>
-                                        <select id="coRegion" class="form-control" required>
-                                            <option value="">Select Region...</option>
-                                            <option value="Inside Dhaka">Inside Dhaka</option>
-                                            <option value="Outside Dhaka">Outside Dhaka</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="coPostCode">Post Code</label>
-                                        <input type="number" id="coPostCode" class="form-control" min="1000" max="9999" placeholder="E.g., 1205" required>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="coAddress">Full Address</label>
-                                    <textarea id="coAddress" class="form-control" rows="3" required placeholder="E.g., House No, Road, Area, Thana"></textarea>
-                                </div>
-                                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                                    <button type="button" class="btn btn-outline" id="coCancelAddressBtn" style="flex: 1;">Cancel</button>
-                                    <button type="button" class="btn btn-primary" id="coSaveAddressBtn" style="flex: 1;">Save Address</button>
-                                </div>
-                            </div>
-                            
-                            <h3>Payment Method</h3>
+                        <form id="checkoutForm">
                             <div class="payment-methods" id="checkoutPaymentMethods">
                                 <!-- Dynamic Payment Methods Injected via JS -->
                             </div>
                             
-                            <button type="submit" class="btn btn-primary btn-block" style="width: 100%; padding: 15px;">Place Order</button>
+                            <div class="checkout-footer" style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #555;">
+                                    <span>Subtotal</span>
+                                    <span id="paymentSubtotal">৳0</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.2rem; margin-bottom: 20px; color: var(--dark);">
+                                    <span>Total Amount</span>
+                                    <span id="paymentTotal" style="color: #f97316;">৳0</span>
+                                </div>
+                                <button type="submit" class="btn btn-secondary btn-block" style="width: 100%; padding: 15px; font-size:1.1rem; display:flex; justify-content:space-between; align-items:center;">
+                                    <span>Proceed to Pay</span>
+                                    <span id="paymentBtnTotal"></span>
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -1217,7 +1209,7 @@
       <img class="lightbox-content" id="lightboxImg">
     </div>
 
-    <!-- COD Confirmation Overlay -->
+    <!-- COD Confirmation Overlay (Requirement 3: Subtotal, Handling fee, Total) -->
     <div class="cod-confirm-overlay" id="codConfirmOverlay">
         <div class="cod-confirm-page">
             <div class="cod-header">
@@ -1239,7 +1231,7 @@
             </div>
             <div class="cod-footer">
                 <div class="cod-row"><span>Subtotal</span><span id="codConfirmSubtotal">৳ 0</span></div>
-                <div class="cod-row"><span>Cash Payment Fee</span><span id="codConfirmFee">৳ 0</span></div>
+                <div class="cod-row"><span>Handling Fee</span><span id="codConfirmFee">৳ 0</span></div>
                 <div class="cod-row cod-total"><span>Total Amount</span><span id="codConfirmTotal">৳ 0</span></div>
                 <button class="btn" id="codConfirmPlaceOrderBtn">Confirm Order</button>
             </div>
@@ -1353,6 +1345,7 @@
         </div>
         <div class="options-panel-body" id="addressSelectList"></div>
         <div style="margin-top: 15px;">
+             <!-- Requirement 3: New page to add/change location -->
              <button class="add-address-btn" onclick="closeAddressSelect(); navigateTo('profile'); setTimeout(()=>showProfileSection('location'), 500);">+ Add New Address</button>
         </div>
     </div>
@@ -1462,6 +1455,22 @@
         const welcomeOverlay = document.getElementById('welcomeOverlay');
         const promoPopup = document.getElementById('promoPopup');
 
+        // Requirement 2: Function to display initial skeletons globally
+        function showInitialSkeletons() {
+            // Header Logo Skeleton
+            const headerLogo = document.getElementById('headerLogo');
+            headerLogo.classList.add('skeleton');
+            headerLogo.style.width = '120px'; headerLogo.style.height = '35px';
+            headerLogo.onload = () => { headerLogo.classList.remove('skeleton'); headerLogo.style.width = ''; headerLogo.style.height = ''; };
+
+            // Hero Skeleton
+            heroBg.innerHTML = '<div class="skeleton" style="width:100%; height:100%;"></div>';
+            
+            // Category Skeleton
+            const categoryGrid = document.getElementById('categoryGrid');
+            categoryGrid.innerHTML = Array(6).fill('<div class="category-card skeleton" style="border:none;"><div class="category-icon skeleton" style="width:50px; height:50px; border-radius:50%; margin-bottom:5px;"></div><h3 class="skeleton" style="width:60px; height:12px;"></h3></div>').join('');
+        }
+
         async function loadInitialData() {
             try {
                 const settingsSnap = await db.collection('settings').doc('general').get();
@@ -1473,6 +1482,10 @@
                     document.getElementById('headerLogo').src = data.logoUrl || '';
                     document.getElementById('footerLogo').src = data.logoUrl || '';
                     if(data.logoUrl) document.getElementById('ogImage').content = data.logoUrl;
+                    
+                    document.getElementById('heroTitle').classList.remove('skeleton');
+                    document.getElementById('heroDesc').classList.remove('skeleton');
+                    document.querySelector('.btn-shop').style.opacity = '1';
                     
                     document.getElementById('heroTitle').textContent = data.heroTitle || '';
                     document.getElementById('heroDesc').textContent = data.heroDesc || '';
@@ -1661,10 +1674,39 @@
             }, 500); 
         }
 
+        // Requirement 3: Order Summary logic adjustment
         function renderOrderSummary() {
             window.appliedCouponDiscount = 0;
             document.getElementById('couponCode').value = '';
             document.getElementById('osDiscount').textContent = `-৳0.00`;
+            
+            // Populate Address Details at the top of Order Summary
+            const addrDetails = document.getElementById('osAddressDetails');
+            const addrBadge = document.getElementById('osAddressBadge');
+            let defaultAddr = savedAddresses.find(a => a.isDefault);
+            if (!defaultAddr && savedAddresses.length > 0) defaultAddr = savedAddresses[0];
+            
+            let shippingFee = 0;
+
+            if (defaultAddr) {
+                window.osSelectedAddress = defaultAddr;
+                addrBadge.style.display = defaultAddr.title ? 'inline-block' : 'none';
+                if(defaultAddr.title) addrBadge.textContent = defaultAddr.title.toUpperCase();
+                
+                addrDetails.innerHTML = `
+                    <div class="summary-address-name">${defaultAddr.name}, ${defaultAddr.phone}</div>
+                    <div class="summary-address-text">${defaultAddr.address}</div>
+                    <div class="summary-address-text">${defaultAddr.region} - ${defaultAddr.postcode}</div>
+                `;
+                shippingFee = defaultAddr.region === 'Outside Dhaka' ? appDeliveryOutside : appDeliveryInside;
+            } else {
+                window.osSelectedAddress = null;
+                addrBadge.style.display = 'none';
+                addrDetails.innerHTML = `
+                    <div class="summary-address-name">Select Delivery Address</div>
+                    <div class="summary-address-text">Please add or select a delivery address</div>
+                `;
+            }
             
             const container = document.getElementById('orderSummaryItems');
             const selectedItems = cart.filter(item => item.selected);
@@ -1712,8 +1754,57 @@
             });
             
             document.getElementById('osSubtotal').textContent = `৳${subtotal.toFixed(0)}`;
-            document.getElementById('osTotal').textContent = `৳${subtotal.toFixed(0)}`;
+            document.getElementById('osShippingFee').textContent = `৳${shippingFee.toFixed(0)}`;
             window.currentOrderSubtotal = subtotal;
+            
+            const finalTotal = subtotal + shippingFee; // initially without coupon
+            document.getElementById('osTotal').textContent = `৳${finalTotal.toFixed(0)}`;
+            
+            // Proceed to Pay action from Order Summary Page
+            document.getElementById('osProceedBtn').onclick = () => {
+                if(!window.osSelectedAddress) {
+                    showCustomAlert('Address Required', 'Please select a delivery address to proceed.');
+                    return;
+                }
+                navigateTo('checkout'); // Navigate to payment selection page
+            };
+        }
+
+        // Requirement 3: New Payment page rendering
+        function renderPaymentPage() {
+            const addr = window.osSelectedAddress;
+            if(!addr) {
+                navigateTo('order-summary');
+                return;
+            }
+            const shippingFee = addr.region === 'Outside Dhaka' ? appDeliveryOutside : appDeliveryInside;
+            const subtotal = window.currentOrderSubtotal || 0;
+            const discount = window.appliedCouponDiscount || 0;
+            const total = subtotal - discount + shippingFee;
+            
+            document.getElementById('paymentSubtotal').textContent = `৳${subtotal.toFixed(0)}`;
+            if(discount > 0) {
+                // Ensure payment form shows discount if applied
+                if(!document.getElementById('paymentDiscount')) {
+                    const discountHTML = `<div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #10b981;"><span>Discount</span><span id="paymentDiscount">-৳${discount.toFixed(0)}</span></div>`;
+                    document.getElementById('paymentSubtotal').parentElement.insertAdjacentHTML('afterend', discountHTML);
+                } else {
+                    document.getElementById('paymentDiscount').textContent = `-৳${discount.toFixed(0)}`;
+                }
+            }
+            
+            // Ensure shipping fee is displayed
+            if(!document.getElementById('paymentShipping')) {
+                const shippingHTML = `<div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #555;"><span>Shipping Fee Total</span><span id="paymentShipping">৳${shippingFee.toFixed(0)}</span></div>`;
+                document.getElementById('paymentTotal').parentElement.insertAdjacentHTML('beforebegin', shippingHTML);
+            } else {
+                document.getElementById('paymentShipping').textContent = `৳${shippingFee.toFixed(0)}`;
+            }
+
+            document.getElementById('paymentTotal').textContent = `৳${total.toFixed(0)}`;
+            document.getElementById('paymentBtnTotal').textContent = `৳${total.toFixed(0)}`;
+            
+            renderPaymentMethods();
         }
 
         function handleRouteChange(isInitialLoad = false) {
@@ -1760,8 +1851,7 @@
                 } else if (finalPageId === 'profile') {
                     populateProfileData();
                 } else if (finalPageId === 'checkout') {
-                    populateCheckoutAddresses();
-                    renderPaymentMethods();
+                    renderPaymentPage();
                 } else if (finalPageId === 'search') {
                     renderSearchHistory();
                     searchPageInput.focus();
@@ -2996,7 +3086,15 @@
             renderSavedAddressesList();
             populateCheckoutAddresses();
             updateDeliveryDisplay();
-            showNotification("Default address updated.");
+            
+            // Re-render Order Summary or Payment Page if active so fee recalculates
+            if(document.getElementById('order-summary-page').classList.contains('active')) {
+                renderOrderSummary();
+            }
+            if(document.getElementById('checkout-page').classList.contains('active')) {
+                renderPaymentPage();
+            }
+            showNotification("Delivery address updated.");
         }
 
         function renderSavedAddressesList() {
@@ -3037,54 +3135,7 @@
         }
 
         function populateCheckoutAddresses() {
-            const listContainer = document.getElementById('checkoutSavedAddressesList');
-            const addressManager = document.getElementById('checkoutAddressManagement');
-            const newForm = document.getElementById('shippingInfoForm');
-            
-            listContainer.innerHTML = '';
-            
-            if (savedAddresses.length === 0) {
-                addressManager.style.display = 'none';
-                newForm.style.display = 'block';
-                newForm.querySelectorAll('input, select, textarea').forEach(el => el.disabled = false);
-                document.getElementById('coEmail').value = currentUser?.email || '';
-            } else {
-                addressManager.style.display = 'block';
-                newForm.style.display = 'none';
-                newForm.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true);
-                
-                savedAddresses.forEach((addr, index) => {
-                    const isDefault = addr.isDefault;
-                    const div = document.createElement('div');
-                    div.className = `address-box ${isDefault ? 'selected' : ''}`;
-                    div.onclick = (e) => {
-                        if(e.target.closest('button')) return;
-                        document.querySelectorAll('#checkoutSavedAddressesList .address-box').forEach(b => b.classList.remove('selected'));
-                        div.classList.add('selected');
-                    };
-
-                    div.innerHTML = `
-                        <div class="address-box-icon">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </div>
-                        <div class="address-box-details">
-                            <h5>${addr.name} <span class="phone">${addr.phone}</span></h5>
-                            <p>${addr.address}</p>
-                            <p>${addr.region} - ${addr.postcode}</p>
-                            <div class="address-badges">
-                                ${addr.title ? `<span class="badge-title">${addr.title.toUpperCase()}</span>` : ''}
-                                ${isDefault ? `<span class="badge-default">Default shipping address</span>` : ''}
-                            </div>
-                            <div class="address-actions" style="margin-top:10px; border-top:1px dashed #ddd; padding-top:10px;">
-                                <div style="display:flex; gap:15px; margin-left:auto;">
-                                    <button type="button" class="btn-edit-addr" onclick="openCheckoutAddressForm(${index})">Edit</button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    listContainer.appendChild(div);
-                });
-            }
+            // Function maintained for backwards compatibility or edge cases, though removed from checkout flow directly
         }
 
         function updateDeliveryDisplay() {
@@ -3175,31 +3226,7 @@
         }
 
         function openCheckoutAddressForm(index = null) {
-            document.getElementById('checkoutAddressManagement').style.display = 'none';
-            const formDiv = document.getElementById('shippingInfoForm');
-            formDiv.style.display = 'block';
-            formDiv.querySelectorAll('input, select, textarea').forEach(el => el.disabled = false);
-            
-            if (index !== null && index >= 0) {
-                editingAddressId = index;
-                const addr = savedAddresses[index];
-                document.getElementById('coAddressTitle').value = addr.title || '';
-                document.getElementById('coName').value = addr.name || '';
-                document.getElementById('coPhone').value = addr.phone || '';
-                document.getElementById('coEmail').value = addr.email || currentUser?.email || '';
-                document.getElementById('coRegion').value = addr.region || '';
-                document.getElementById('coPostCode').value = addr.postcode || '';
-                document.getElementById('coAddress').value = addr.address || '';
-            } else {
-                editingAddressId = null;
-                document.getElementById('coAddressTitle').value = '';
-                document.getElementById('coName').value = currentUser?.name || '';
-                document.getElementById('coPhone').value = currentUser?.phone || '';
-                document.getElementById('coEmail').value = currentUser?.email || '';
-                document.getElementById('coRegion').value = '';
-                document.getElementById('coPostCode').value = '';
-                document.getElementById('coAddress').value = '';
-            }
+            // Function maintained for compatibility but removed direct call from checkout flow
         }
 
         async function saveAddressesToFirebase() {
@@ -3442,8 +3469,6 @@
             cart = cart.filter(item => !item.selected);
             updateCartCount();
             renderCartItems();
-            document.getElementById('shippingInfoForm').style.display = 'none';
-            populateCheckoutAddresses();
         }
 
         function setupEventListeners() {
@@ -3586,55 +3611,25 @@
                     showCustomAlert('Invalid Coupon', 'The coupon code is invalid or expired.');
                 }
                 document.getElementById('osDiscount').textContent = `-৳${window.appliedCouponDiscount.toFixed(2)}`;
-                const newTotal = window.currentOrderSubtotal - window.appliedCouponDiscount;
-                document.getElementById('osTotal').textContent = `৳${Math.max(0, newTotal).toFixed(2)}`;
+                
+                // Recalculate Order Summary Total dynamically on coupon apply
+                let defaultAddr = window.osSelectedAddress;
+                let shippingFee = defaultAddr ? (defaultAddr.region === 'Outside Dhaka' ? appDeliveryOutside : appDeliveryInside) : 0;
+                const newTotal = window.currentOrderSubtotal - window.appliedCouponDiscount + shippingFee;
+                document.getElementById('osTotal').textContent = `৳${Math.max(0, newTotal).toFixed(0)}`;
             });
 
-            document.getElementById('osProceedBtn')?.addEventListener('click', () => {
-                navigateTo('checkout');
-            });
-            
             // ------------------------------------------------------------------------------------------
-            // COD Confirm Logic Execution and Form Submission handling
+            // COD Confirm Logic Execution and Form Submission handling (Requirement 3 Form submit adjustment)
             // ------------------------------------------------------------------------------------------
             checkoutForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
-                let orderAddress = {};
-                const isCreatingNewAddress = document.getElementById('shippingInfoForm').style.display !== 'none';
-
-                if (isCreatingNewAddress) {
-                    const postCode = document.getElementById('coPostCode').value;
-                    if(postCode < 1000 || postCode > 9999) {
-                        showCustomAlert('Invalid Post Code', 'Post code must be between 1000 and 9999.');
-                        return;
-                    }
-                    orderAddress = {
-                        title: document.getElementById('coAddressTitle').value,
-                        name: document.getElementById('coName').value,
-                        phone: document.getElementById('coPhone').value,
-                        email: document.getElementById('coEmail').value,
-                        region: document.getElementById('coRegion').value,
-                        postcode: postCode,
-                        address: document.getElementById('coAddress').value,
-                        isDefault: savedAddresses.length === 0
-                    };
-                    
-                    if(editingAddressId !== null) {
-                        savedAddresses[editingAddressId] = orderAddress;
-                    } else {
-                        savedAddresses.push(orderAddress);
-                    }
-                    await saveAddressesToFirebase();
-                } else {
-                    const selectedBox = document.querySelector('#checkoutSavedAddressesList .address-box.selected');
-                    if(selectedBox) {
-                        const index = Array.from(selectedBox.parentNode.children).indexOf(selectedBox);
-                        orderAddress = savedAddresses[index];
-                    } else {
-                        showCustomAlert('No Address', 'Please select a shipping address.');
-                        return;
-                    }
+                const orderAddress = window.osSelectedAddress;
+                
+                if (!orderAddress) {
+                    showCustomAlert('No Address', 'Please go back and select a shipping address.');
+                    return;
                 }
 
                 const selectedItems = cart.filter(item => item.selected);
@@ -3816,57 +3811,14 @@
                 renderSavedAddressesList();
                 updateDeliveryDisplay();
                 showNotification("Address saved successfully!");
-            });
-
-            document.getElementById('checkoutAddAddressBtn').addEventListener('click', () => {
-                openCheckoutAddressForm(null);
-            });
-
-            document.getElementById('coCancelAddressBtn').addEventListener('click', () => {
-                if(savedAddresses.length > 0) {
-                    document.getElementById('shippingInfoForm').style.display = 'none';
-                    document.getElementById('checkoutAddressManagement').style.display = 'block';
-                    populateCheckoutAddresses();
-                } else {
-                    showCustomAlert('Required', 'You must add a shipping address to checkout.');
-                }
-            });
-            
-            document.getElementById('coSaveAddressBtn').addEventListener('click', async () => {
-                const form = document.getElementById('checkoutForm');
-                if(!form.checkValidity()) {
-                    form.reportValidity();
-                    return;
-                }
-                const postCode = document.getElementById('coPostCode').value;
-                if(postCode < 1000 || postCode > 9999) {
-                    showCustomAlert('Invalid Post Code', 'Post code must be between 1000 and 9999.');
-                    return;
-                }
-
-                const addr = {
-                    title: document.getElementById('coAddressTitle').value,
-                    name: document.getElementById('coName').value,
-                    phone: document.getElementById('coPhone').value,
-                    email: document.getElementById('coEmail').value,
-                    region: document.getElementById('coRegion').value,
-                    postcode: postCode,
-                    address: document.getElementById('coAddress').value,
-                    isDefault: savedAddresses.length === 0
-                };
-
-                if (editingAddressId !== null) {
-                    savedAddresses[editingAddressId] = addr;
-                } else {
-                    savedAddresses.push(addr);
-                }
                 
-                await saveAddressesToFirebase();
-                document.getElementById('shippingInfoForm').style.display = 'none';
-                document.getElementById('checkoutAddressManagement').style.display = 'block';
-                populateCheckoutAddresses();
-                updateDeliveryDisplay();
-                showNotification("Address saved for checkout!");
+                // Update Order Summary or Payment Page if active
+                if(document.getElementById('order-summary-page').classList.contains('active')) {
+                    renderOrderSummary();
+                }
+                if(document.getElementById('checkout-page').classList.contains('active')) {
+                    renderPaymentPage();
+                }
             });
 
             ['homeFilterOptions', 'searchFilterOptions'].forEach(id => {
@@ -3917,38 +3869,58 @@
             searchPageForm.addEventListener('submit', handleSearch);
             
             const searchClearBtn = document.getElementById('searchClearBtn');
+            
+            // Requirement 1: Search Suggestion update with SEO Tags & Keywords logic
             searchPageInput.addEventListener('input', () => {
-                const term = searchPageInput.value.toLowerCase();
+                const term = searchPageInput.value.toLowerCase().trim();
                 if(term.length > 0) { searchClearBtn.style.display = 'block'; } else { searchClearBtn.style.display = 'none'; }
                 searchSuggestionsList.innerHTML = '';
+                
                 if(term.length < 2) {
                     searchSuggestionsList.style.display = 'none';
                     return;
                 }
 
-                const matchedProducts = new Set();
+                const matchedSuggestions = new Set();
                 
                 products.forEach(p => {
-                    const nameMatch = p.name.toLowerCase().includes(term);
-                    let seoMatch = false;
-                    if (p.seo_tag) {
-                        let tags = typeof p.seo_tag === 'string' ? p.seo_tag.split(',').map(s=>s.trim().toLowerCase()) : p.seo_tag.map(s=>s.toLowerCase());
-                        seoMatch = tags.some(t => t.includes(term));
+                    // Check Product Name
+                    if(p.name.toLowerCase().includes(term)) {
+                        matchedSuggestions.add(p.name);
                     }
-                    const keywordMatch = p.keywords && p.keywords.some(k => k.toLowerCase().includes(term));
                     
-                    if(nameMatch || seoMatch || keywordMatch) {
-                        matchedProducts.add(p);
+                    // Check SEO Tags
+                    if (p.seo_tag) {
+                        let tags = typeof p.seo_tag === 'string' ? p.seo_tag.split(',').map(s=>s.trim()) : p.seo_tag;
+                        tags.forEach(tag => {
+                            if(tag.toLowerCase().includes(term)) {
+                                matchedSuggestions.add(tag); // Add tag as suggestion
+                            }
+                        });
+                    }
+                    
+                    // Check Keywords
+                    if (p.keywords) {
+                        p.keywords.forEach(k => {
+                            if(k.toLowerCase().includes(term)) {
+                                matchedSuggestions.add(k); // Add keyword as suggestion
+                            }
+                        });
                     }
                 });
 
-                if (matchedProducts.size > 0) {
+                if (matchedSuggestions.size > 0) {
                     searchSuggestionsList.style.display = 'block';
-                    matchedProducts.forEach(p => {
+                    matchedSuggestions.forEach(suggestionText => {
                         const item = document.createElement('div');
                         item.className = 'suggestion-item';
-                        item.textContent = p.name;
-                        item.onclick = () => { navigateTo(`product-details?id=${p.id}`); searchPageInput.value = ''; searchSuggestionsList.innerHTML = ''; searchSuggestionsList.style.display = 'none';};
+                        item.innerHTML = `<i class="fas fa-search" style="margin-right:8px; color:var(--gray); font-size:0.85rem;"></i> ${suggestionText}`;
+                        item.onclick = () => { 
+                            searchPageInput.value = suggestionText; 
+                            searchSuggestionsList.innerHTML = ''; 
+                            searchSuggestionsList.style.display = 'none';
+                            handleSearch(new Event('submit'), suggestionText);
+                        };
                         searchSuggestionsList.appendChild(item);
                     });
                 } else {
@@ -4020,6 +3992,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
+            showInitialSkeletons(); // Trigger Skeletons immediately upon DOM load
             await loadInitialData();
             init();
             startOfferTimer();
