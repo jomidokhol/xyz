@@ -391,7 +391,7 @@
         .skeleton-line.short { width: 60%; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         
-        /* Profile UI New Styles */
+        /* Profile UI New Styles & Order Slider */
         .app-profile-header-card { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
         .app-profile-orders-card, .app-profile-recent-card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 3px 15px rgba(0,0,0,0.05); }
         .orders-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -401,8 +401,14 @@
         .order-status-item { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 0.75rem; color: #333; cursor: pointer; position: relative; width: 18%; text-align: center; }
         .order-status-item i { font-size: 22px; color: #f97316; margin-bottom: 5px; }
         .order-badge-count { position: absolute; top: -8px; right: 0px; background: #ef4444; color: white; font-size: 0.65rem; font-weight: bold; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1.5px solid white; }
-        .latest-order-snippet { background: #f9fafb; padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 15px; font-size: 0.85rem; color: #555; cursor: pointer; border: 1px solid #f3f4f6;}
+        
+        /* Order Auto-Scroll Slider Styles */
+        .latest-order-slider-container { width: 100%; overflow: hidden; position: relative; border-radius: 8px; border: 1px solid #f3f4f6; background: #f9fafb; display: none; margin-top: 15px; }
+        .latest-order-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none; }
+        .latest-order-track::-webkit-scrollbar { display: none; }
+        .latest-order-snippet { flex: 0 0 100%; scroll-snap-align: start; padding: 12px; display: flex; align-items: center; gap: 15px; font-size: 0.85rem; color: #555; cursor: pointer; box-sizing: border-box; }
         .latest-order-snippet img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover;}
+        
         .app-profile-recent-card h3 { font-size: 1.1rem; font-weight: 600; color: #111; margin-bottom: 15px; }
         .recently-viewed-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .rv-card { border: 1px solid #eee; border-radius: 8px; overflow: hidden; position: relative; cursor: pointer; background: white;}
@@ -1091,7 +1097,7 @@
                             </a>
                             <a href="javascript:void(0)" class="nav-item" onclick="showProfileSection('tracking')">
                                 <i class="fas fa-box"></i>
-                                Order History
+                                All Orders
                             </a>
                             <a href="javascript:void(0)" class="nav-item" onclick="logout()">
                                 <i class="fas fa-sign-out-alt"></i>
@@ -1109,38 +1115,77 @@
                                     <span onclick="showProfileSection('tracking')">View All Orders &gt;</span>
                                 </div>
                                 <div class="orders-status-grid">
-                                    <div class="order-status-item" onclick="showProfileSection('tracking')">
+                                    <div class="order-status-item" onclick="showProfileSection('topay')">
                                         <i class="fas fa-wallet"></i>
                                         <span>To Pay</span>
                                         <div class="order-badge-count" id="badgeToPay" style="display:none;">0</div>
                                     </div>
-                                    <div class="order-status-item" onclick="showProfileSection('tracking')">
+                                    <div class="order-status-item" onclick="showProfileSection('toship')">
                                         <i class="fas fa-box"></i>
                                         <span>To Ship</span>
                                         <div class="order-badge-count" id="badgeToShip" style="display:none;">0</div>
                                     </div>
-                                    <div class="order-status-item" onclick="showProfileSection('tracking')">
+                                    <div class="order-status-item" onclick="showProfileSection('toreceive')">
                                         <i class="fas fa-truck"></i>
                                         <span>To Receive</span>
                                         <div class="order-badge-count" id="badgeToReceive" style="display:none;">0</div>
                                     </div>
-                                    <div class="order-status-item" onclick="showProfileSection('tracking')">
+                                    <div class="order-status-item" onclick="showProfileSection('toreview')">
                                         <i class="fas fa-comment-dots"></i>
                                         <span>To Review</span>
                                         <div class="order-badge-count" id="badgeToReview" style="display:none;">0</div>
                                     </div>
-                                    <div class="order-status-item" onclick="showProfileSection('tracking')">
+                                    <div class="order-status-item" onclick="showProfileSection('returns')">
                                         <i class="fas fa-undo"></i>
                                         <span>Returns &<br>Cancellations</span>
                                     </div>
                                 </div>
-                                <div class="latest-order-snippet" id="latestOrderSnippet" onclick="showProfileSection('tracking')" style="display:none;"></div>
+                                
+                                <div class="latest-order-slider-container" id="latestOrderSliderContainer">
+                                    <div class="latest-order-track" id="latestOrderTrack"></div>
+                                </div>
                             </div>
                             
                             <div class="app-profile-recent-card">
                                 <h3>Recently Viewed</h3>
                                 <div class="recently-viewed-grid" id="recentlyViewedGrid"></div>
                             </div>
+                        </section>
+
+                        <!-- Individual Order Status Sections -->
+                        <section id="profile-section-topay" class="content-section">
+                            <div class="section-header">
+                                <h2 class="section-title">To Pay</h2>
+                            </div>
+                            <div id="ordersToPayList"></div>
+                        </section>
+
+                        <section id="profile-section-toship" class="content-section">
+                            <div class="section-header">
+                                <h2 class="section-title">To Ship</h2>
+                            </div>
+                            <div id="ordersToShipList"></div>
+                        </section>
+
+                        <section id="profile-section-toreceive" class="content-section">
+                            <div class="section-header">
+                                <h2 class="section-title">To Receive</h2>
+                            </div>
+                            <div id="ordersToReceiveList"></div>
+                        </section>
+
+                        <section id="profile-section-toreview" class="content-section">
+                            <div class="section-header">
+                                <h2 class="section-title">To Review</h2>
+                            </div>
+                            <div id="ordersToReviewList"></div>
+                        </section>
+
+                        <section id="profile-section-returns" class="content-section">
+                            <div class="section-header">
+                                <h2 class="section-title">Returns & Cancellations</h2>
+                            </div>
+                            <div id="ordersReturnsList"></div>
                         </section>
 
                         <section id="profile-section-setup" class="content-section">
@@ -1165,6 +1210,7 @@
                                 <button type="submit" class="btn btn-primary">Save Changes</button>
                             </form>
                         </section>
+
                         <section id="profile-section-location" class="content-section">
                             <div class="section-header">
                                 <h2 class="section-title">Manage Your Addresses</h2>
@@ -1222,9 +1268,10 @@
                                 </div>
                             </form>
                         </section>
+
                         <section id="profile-section-tracking" class="content-section">
                             <div class="section-header">
-                                <h2 class="section-title">Order History</h2>
+                                <h2 class="section-title">All Orders</h2>
                             </div>
                             <div id="userOrdersList">
                                 <div style="text-align: center; padding: 40px; color: var(--gray);">
@@ -1483,7 +1530,7 @@
         window.userReviewedProducts = new Set();
         window.deliveryToggleInterval = null;
         let currentReviewProductId = null;
-        let currentReviewOrderId = null; // Added for multiple reviews functionality
+        let currentReviewOrderId = null; 
         let currentReviewRating = 5;
 
         let appDomainName = window.location.origin;
@@ -1742,7 +1789,6 @@
             if(!auth.currentUser) return;
             try {
                 const snap = await db.collection('reviews').where('userId', '==', auth.currentUser.uid).get();
-                // Store combination of orderId and productId so multiple orders of same product can be reviewed
                 window.userReviewedProducts = new Set(snap.docs.map(doc => {
                     const data = doc.data();
                     return data.orderId ? `${data.orderId}_${data.productId}` : data.productId;
@@ -2044,9 +2090,14 @@
         function showProfileSection(sectionId) {
             document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
             document.getElementById(`profile-section-${sectionId}`).classList.add('active');
+            
             document.querySelectorAll('#profileNav .nav-item').forEach(item => item.classList.remove('active'));
             const targetNav = document.querySelector(`#profileNav .nav-item[onclick*="'${sectionId}'"]`);
-            if(targetNav) targetNav.classList.add('active');
+            if(targetNav) {
+                targetNav.classList.add('active');
+            } else if (['topay', 'toship', 'toreceive', 'toreview', 'returns'].includes(sectionId)) {
+                // If it's a sub-page, keep the dashboard highlighted or nothing
+            }
         }
 
         function updateAuthStateUI() {
@@ -2122,11 +2173,17 @@
             try {
                 const snap = await db.collection('orders').where('userId', '==', auth.currentUser.uid).get();
                 if (snap.empty) {
-                    ordersContainer.innerHTML = `
+                    let emptyHtml = `
                         <div style="text-align: center; padding: 40px; color: var(--gray);">
                             <i class="fas fa-receipt fa-3x"></i>
                             <p style="margin-top: 15px;">You have no active orders.</p>
                         </div>`;
+                    ordersContainer.innerHTML = emptyHtml;
+                    document.getElementById('ordersToPayList').innerHTML = emptyHtml;
+                    document.getElementById('ordersToShipList').innerHTML = emptyHtml;
+                    document.getElementById('ordersToReceiveList').innerHTML = emptyHtml;
+                    document.getElementById('ordersToReviewList').innerHTML = emptyHtml;
+                    document.getElementById('ordersReturnsList').innerHTML = emptyHtml;
                     return;
                 }
                 
@@ -2134,14 +2191,18 @@
                 window.userOrders.sort((a,b) => new Date(b.date) - new Date(a.date));
 
                 let toPay = 0, toShip = 0, toReceive = 0, toReview = 0;
-                let latestOrder = window.userOrders[0];
+                let htmlAll = '', htmlToPay = '', htmlToShip = '', htmlToReceive = '', htmlToReview = '', htmlReturns = '';
+                let recentUpdates = [];
 
-                let ordersHtml = '';
                 window.userOrders.forEach(order => {
-                    if(order.status === 'Pending') toPay++;
-                    if(order.status === 'Processing') toShip++;
-                    if(order.status === 'Shipped') toReceive++;
-                    if(order.status === 'Delivered') toReview++; // Simplified review count
+                    let isToPay = ['Pending', 'Pending Payment'].includes(order.status) && order.payment !== 'Cash on Delivery';
+                    let isToShip = ['Pending', 'Pending Payment', 'Processing', 'Handed Over'].includes(order.status);
+                    let isToReceive = ['Shipped', 'Delivered'].includes(order.status);
+                    let isReturns = ['Cancelled', 'Returned'].includes(order.status);
+                    let isToReview = false;
+
+                    let hasUnreviewed = false;
+                    let hasReturnable = false;
 
                     let itemsHtml = '';
                     if (order.cartItems && order.cartItems.length > 0) {
@@ -2156,6 +2217,8 @@
                             let reviewBtnHtml = '';
                             let navId = productData ? productData.id : (item.id || item.pid);
                             
+                            let reviewKey = order.id ? `${order.id}_${navId}` : navId;
+
                             if (order.status === 'Delivered') {
                                 if(productData && productData.hasReturnPolicy && productData.returnTime) {
                                     let isReturnValid = true;
@@ -2180,12 +2243,13 @@
                                     } catch(e){}
 
                                     if(isReturnValid) {
-                                        returnBtnHtml = `<div style="margin-top: 8px; display: inline-block; margin-right: 10px;"><button class="btn btn-outline" style="padding: 4px 12px; font-size: 0.75rem; color: #10b981; border-color: #10b981; border-radius: 4px;" onclick="requestReturn('${order.id}', '${productData.id}')"><i class="fas fa-undo"></i> Return</button></div>`;
+                                        hasReturnable = true;
+                                        returnBtnHtml = `<div style="margin-top: 8px; display: inline-block; margin-right: 10px;"><button class="btn btn-outline" style="padding: 4px 12px; font-size: 0.75rem; color: #10b981; border-color: #10b981; border-radius: 4px;" onclick="requestReturn('${order.id}', '${navId}')"><i class="fas fa-undo"></i> Return</button></div>`;
                                     }
                                 }
                                 
-                                let reviewKey = order.id ? `${order.id}_${navId}` : navId;
                                 if(!window.userReviewedProducts.has(reviewKey)) {
+                                    hasUnreviewed = true;
                                     reviewBtnHtml = `<div style="margin-top: 8px; display: inline-block;"><button class="btn btn-primary" style="padding: 4px 12px; font-size: 0.75rem; border-radius: 4px;" onclick="openReviewPage('${navId}', '${order.id}')"><i class="fas fa-star"></i> Write Review</button></div>`;
                                 }
                             }
@@ -2202,16 +2266,30 @@
                             `;
                         });
                     }
-                    
+
+                    if (order.status === 'Delivered' && hasUnreviewed) isToReview = true;
+                    if (hasReturnable) isReturns = true;
+
+                    if(isToPay) toPay++;
+                    if(isToShip) toShip++;
+                    if(isToReceive) toReceive++;
+                    if(isToReview) toReview++;
+
                     let actionButtonsHtml = '';
+                    if (isToPay) {
+                        actionButtonsHtml += `<button class="btn btn-primary" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 6px; margin-left:10px;" onclick="resumePayment('${order.id}')"><i class="fas fa-credit-card"></i> Pay Now</button>`;
+                    }
+                    if (isToShip && order.status !== 'Delivered' && order.status !== 'Cancelled') {
+                        actionButtonsHtml += `<button class="btn btn-outline" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 6px; margin-left:10px;" onclick="cancelOrder('${order.id}')"><i class="fas fa-times"></i> Cancel</button>`;
+                    }
                     if (order.status === 'Delivered' || order.status === 'Cancelled') {
-                        actionButtonsHtml = `<button class="btn btn-primary" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 6px;" onclick="reBuyOrder('${order.id}')"><i class="fas fa-shopping-bag"></i> Re-buy</button>`;
-                    } else {
-                        actionButtonsHtml = `<button class="btn btn-outline" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 6px;" onclick="showOrderTracking('${order.id}', '${order.status || 'Pending'}')"><i class="fas fa-truck"></i> Track</button>`;
+                        actionButtonsHtml += `<button class="btn btn-primary" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 6px; margin-left:10px;" onclick="reBuyOrder('${order.id}')"><i class="fas fa-shopping-bag"></i> Re-buy</button>`;
+                    } else if (!isToPay) {
+                        actionButtonsHtml += `<button class="btn btn-outline" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 6px; margin-left:10px;" onclick="showOrderTracking('${order.id}', '${order.status || 'Pending'}')"><i class="fas fa-truck"></i> Track</button>`;
                     }
                     actionButtonsHtml += `<button class="btn btn-secondary" style="padding: 6px 15px; font-size: 0.85rem; margin-left:10px; border-radius: 6px;" onclick="showOrderSummary('${order.id}')"><i class="fas fa-file-invoice"></i> Summary</button>`;
 
-                    ordersHtml += `
+                    let orderHtml = `
                         <div style="border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 20px; text-align: left; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
                             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 12px;">
                                 <div>
@@ -2225,12 +2303,30 @@
                             ${itemsHtml}
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px; flex-wrap:wrap; gap:15px;">
                                 <div style="font-weight:700; color:var(--dark); font-size:1.1rem;">Total: <span style="color:var(--primary);">৳${order.amount}</span></div>
-                                <div>
+                                <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
                                     ${actionButtonsHtml}
                                 </div>
                             </div>
                         </div>
                     `;
+
+                    htmlAll += orderHtml;
+                    if(isToPay) htmlToPay += orderHtml;
+                    if(isToShip) htmlToShip += orderHtml;
+                    if(isToReceive) htmlToReceive += orderHtml;
+                    if(isToReview) htmlToReview += orderHtml;
+                    if(isReturns) htmlReturns += orderHtml;
+
+                    // Collect slider updates
+                    if (order.cartItems.length > 0 && ['Pending', 'Pending Payment', 'Processing', 'Handed Over', 'Shipped', 'Delivered'].includes(order.status)) {
+                        let snippetText = order.status === 'Delivered' ? 'Package delivered!' : 'Your package is on the way.';
+                        recentUpdates.push({
+                            image: order.cartItems[0].image,
+                            status: order.status,
+                            text: snippetText,
+                            date: order.date.split(' ')[0]
+                        });
+                    }
                 });
                 
                 // Update Dashboard badges
@@ -2243,23 +2339,44 @@
                 document.getElementById('badgeToReview').style.display = toReview > 0 ? 'flex' : 'none';
                 document.getElementById('badgeToReview').textContent = toReview;
 
-                const snippet = document.getElementById('latestOrderSnippet');
-                if(latestOrder && latestOrder.cartItems.length > 0) {
-                    snippet.style.display = 'flex';
-                    let snippetText = latestOrder.status === 'Delivered' ? 'Package delivered!' : (latestOrder.status === 'Cancelled' ? 'Order cancelled' : 'Your package is on the way.');
-                    snippet.innerHTML = `
-                        <img src="${latestOrder.cartItems[0].image}">
-                        <div style="flex:1;">
-                            <div style="font-weight:600; color:#111; font-size: 0.95rem;">${latestOrder.status} &gt;</div>
-                            <div style="font-size:0.8rem; color:#6b7280;">${snippetText}</div>
+                const getEmptyMsg = (msg) => `<div style="text-align: center; padding: 40px; color: var(--gray);"><i class="fas fa-box-open fa-3x"></i><p style="margin-top: 15px;">${msg}</p></div>`;
+
+                ordersContainer.innerHTML = htmlAll || getEmptyMsg('You have no active orders.');
+                document.getElementById('ordersToPayList').innerHTML = htmlToPay || getEmptyMsg('No pending payments found.');
+                document.getElementById('ordersToShipList').innerHTML = htmlToShip || getEmptyMsg('No orders currently to ship.');
+                document.getElementById('ordersToReceiveList').innerHTML = htmlToReceive || getEmptyMsg('No orders to receive right now.');
+                document.getElementById('ordersToReviewList').innerHTML = htmlToReview || getEmptyMsg('No products pending for review.');
+                document.getElementById('ordersReturnsList').innerHTML = htmlReturns || getEmptyMsg('No returns or cancellations.');
+
+                // Slider Implementation
+                const sliderContainer = document.getElementById('latestOrderSliderContainer');
+                const track = document.getElementById('latestOrderTrack');
+                if (recentUpdates.length > 0) {
+                    sliderContainer.style.display = 'block';
+                    track.innerHTML = recentUpdates.slice(0, 5).map(u => `
+                        <div class="latest-order-snippet" onclick="showProfileSection('tracking')">
+                            <img src="${u.image}">
+                            <div style="flex:1;">
+                                <div style="font-weight:600; color:#111; font-size: 0.95rem;">${u.status} &gt;</div>
+                                <div style="font-size:0.8rem; color:#6b7280;">${u.text}</div>
+                            </div>
+                            <div style="font-size:0.75rem; color:#9ca3af;">${u.date}</div>
                         </div>
-                        <div style="font-size:0.75rem; color:#9ca3af;">${latestOrder.date.split(' ')[0]}</div>
-                    `;
+                    `).join('');
+
+                    if (window.orderSliderInterval) clearInterval(window.orderSliderInterval);
+                    if (recentUpdates.length > 1) {
+                        window.orderSliderInterval = setInterval(() => {
+                            let scrollPos = track.scrollLeft + track.clientWidth;
+                            if (scrollPos >= track.scrollWidth - 10) scrollPos = 0;
+                            track.scrollTo({ left: scrollPos, behavior: 'smooth' });
+                        }, 3000);
+                    }
                 } else {
-                    snippet.style.display = 'none';
+                    sliderContainer.style.display = 'none';
+                    track.innerHTML = '';
                 }
 
-                ordersContainer.innerHTML = ordersHtml;
             } catch (e) {
                 console.error("Error fetching orders:", e);
                 ordersContainer.innerHTML = '<p>Error loading orders.</p>';
@@ -2301,6 +2418,40 @@
             } else {
                 showCustomAlert('Unavailable', 'Products in this order are currently out of stock or unavailable.');
             }
+        };
+
+        window.cancelOrder = async function(orderId) {
+            if(!confirm('Are you sure you want to cancel this order?')) return;
+            try {
+                await db.collection('orders').doc(orderId).update({ status: 'Cancelled' });
+                showNotification('Order cancelled successfully.');
+                fetchUserOrders();
+            } catch(e) {
+                showCustomAlert('Error', 'Failed to cancel order.');
+            }
+        };
+
+        window.resumePayment = function(orderId) {
+            const order = window.userOrders.find(o => o.id === orderId);
+            if(!order) return;
+            
+            cart = order.cartItems.map(item => ({
+                id: item.id || item.pid,
+                pid: item.pid || item.id,
+                cartId: `${item.id}-${item.color}-${item.size}`,
+                name: item.name,
+                price: item.price,
+                image: item.image,
+                quantity: item.qty,
+                selected: true,
+                color: item.color || 'N/A',
+                size: item.size || 'N/A'
+            }));
+            
+            updateCartCount();
+            renderCartItems();
+            window.currentOrderSubtotal = order.amount;
+            navigateTo('checkout');
         };
 
         window.showOrderSummary = function(orderId) {
