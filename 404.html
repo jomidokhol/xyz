@@ -1,0 +1,690 @@
+function closeAddressSelect() {
+        document.getElementById('addressSelectOverlay').classList.remove('active');
+        document.getElementById('addressSelectPanel').classList.remove('active');
+    }
+
+    function openAddressForm(index = null) {
+        document.getElementById('addressListContainer').style.display = 'none';
+        document.getElementById('newAddressForm').style.display = 'block';
+        
+        if (index !== null && index >= 0) {
+            const addr = savedAddresses[index];
+            document.getElementById('addressFormTitle').textContent = 'Edit Address';
+            document.getElementById('editAddressId').value = index;
+            document.getElementById('addrTitle').value = addr.title || '';
+            document.getElementById('addrName').value = addr.name || '';
+            document.getElementById('addrPhone').value = addr.phone || '';
+            document.getElementById('addrEmail').value = addr.email || currentUser?.email || '';
+            document.getElementById('addrRegion').value = addr.region || '';
+            document.getElementById('addrPostCode').value = addr.postcode || '';
+            document.getElementById('addrFull').value = addr.address || '';
+        } else {
+            document.getElementById('addressFormTitle').textContent = 'Add New Address';
+            document.getElementById('newAddressForm').reset();
+            document.getElementById('editAddressId').value = '';
+            document.getElementById('addrEmail').value = currentUser?.email || '';
+            if(currentUser) {
+                document.getElementById('addrName').value = currentUser.name;
+                document.getElementById('addrPhone').value = currentUser.phone;
+            }
+        }
+    }
+
+    async function saveAddressesToFirebase() {
+        if(!auth.currentUser) return;
+        try {
+            if(savedAddresses.length > 0) {
+                let hasDefault = savedAddresses.some(a => a.isDefault);
+                if(!hasDefault) savedAddresses[0].isDefault = true;
+            }
+            await db.collection('users').doc(auth.currentUser.uid).update({ addresses: savedAddresses });
+        } catch (error) {
+            console.error("Error saving address:", error);
+            showCustomAlert("Error", "Failed to save address to database.");
+        }
+    }
+    
+    function renderPaymentMethods() {
+        const container = document.getElementById('checkoutPaymentMethods');
+        container.innerHTML = '';
+        
+        const codDiv = document.createElement('div');
+        codDiv.className = 'payment-method active';
+        codDiv.dataset.method = 'Cash on Delivery';
+        codDiv.innerHTML = `<i class="fas fa-money-bill-wave fa-2x"></i><p>Cash on Delivery</p>`;
+        codDiv.onclick = () => selectPaymentMethod(codDiv);
+        container.appendChild(codDiv);
+
+        paymentGateways.forEach(gw => {
+            const gwDiv = document.createElement('div');
+            gwDiv.className = 'payment-method';
+            gwDiv.dataset.method = gw.name;
+            gwDiv.innerHTML = `<img src="${gw.logo}" alt="${gw.name}"><p>${gw.name}</p>`;
+            gwDiv.onclick = () => selectPaymentMethod(gwDiv);
+            container.appendChild(gwDiv);
+        });
+    }
+    
+    function selectPaymentMethod(element) {
+        document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('active'));
+        element.classList.add('active');
+    }
+
+    function applyFilterAndRender(productsList, filter, targetGrid) {
+        let sortedProducts = [...productsList];
+        const getPrice = p => (p.variants && p.variants.length > 0) ? p.variants[0].price : (p.price || 0);
+
+        switch(filter) {
+            case 'price-asc': sortedProducts.sort((a, b) => getPrice(a) - getPrice(b)); break;
+            case 'price-desc': sortedProducts.sort((a, b) => getPrice(b) - getPrice(a)); break;
+            case 'top-selling': sortedProducts.sort((a, b) => (b.sales || 0) - (a.sales || 0)); break;
+            case 'most-discount': sortedProducts.sort((a, b) => (b.discount || 0) - (a.discount || 0)); break;
+            case 'default': default: break;
+        }
+        renderProducts(sortedProducts, targetGrid);
+    }
+
+    function showPromoPopup() {
+        if(randomPopups.length === 0) return;
+
+        let unreviewedProduct = null;
+        if (isLoggedIn && window.userOrders) {
+             for(let order of window.userOrders) {
+                 if(order.status === 'Delivered') {
+                     for(let item of order.cartItems) {
+                         let pid = item.id || item.pid;
+                         let reviewKey = `${order.id}_${pid}`;
+                         if(!window.userReviewedProducts.has(reviewKey)) {
+                             unreviewedProduct = {...item, orderId: order.id}; break;
+                         }
+                     }
+                 }
+                 if(unreviewedProduct) break;
+             }
+        }
+
+        if (unreviewedProduct) {
+             document.getElementById('promoPopupImg').src = unreviewedProduct.image;
+             document.getElementById('promoPopupName').textContent = "Please review your recent purchase: " + unreviewedProduct.name;
+             document.getElementById('promoPopupPrice').style.display = 'none';
+             document.getElementById('promoPopupDiscount').style.display = 'none';
+             document.getElementById('promoPopupOldPrice').style.display = 'none';
+             document.getElementById('promoPopupAction').textContent = "Review Now";
+             document.getElementById('promoPopupAction').style.display = 'block';
+             document.getElementById('promoPopupAction').onclick = () => {
+                 openReviewPage(unreviewedProduct.id || unreviewedProduct.pid, unreviewedProduct.orderId);
+                 hidePromoPopup();
+             };
+             promoPopup.classList.add('visible');
+             return;
+        }
+
+        const popupData = randomPopups[Math.floor(Math.random() * randomPopups.length)];
+        
+        if (popupData.type === 'product' && popupData.productId) {
+            const prod = products.find(p => p.id === popupData.productId);
+            if (prod) {
+                const price = prod.variants && prod.variants.length > 0 ? prod.variants[0].price : (prod.price || 0);
+                document.getElementById('promoPopupImg').src = popupData.bannerLogo || prod.images[0];
+                document.getElementById('promoPopupName').textContent = prod.name.length > 20 ? prod.name.substring(0,20)+'...' : prod.name;
+                document.getElementById('promoPopupPrice').textContent = `${price.toFixed(0)} ৳`;
+                
+                const origPrice = prod.originalPrice || 0;
+                if (origPrice > price) {
+                    document.getElementById('promoPopupOldPrice').textContent = `${origPrice.toFixed(0)} ৳`;
+                    document.getElementById('promoPopupOldPrice').style.display = 'inline-block';
+                    document.getElementById('promoPopupDiscount').innerHTML = `${Math.round(((origPrice-price)/origPrice)*100)}%<br>OFF`;
+                    document.getElementById('promoPopupDiscount').style.display = 'block';
+                } else {
+                    document.getElementById('promoPopupOldPrice').style.display = 'none';
+                    document.getElementById('promoPopupDiscount').style.display = 'none';
+                }
+                
+                document.getElementById('promoPopupAction').textContent = popupData.actionButtonName || 'Shop Now';
+                document.getElementById('promoPopupAction').style.display = 'block';
+                document.getElementById('promoPopupAction').onclick = () => {
+                    navigateTo(`product-details?id=${prod.id}`);
+                    hidePromoPopup();
+                };
+            }
+        } else {
+            document.getElementById('promoPopupImg').src = popupData.bannerLogo || '';
+            document.getElementById('promoPopupName').textContent = popupData.name || '';
+            
+            if (popupData.price && popupData.price > 0) {
+                document.getElementById('promoPopupPrice').textContent = `${popupData.price} ৳`;
+                document.getElementById('promoPopupPrice').style.display ='inline-block';
+            } else {
+                document.getElementById('promoPopupPrice').style.display = 'none';
+            }
+            
+            if (popupData.discount && popupData.discount > 0) {
+                document.getElementById('promoPopupDiscount').innerHTML = `${popupData.discount}%<br>OFF`;
+                document.getElementById('promoPopupDiscount').style.display = 'block';
+            } else {
+                document.getElementById('promoPopupDiscount').style.display = 'none';
+            }
+            document.getElementById('promoPopupOldPrice').style.display = 'none';
+            
+            if (popupData.actionButton) {
+                document.getElementById('promoPopupAction').textContent = popupData.actionButtonName || 'Click Here';
+                document.getElementById('promoPopupAction').style.display = 'block';
+                document.getElementById('promoPopupAction').onclick = () => {
+                    if (popupData.actionButtonLink) window.location.href = popupData.actionButtonLink;
+                    hidePromoPopup();
+                };
+            } else {
+                document.getElementById('promoPopupAction').style.display = 'none';
+            }
+        }
+        
+        promoPopup.classList.add('visible');
+    }
+
+    function hidePromoPopup() {
+        promoPopup.classList.remove('visible');
+    }
+    
+    function showPromoPopupWithCheck() {
+        const isAnyOverlayActive = document.querySelector('.cart-overlay.active, .options-panel-overlay.active, .custom-alert-overlay.active, .welcome-overlay.active, .order-details-overlay.active, .lightbox[style*="display: flex"], .cod-confirm-overlay.active, .date-picker-overlay.active');
+        if (!isAnyOverlayActive) {
+            showPromoPopup();
+        }
+    }
+
+    function executeOrderPlacement(orderAddress, selectedItems, paymentMethodText, subtotal, shippingFee, codFee, couponDiscount = 0) {
+        const orderNo = Math.floor(Math.random() * 1000000000000) + 1000000000000;
+        const dateObj = new Date();
+        const date = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + dateObj.toLocaleTimeString('en-GB', { hour12: false });
+        
+        const total = subtotal - couponDiscount + shippingFee + codFee;
+        
+        let itemsHtml = '';
+        selectedItems.forEach(item => {
+            const variantText = (item.color!=='N/A' ? item.color : '') + (item.size!=='N/A' ? `, ${item.size}` : '');
+            itemsHtml += `
+                <div class="od-item">
+                    <img src="${item.image}" alt="">
+                    <div class="od-item-info">
+                        <h4>${item.name}</h4>
+                        ${variantText ? `<div class="od-item-variant">${variantText}</div>` : ''}
+                        <div class="od-item-price-row">
+                            <span class="od-item-price">৳ ${item.price.toFixed(0)}</span>
+                            <span class="od-item-qty">Qty: ${item.quantity}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        if(isLoggedIn && currentUser) {
+             const orderData = {
+                 id: orderNo.toString(),
+                 customer: orderAddress.name,
+                 phone: orderAddress.phone,
+                 address: `${orderAddress.address}, ${orderAddress.region} - ${orderAddress.postcode}`,
+                 amount: total,
+                 date: date,
+                 status: 'Pending',
+                 payment: paymentMethodText,
+                 cartItems: selectedItems.map(i => ({
+                     id: i.id,
+                     pid: i.pid || i.id,
+                     name: i.name,
+                     price: i.price,
+                     qty: i.quantity,
+                     color: i.color,
+                     size: i.size,
+                     image: i.image
+                 })),
+                 userId: auth.currentUser.uid
+             };
+             db.collection('orders').doc(orderNo.toString()).set(orderData);
+        }
+        
+        document.querySelector('.od-actions').style.display = 'block'; 
+        
+        document.getElementById('odBody').innerHTML = itemsHtml;
+        document.getElementById('odSubtotal').parentNode.style.display = 'flex';
+        document.getElementById('odShipping').parentNode.style.display = 'flex';
+        document.getElementById('odCOD').parentNode.style.display = 'flex';
+        
+        if (couponDiscount > 0) {
+            document.getElementById('odCouponRow').style.display = 'flex';
+            document.getElementById('odCoupon').textContent = `-৳ ${couponDiscount.toFixed(0)}`;
+        } else {
+            document.getElementById('odCouponRow').style.display = 'none';
+        }
+        
+        document.getElementById('odSubtotal').textContent = `৳ ${subtotal.toFixed(0)}`;
+        document.getElementById('odShipping').textContent = `৳ ${shippingFee}`;
+        document.getElementById('odCOD').textContent = codFee === 0 ? 'Free' : `৳ ${codFee}`;
+        document.getElementById('odTotal').textContent = `৳ ${total.toFixed(0)}`;
+        document.getElementById('odPaidAmount').textContent = `৳ ${total.toFixed(0)}`;
+        document.getElementById('odPaidMethodName').textContent = paymentMethodText;
+        document.getElementById('odOrderNo').textContent = orderNo;
+        document.getElementById('odDate').textContent = date;
+        document.getElementById('odPaymentMethod').textContent = paymentMethodText;
+        
+        document.getElementById('orderDetailsOverlay').classList.add('active');
+        
+        cart = cart.filter(item => !item.selected);
+        updateCartCount();
+        renderCartItems();
+    }
+
+    // --- Custom Date Picker Logic ---
+    let dpSelectedYear = new Date().getFullYear();
+    let dpSelectedMonth = new Date().getMonth() + 1;
+    let dpSelectedDay = new Date().getDate();
+    let dpScrollTimeout;
+
+    function initDatePicker() {
+        populateDatePicker();
+    }
+
+    function openDatePicker() {
+        document.getElementById('datePickerOverlay').classList.add('active');
+        
+        let currentVal = document.getElementById('profileBirthday').value;
+        if(currentVal) {
+            let parts = currentVal.split('-');
+            if(parts.length === 3) {
+                dpSelectedYear = parseInt(parts[0]);
+                dpSelectedMonth = parseInt(parts[1]);
+                dpSelectedDay = parseInt(parts[2]);
+                populateDatePicker();
+            }
+        } else {
+            populateDatePicker();
+        }
+    }
+
+    function closeDatePicker() {
+        document.getElementById('datePickerOverlay').classList.remove('active');
+    }
+
+    function populateDatePicker() {
+        const yearCol = document.getElementById('dpYear');
+        const monthCol = document.getElementById('dpMonth');
+        const dayCol = document.getElementById('dpDay');
+        
+        let yearsHtml = '<div style="height: 55px;"></div>';
+        const currentYear = new Date().getFullYear();
+        for(let i = currentYear - 100; i <= currentYear; i++) {
+            yearsHtml += `<div class="dp-item ${i === dpSelectedYear ? 'selected' : ''}" data-val="${i}">${i}</div>`;
+        }
+        yearsHtml += '<div style="height: 55px;"></div>';
+        yearCol.innerHTML = yearsHtml;
+
+        let monthsHtml = '<div style="height: 55px;"></div>';
+        for(let i = 1; i <= 12; i++) {
+            let m = i.toString().padStart(2, '0');
+            monthsHtml += `<div class="dp-item ${i === dpSelectedMonth ? 'selected' : ''}" data-val="${i}">${m}</div>`;
+        }
+        monthsHtml += '<div style="height: 55px;"></div>';
+        monthCol.innerHTML = monthsHtml;
+
+        populateDays(dpSelectedYear, dpSelectedMonth);
+        
+        setTimeout(() => {
+            scrollToSelected(yearCol);
+            scrollToSelected(monthCol);
+            scrollToSelected(dayCol);
+        }, 100);
+    }
+
+    function populateDays(year, month) {
+        const dayCol = document.getElementById('dpDay');
+        const daysInMonth = new Date(year, month, 0).getDate();
+        if (dpSelectedDay > daysInMonth) dpSelectedDay = daysInMonth;
+        
+        let daysHtml = '<div style="height: 55px;"></div>';
+        for(let i = 1; i <= daysInMonth; i++) {
+            let d = i.toString().padStart(2, '0');
+            daysHtml += `<div class="dp-item ${i === dpSelectedDay ? 'selected' : ''}" data-val="${i}">${d}</div>`;
+        }
+        daysHtml += '<div style="height: 55px;"></div>';
+        dayCol.innerHTML = daysHtml;
+    }
+
+    function scrollToSelected(container) {
+        const selected = container.querySelector('.dp-item.selected');
+        if (selected) {
+            container.scrollTop = selected.offsetTop - 55;
+        }
+    }
+
+    function handleDpScroll(colId) {
+        clearTimeout(dpScrollTimeout);
+        dpScrollTimeout = setTimeout(() => {
+            const container = document.getElementById(colId);
+            const items = container.querySelectorAll('.dp-item');
+            const center = container.scrollTop + 55 + 20; 
+            
+            let closest = null;
+            let minDiff = Infinity;
+            
+            items.forEach(item => {
+                const diff = Math.abs((item.offsetTop + 20) - center);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closest = item;
+                }
+            });
+
+            if (closest) {
+                items.forEach(i => i.classList.remove('selected'));
+                closest.classList.add('selected');
+                const val = parseInt(closest.dataset.val);
+                
+                if (colId === 'dpYear') dpSelectedYear = val;
+                if (colId === 'dpMonth') dpSelectedMonth = val;
+                if (colId === 'dpDay') dpSelectedDay = val;
+                
+                if (colId === 'dpYear' || colId === 'dpMonth') {
+                    populateDays(dpSelectedYear, dpSelectedMonth);
+                    setTimeout(() => scrollToSelected(document.getElementById('dpDay')), 50);
+                }
+                container.scrollTop = closest.offsetTop - 55;
+            }
+        }, 150);
+    }
+
+    function confirmDatePicker() {
+        const y = dpSelectedYear;
+        const m = dpSelectedMonth.toString().padStart(2, '0');
+        const d = dpSelectedDay.toString().padStart(2, '0');
+        document.getElementById('profileBirthday').value = `${y}-${m}-${d}`;
+        closeDatePicker();
+    }
+    // --- End Date Picker Logic ---
+
+    function setupEventListeners() {
+        let adTimer;
+        let timeLeft = 5;
+
+        function closeAdBanner() {
+            welcomeOverlay.classList.remove('active');
+            clearInterval(adTimer);
+            setTimeout(showPromoPopup, 8000);
+            setInterval(showPromoPopupWithCheck, 120000);
+        }
+
+        document.getElementById('closeWelcomeOverlay').addEventListener('click', closeAdBanner);
+        
+        const hasSeenPopup = sessionStorage.getItem('popupShown');
+        if (document.getElementById('welcomeOverlay').style.display !== 'none' && !hasSeenPopup) {
+             sessionStorage.setItem('popupShown', 'true');
+             timeLeft = 5;
+             document.getElementById('adCountdown').textContent = `close in ${timeLeft}s`;
+             welcomeOverlay.classList.add('active'); 
+             adTimer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('adCountdown').textContent = `close in ${timeLeft}s`;
+                if (timeLeft <= 0) {
+                    closeAdBanner();
+                }
+            }, 1000);
+        } else {
+             document.getElementById('welcomeOverlay').style.display = 'none';
+             setTimeout(showPromoPopup, 8000);
+             setInterval(showPromoPopupWithCheck, 120000);
+        }
+        
+        document.getElementById('promoPopupClose').addEventListener('click', hidePromoPopup);
+        
+        // Closing Overlays by clicking outside
+        document.addEventListener('click', (e) => {
+            if (e.target === cartOverlay) cartOverlay.classList.remove('active');
+            if (e.target === document.getElementById('variantLayerOverlay')) closeVariantLayer();
+            if (e.target === document.getElementById('addressSelectOverlay')) closeAddressSelect();
+            if (e.target === document.getElementById('datePickerOverlay')) closeDatePicker();
+            if (e.target === document.getElementById('orderDetailsOverlay')) document.getElementById('orderDetailsOverlay').classList.remove('active');
+            if (e.target === document.getElementById('codConfirmOverlay')) document.getElementById('codConfirmOverlay').classList.remove('active');
+            if (e.target === document.getElementById('customAlert')) document.getElementById('customAlert').classList.remove('active');
+        });
+
+        cartIcon.addEventListener('click', () => cartOverlay.classList.add('active'));
+        closeCart.addEventListener('click', () => cartOverlay.classList.remove('active'));
+        
+        detailDecQty.addEventListener('click', () => { if (detailQty.value > 1) detailQty.value--; });
+        detailIncQty.addEventListener('click', () => { 
+            const maxStock = parseInt(detailQty.max) || Infinity;
+            if (parseInt(detailQty.value) < maxStock) {
+                detailQty.value++; 
+            } else {
+                showCustomAlert('Stock Limit', 'Cannot select more than available stock.');
+            }
+        });
+        
+        detailQty.addEventListener('change', () => {
+            const maxStock = parseInt(detailQty.max) || 1;
+            let val = parseInt(detailQty.value);
+            if(isNaN(val) || val < 1) val = 1;
+            if(val > maxStock) {
+                val = maxStock;
+                showCustomAlert('Stock Limit', 'Cannot select more than available stock.');
+            }
+            detailQty.value = val;
+        });
+
+        document.getElementById('vlCloseBtn').addEventListener('click', closeVariantLayer);
+        
+        document.getElementById('vlDecQty').addEventListener('click', () => { 
+            const vlQty = document.getElementById('vlQty');
+            if (vlQty.value > 1) vlQty.value--; 
+        });
+        document.getElementById('vlIncQty').addEventListener('click', () => { 
+            const vlQty = document.getElementById('vlQty');
+            const maxStock = parseInt(vlQty.max) || Infinity;
+            if (parseInt(vlQty.value) < maxStock) {
+                vlQty.value++; 
+            } else {
+                showCustomAlert('Stock Limit', 'Cannot select more than available stock.');
+            }
+        });
+        document.getElementById('vlQty').addEventListener('change', () => {
+            const vlQty = document.getElementById('vlQty');
+            const maxStock = parseInt(vlQty.max) || 1;
+            let val = parseInt(vlQty.value);
+            if(isNaN(val) || val < 1) val = 1;
+            if(val > maxStock) {
+                val = maxStock;
+                showCustomAlert('Stock Limit', 'Cannot select more than available stock.');
+            }
+            vlQty.value = val;
+        });
+
+        document.getElementById('vlConfirmBtn').addEventListener('click', () => {
+            if (!selectedVariant) {
+                showCustomAlert('Selection Required', 'Please select a valid variant to continue.');
+                return;
+            }
+            const qtyToOrder = parseInt(document.getElementById('vlQty').value);
+            addToCart(currentProduct.id, qtyToOrder, selectedVariant);
+            closeVariantLayer();
+
+            if (pendingActionToConfirm === 'buy') {
+                cartOverlay.classList.remove('active');
+                navigateTo('order-summary');
+            }
+        });
+        
+        const handleActionRequest = (action) => {
+            if (currentProduct.variants && currentProduct.variants.length > 0) {
+                openVariantLayer(action);
+            } else {
+                addToCart(currentProduct.id, parseInt(detailQty.value), null);
+                if (action === 'buy') {
+                    cartOverlay.classList.remove('active');
+                    navigateTo('order-summary');
+                }
+            }
+        };
+
+        detailAddToCartSticky.addEventListener('click', () => requireLogin(() => handleActionRequest('cart')));
+        detailBuyNowSticky.addEventListener('click', () => requireLogin(() => handleActionRequest('buy')));
+        
+        checkoutBtn.addEventListener('click', () => {
+            requireLogin(() => {
+                 const selectedItems = cart.filter(item => item.selected);
+                if (selectedItems.length === 0) {
+                    showCustomAlert('No Item Selected', 'Please select an item to checkout.');
+                    return;
+                }
+                cartOverlay.classList.remove('active');
+                navigateTo('order-summary');
+            });
+        });
+        
+        document.getElementById('applyCouponBtn')?.addEventListener('click', () => {
+            const code = document.getElementById('couponCode').value.trim().toUpperCase();
+            if(code === 'DISCOUNT10') {
+                window.appliedCouponDiscount = window.currentOrderSubtotal * 0.1;
+                showNotification('Coupon applied! 10% off.');
+            } else if(code === 'DISCOUNT50') {
+                window.appliedCouponDiscount = 50;
+                showNotification('Coupon applied! ৳50 off.');
+            } else {
+                window.appliedCouponDiscount = 0;
+                showCustomAlert('Invalid Coupon', 'The coupon code is invalid or expired.');
+            }
+            document.getElementById('osDiscount').textContent = `-৳${window.appliedCouponDiscount.toFixed(2)}`;
+            
+            let defaultAddr = window.osSelectedAddress;
+            let shippingFee = defaultAddr ? (defaultAddr.region === 'Outside Dhaka' ? appDeliveryOutside : appDeliveryInside) : 0;
+            const newTotal = window.currentOrderSubtotal - window.appliedCouponDiscount + shippingFee;
+            document.getElementById('osTotal').textContent = `৳${Math.max(0, newTotal).toFixed(0)}`;
+        });
+
+        checkoutForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const orderAddress = window.osSelectedAddress;
+            
+            if (!orderAddress) {
+                showCustomAlert('No Address', 'Please go back and select a shipping address.');
+                return;
+            }
+
+            const selectedItems = cart.filter(item => item.selected);
+            if (selectedItems.length === 0) { 
+                showCustomAlert('Cart Empty', 'Your cart is empty or no item is selected.'); 
+                return; 
+            }
+            
+            const activePayment = document.querySelector('.payment-method.active');
+            const paymentMethodText = activePayment ? activePayment.dataset.method : 'Cash on Delivery';
+            
+            let subtotal = 0;
+            selectedItems.forEach(item => subtotal += item.price * item.quantity);
+            const finalSubtotal = Math.max(0, subtotal - (window.appliedCouponDiscount || 0));
+            
+            const shippingFee = (orderAddress.region === 'Outside Dhaka') ? appDeliveryOutside : appDeliveryInside; 
+            
+            if (paymentMethodText === 'Cash on Delivery') {
+                const codFee = appCodHandlingFee;
+                const totalBase = finalSubtotal + shippingFee;
+                
+                document.getElementById('codStoreNameSpan').textContent = document.getElementById('pageTitle').textContent;
+                document.getElementById('codConfirmSubtotal').textContent = `৳ ${totalBase.toFixed(0)}`;
+                document.getElementById('codConfirmFee').textContent = codFee === 0 ? 'Free' : `৳ ${codFee.toFixed(0)}`;
+                document.getElementById('codConfirmTotal').textContent = `৳ ${(totalBase + codFee).toFixed(0)}`;
+                
+                pendingOrderParams = { orderAddress, selectedItems, paymentMethodText, subtotal, shippingFee, codFee, couponDiscount: window.appliedCouponDiscount };
+                document.getElementById('codConfirmOverlay').classList.add('active');
+            } else {
+                executeOrderPlacement(orderAddress, selectedItems, paymentMethodText, subtotal, shippingFee, 0, window.appliedCouponDiscount);
+            }
+        });
+
+        document.getElementById('codConfirmPlaceOrderBtn').addEventListener('click', () => {
+            if(pendingOrderParams) {
+                document.getElementById('codConfirmOverlay').classList.remove('active');
+                executeOrderPlacement(
+                    pendingOrderParams.orderAddress, 
+                    pendingOrderParams.selectedItems, 
+                    pendingOrderParams.paymentMethodText, 
+                    pendingOrderParams.subtotal, 
+                    pendingOrderParams.shippingFee, 
+                    pendingOrderParams.codFee,
+                    pendingOrderParams.couponDiscount
+                );
+                pendingOrderParams = null;
+            }
+        });
+
+        document.getElementById('closeOrderDetails').addEventListener('click', () => {
+            document.getElementById('orderDetailsOverlay').classList.remove('active');
+            if (document.querySelector('.od-actions').style.display !== 'none') {
+                navigateTo('home');
+            }
+        });
+        document.getElementById('odContinueShopping').addEventListener('click', () => {
+            document.getElementById('orderDetailsOverlay').classList.remove('active');
+            navigateTo('home');
+        });
+        document.getElementById('odCopy').addEventListener('click', (e) => {
+            e.preventDefault();
+            navigator.clipboard.writeText(document.getElementById('odOrderNo').textContent);
+            const orig = e.target.textContent;
+            e.target.textContent = 'Copied!';
+            setTimeout(() => e.target.textContent = orig, 2000);
+        });
+
+        document.getElementById('loginForm')?.addEventListener('submit', async (e) => { 
+            e.preventDefault(); 
+            const email = e.target.querySelector('input[type=email]').value;
+            const password = e.target.querySelector('input[type=password]').value;
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                showCustomAlert('Login Successful', 'Welcome back!', () => navigateTo('profile')); 
+            } catch(error) {
+                showCustomAlert('Login Failed', error.message);
+            }
+        });
+
+        document.getElementById('registerForm')?.addEventListener('submit', async (e) => { 
+            e.preventDefault(); 
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const phone = document.getElementById('registerPhone').value;
+            const passwords = e.target.querySelectorAll('input[type=password]');
+            const password = passwords[0].value;
+            const confirmPassword = passwords[1].value;
+
+            if (password !== confirmPassword) {
+                showCustomAlert('Error', 'Passwords do not match');
+                return;
+            }
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                await userCredential.user.updateProfile({ displayName: name });
+                await db.collection('users').doc(userCredential.user.uid).set({ name, email, phone });
+                showCustomAlert('Registration Successful', 'Your account has been created successfully.', () => navigateTo('profile'));
+            } catch(error) {
+                showCustomAlert('Registration Failed', error.message);
+            }
+        });
+        
+        document.querySelectorAll('.google-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const provider = new firebase.auth.GoogleAuthProvider();
+                try {
+                    const result = await auth.signInWithPopup(provider);
+                    const userDoc = await db.collection('users').doc(result.user.uid).get();
+                    if (!userDoc.exists) {
+                        await db.collection('users').doc(result.user.uid).set({
+                            name: result.user.displayName,
+                            email: result.user.email,
+                            phone: ''
+                        });
+                    }
+                    showCustomAlert('Login Successful', 'Welcome!', () => navigateTo('profile'));
+                } catch(error) {
+                    showCustomAlert('Login Failed', error.message);
+                }
+            });
+        });
