@@ -1329,6 +1329,7 @@
                         <li><a href="javascript:void(0)" onclick="navigateTo('home')">Home</a></li>
                         <li><a href="javascript:void(0)" onclick="navigateTo('home')">Shop</a></li>
                         <li><a href="javascript:void(0)" onclick="navigateTo('home')">Contact</a></li>
+                        <li><a href="support.html">Support Chat</a></li>
                     </ul>
                 </div>
                 
@@ -2380,6 +2381,7 @@
 
                     let hasUnreviewed = false;
                     let hasReturnable = false;
+                    let canCancelOrder = true;
 
                     let itemsHtml = '';
                     if (order.cartItems && order.cartItems.length > 0) {
@@ -2396,6 +2398,7 @@
                             
                             let reviewKey = order.id ? `${order.id}_${navId}` : navId;
 
+                            // Process Return Time Validity
                             if (order.status === 'Delivered') {
                                 if(productData && productData.hasReturnPolicy && productData.returnTime) {
                                     let isReturnValid = true;
@@ -2411,13 +2414,13 @@
                                             if(timeUnit.includes('day')) timeLimitMs = timeValue * 24 * 60 * 60 * 1000;
                                             else if(timeUnit.includes('hour')) timeLimitMs = timeValue * 60 * 60 * 1000;
                                             
-                                            let deliveryBufferMs = 3 * 24 * 60 * 60 * 1000; 
-                                            
-                                            if (now.getTime() - orderDate.getTime() > (timeLimitMs + deliveryBufferMs)) {
+                                            if (now.getTime() - orderDate.getTime() > timeLimitMs) {
                                                 isReturnValid = false;
                                             }
+                                        } else {
+                                            isReturnValid = false;
                                         }
-                                    } catch(e){}
+                                    } catch(e){ isReturnValid = false; }
 
                                     if(isReturnValid) {
                                         hasReturnable = true;
@@ -2431,6 +2434,26 @@
                                 }
                             }
                             
+                            // Process Cancellation Time Validity
+                            if (canCancelOrder) {
+                                if (productData && productData.hasOrderCancellation) {
+                                    let cancelVal = parseInt(productData.orderCancelTimeValue) || 0;
+                                    let cancelUnit = productData.orderCancelTimeUnit || ''; 
+                                    let limitMs = cancelUnit.includes('Hour') ? cancelVal * 3600000 : cancelVal * 60000;
+                                    
+                                    let oDate = new Date(order.date);
+                                    if (!isNaN(oDate.getTime())) {
+                                        if (Date.now() - oDate.getTime() > limitMs) {
+                                            canCancelOrder = false;
+                                        }
+                                    } else {
+                                        canCancelOrder = false; 
+                                    }
+                                } else {
+                                    canCancelOrder = false; 
+                                }
+                            }
+
                             itemsHtml += `
                                 <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:12px;">
                                     <img src="${item.image}" style="width:65px; height:65px; object-fit:cover; border-radius:6px; cursor:pointer; border: 1px solid #ddd;" onclick="navigateToProduct('${navId}')">
@@ -2456,7 +2479,7 @@
                     if (isToPay) {
                         actionButtonsHtml += `<button class="btn btn-primary" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 6px; margin-left:10px;" onclick="resumePayment('${order.id}')"><i class="fas fa-credit-card"></i> Pay Now</button>`;
                     }
-                    if (isToShip && order.status !== 'Delivered' && order.status !== 'Cancelled') {
+                    if (isToShip && order.status !== 'Delivered' && order.status !== 'Cancelled' && canCancelOrder) {
                         actionButtonsHtml += `<button class="btn btn-outline" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 6px; margin-left:10px;" onclick="cancelOrder('${order.id}')"><i class="fas fa-times"></i> Cancel</button>`;
                     }
                     if (order.status === 'Delivered' || order.status === 'Cancelled') {
@@ -3391,6 +3414,80 @@
                 const firstColor = container.querySelector('.color-option:not(.out-of-stock)');
                 if(firstColor) firstColor.click();
             }
+
+            // --- Image Watermark Protection System ---
+            function applyWatermarkToElement(imgEl) {
+                // Skip if already watermarked, failed previously due to CORS, or is already a Base64 data URL
+                if (!imgEl || imgEl.dataset.watermarked === 'true' || imgEl.dataset.watermarked === 'failed' || imgEl.src.startsWith('data:')) return;
+                
+                const img = new Image();
+                img.crossOrigin = "Anonymous";
+                img.src = imgEl.src;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    
+                    const shopName = document.getElementById('pageTitle').textContent || 'Shop';
+                    const domain = appDomainName.replace(/^https?:\/\//, '');
+                    const wmText = `${shopName} - ${domain}`;
+                    
+                    ctx.font = `bold ${Math.max(12, canvas.width / 15)}px Poppins, sans-serif`;
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.shadowColor = "rgba(0, 0, 0, 0.7)";
+                    ctx.shadowOffsetX = 1;
+                    ctx.shadowOffsetY = 1;
+                    ctx.shadowBlur = 4;
+                    
+                    // Draw Watermark at Center
+                    ctx.fillText(wmText, canvas.width / 2, canvas.height / 2);
+                    
+                    // Draw Smaller Watermark at Bottom
+                    ctx.font = `bold ${Math.max(10, canvas.width / 25)}px Poppins, sans-serif`;
+                    ctx.fillText(wmText, canvas.width / 2, canvas.height - 20);
+                    
+                    try {
+                        imgEl.src = canvas.toDataURL('image/jpeg', 0.9);
+                        imgEl.dataset.watermarked = 'true';
+                    } catch(e) {
+                        // CORS blocked canvas read, mark as failed to avoid infinite loop
+                        imgEl.dataset.watermarked = 'failed'; 
+                    }
+                };
+                img.onerror = () => {
+                    imgEl.dataset.watermarked = 'failed';
+                };
+            }
+
+            // Global MutationObserver to catch dynamically added images and apply watermark
+            const imgObserver = new MutationObserver((mutations) => {
+                mutations.forEach(mutation => {
+                    if (mutation.type === 'childList') {
+                        mutation.addedNodes.forEach(node => {
+                            if (node.tagName === 'IMG') applyWatermarkToElement(node);
+                            else if (node.querySelectorAll) {
+                                node.querySelectorAll('img').forEach(applyWatermarkToElement);
+                            }
+                        });
+                    } else if (mutation.type === 'attributes' && mutation.attributeName === 'src') {
+                        applyWatermarkToElement(mutation.target);
+                    }
+                });
+            });
+            imgObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['src'] });
+
+            // Prevent Right-Click on Images for extra protection
+            document.addEventListener('contextmenu', function(e) {
+                if(e.target.tagName === 'IMG') {
+                    e.preventDefault();
+                    showNotification('Image download is protected. Property of ' + (document.getElementById('pageTitle').textContent || 'our Shop'));
+                }
+            });
+            // --- End Image Watermark System ---
 
             function addToCart(productId, quantity, variant) {
                 const product = products.find(p => p.id == productId);
@@ -4757,6 +4854,9 @@
                 await loadInitialData();
                 init();
                 startOfferTimer();
+                
+                // Initial Watermark pass for any pre-loaded images
+                document.querySelectorAll('img').forEach(applyWatermarkToElement);
             });
     </script>
 </body>
