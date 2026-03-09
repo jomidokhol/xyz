@@ -1,1 +1,1079 @@
-coming soon...
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-commerce Support Chat</title>
+    
+    <!-- Firebase SDKs (Compat version for simple drop-in without build tools) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+    <style>
+        /* ============================
+           THEME & VARIABLES
+        ============================ */
+        :root {
+            --primary: #0f5132;      /* Deep Green */
+            --primary-light: #198754;
+            --secondary: #ffffff;    /* White */
+            --accent: #d1e7dd;       /* Light Green */
+            --text-dark: #212529;
+            --text-muted: #6c757d;
+            --bg-body: #f8f9fa;
+            --bg-chat: #f0f2f5;
+            --shadow-soft: 0 4px 15px rgba(0,0,0,0.1);
+            --shadow-hard: 0 8px 30px rgba(0,0,0,0.2);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* ============================
+           RESET & GLOBAL
+        ============================ */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .demo-content {
+            text-align: center;
+            color: var(--text-dark);
+        }
+
+        /* ============================
+           MOBILE OVERLAY
+        ============================ */
+        #chat-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            z-index: 998;
+        }
+
+        /* ============================
+           FLOATING ACTION BUTTON
+        ============================ */
+        #chat-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: var(--primary);
+            color: var(--secondary);
+            border-radius: 50%;
+            border: none;
+            box-shadow: var(--shadow-hard);
+            cursor: pointer;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        #chat-fab:hover {
+            transform: scale(1.05);
+            background-color: var(--primary-light);
+        }
+
+        #chat-fab svg {
+            width: 30px;
+            height: 30px;
+            fill: currentColor;
+            transition: var(--transition);
+        }
+
+        #notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #dc3545;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--secondary);
+            opacity: 0;
+            transform: scale(0);
+            transition: var(--transition);
+        }
+
+        #notification-badge.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* ============================
+           CHAT WIDGET
+        ============================ */
+        #chat-widget {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 380px;
+            height: 600px;
+            max-height: calc(100vh - 120px);
+            background-color: var(--secondary);
+            border-radius: 16px;
+            box-shadow: var(--shadow-hard);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px) scale(0.95);
+            transform-origin: bottom right;
+            transition: var(--transition);
+        }
+
+        #chat-widget.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        /* ============================
+           CHAT HEADER
+        ============================ */
+        .chat-header {
+            background-color: var(--primary);
+            color: var(--secondary);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .header-status {
+            font-size: 12px;
+            color: var(--accent);
+            margin-top: 2px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--secondary);
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .icon-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* ============================
+           MESSAGE AREA
+        ============================ */
+        .chat-messages {
+            flex: 1;
+            background-color: var(--bg-chat);
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            scroll-behavior: smooth;
+        }
+
+        .message-row {
+            display: flex;
+            width: 100%;
+        }
+
+        .message-row.user { justify-content: flex-end; }
+        .message-row.admin { justify-content: flex-start; }
+
+        .message-bubble {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 15px;
+            position: relative;
+            font-size: 14px;
+            line-height: 1.4;
+            box-shadow: var(--shadow-soft);
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-row.user .message-bubble {
+            background-color: var(--primary);
+            color: var(--secondary);
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-row.admin .message-bubble {
+            background-color: var(--secondary);
+            color: var(--text-dark);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-meta {
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 5px;
+            margin-top: 4px;
+            opacity: 0.8;
+        }
+
+        .message-row.user .message-meta { color: var(--accent); }
+        .message-row.admin .message-meta { color: var(--text-muted); }
+
+        .message-status svg {
+            width: 12px; height: 12px;
+            fill: currentColor;
+        }
+
+        .status-read { color: #4facfe !important; }
+
+        .edited-tag {
+            font-style: italic;
+            font-size: 10px;
+        }
+
+        .edit-btn {
+            position: absolute;
+            top: 50%;
+            left: -30px;
+            transform: translateY(-50%);
+            background: var(--secondary);
+            border: none;
+            border-radius: 50%;
+            width: 24px; height: 24px;
+            cursor: pointer;
+            box-shadow: var(--shadow-soft);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+        }
+
+        .message-row.user:hover .edit-btn {
+            display: flex;
+        }
+
+        .edit-btn svg { width: 12px; height: 12px; fill: currentColor; }
+
+        /* ============================
+           TYPING INDICATOR
+        ============================ */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: var(--secondary);
+            border-radius: 15px;
+            border-bottom-left-radius: 4px;
+            width: fit-content;
+            box-shadow: var(--shadow-soft);
+            align-items: center;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .typing-indicator.active { display: flex; }
+
+        .typing-dot {
+            width: 6px; height: 6px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* ============================
+           FAQ SECTION
+        ============================ */
+        .faq-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        .faq-chip {
+            background-color: var(--accent);
+            color: var(--primary);
+            border: 1px solid var(--primary-light);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .faq-chip:hover {
+            background-color: var(--primary);
+            color: var(--secondary);
+        }
+
+        /* ============================
+           INPUT AREA
+        ============================ */
+        .chat-input-area {
+            padding: 15px;
+            background-color: var(--secondary);
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            border: 1px solid #dee2e6;
+            border-radius: 20px;
+            padding: 10px 15px;
+            font-size: 14px;
+            outline: none;
+            resize: none;
+            max-height: 100px;
+            background-color: var(--bg-body);
+            transition: border-color 0.2s;
+        }
+
+        .chat-input:focus {
+            border-color: var(--primary-light);
+        }
+
+        .send-btn {
+            background-color: var(--primary);
+            color: var(--secondary);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .send-btn:hover {
+            background-color: var(--primary-light);
+        }
+
+        .send-btn svg {
+            width: 18px; height: 18px; fill: currentColor;
+            transform: translateX(2px);
+        }
+
+        /* ============================
+           ADMIN MODAL
+        ============================ */
+        .admin-modal {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--secondary);
+            z-index: 1001;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(100%);
+            transition: var(--transition);
+        }
+
+        .admin-modal.open {
+            transform: translateY(0);
+        }
+
+        .admin-header {
+            background-color: var(--text-dark);
+            color: var(--secondary);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-content {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .admin-section {
+            margin-bottom: 25px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .admin-section h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        .admin-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .admin-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .admin-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .admin-btn.danger { background-color: #dc3545; }
+
+        .data-list {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        .data-list li {
+            background: var(--bg-body);
+            padding: 8px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* ============================
+           MOBILE RESPONSIVENESS
+        ============================ */
+        @media (max-width: 480px) {
+            #chat-widget {
+                bottom: 0;
+                right: 0;
+                width: 100%;
+                height: 100%;
+                max-height: 100%;
+                border-radius: 0;
+            }
+
+            #chat-overlay.open {
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Demo Background -->
+    <div class="demo-content">
+        <h1>Welcome to our E-commerce Store</h1>
+        <p>Click the floating button in the bottom right to chat with support!</p>
+    </div>
+
+    <!-- Mobile Overlay -->
+    <div id="chat-overlay"></div>
+
+    <!-- Floating Action Button -->
+    <button id="chat-fab" onclick="toggleChat()">
+        <svg viewBox="0 0 24 24">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+        </svg>
+        <div id="notification-badge">0</div>
+    </button>
+
+    <!-- Chat Widget -->
+    <div id="chat-widget">
+        
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="header-info">
+                <span class="header-title">Customer Support</span>
+                <span class="header-status" id="admin-status">Active now</span>
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" onclick="openAdmin()" title="Admin Settings">
+                    <svg viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                </button>
+                <button class="icon-btn" onclick="toggleChat()" title="Close">
+                    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Messages Area -->
+        <div class="chat-messages" id="chat-messages">
+            <!-- Messages injected here via JS -->
+            
+            <!-- Typing Indicator -->
+            <div class="typing-indicator" id="typing-indicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="chat-input-area">
+            <textarea class="chat-input" id="chat-input" placeholder="Type a message..." rows="1" onkeypress="handleKeyPress(event)"></textarea>
+            <button class="send-btn" onclick="sendUserMessage()">
+                <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+        </div>
+
+        <!-- Admin Settings Modal -->
+        <div class="admin-modal" id="admin-modal">
+            <div class="admin-header">
+                <span>Admin Panel</span>
+                <button class="icon-btn" onclick="closeAdmin()">
+                    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
+            </div>
+            <div class="admin-content">
+                <div class="admin-section">
+                    <h3>Welcome Message</h3>
+                    <div class="admin-input-group">
+                        <input type="text" id="admin-welcome-msg" class="admin-input">
+                        <button class="admin-btn" onclick="updateWelcomeMessage()">Save</button>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <h3>Quick Replies (Keyword Based)</h3>
+                    <div class="admin-input-group">
+                        <input type="text" id="qr-keyword" class="admin-input" placeholder="Keyword (e.g. delivery)">
+                        <input type="text" id="qr-reply" class="admin-input" placeholder="Auto Reply">
+                        <button class="admin-btn" onclick="addQuickReply()">Add</button>
+                    </div>
+                    <ul class="data-list" id="qr-list"></ul>
+                </div>
+
+                <div class="admin-section">
+                    <h3>FAQ (Stock Questions)</h3>
+                    <div class="admin-input-group">
+                        <input type="text" id="faq-q" class="admin-input" placeholder="Question">
+                        <input type="text" id="faq-a" class="admin-input" placeholder="Answer">
+                        <button class="admin-btn" onclick="addFAQ()">Add</button>
+                    </div>
+                    <ul class="data-list" id="faq-list"></ul>
+                </div>
+
+                <div class="admin-section">
+                    <h3>Actions</h3>
+                    <button class="admin-btn danger" onclick="clearChatHistory()">Clear Chat History</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ============================
+         JAVASCRIPT LOGIC
+    ============================ -->
+    <script>
+        /* --------------------------------------------------------------------------
+           1. CONFIGURATION & STATE
+        -------------------------------------------------------------------------- */
+        
+        // ADMIN PASSWORD (Hardcoded for single-file demonstration)
+        const ADMIN_PASSWORD = "admin";
+
+        // FIREBASE CONFIGURATION (Replace with your own credentials to enable Realtime Database)
+        // If left empty or invalid, the app automatically falls back to LocalStorage!
+        const FIREBASE_CONFIG = {
+            /* 
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+            */
+        };
+
+        // Application State
+        let state = {
+            welcomeMessage: "Hello 👋 Welcome to our support. How can we help you today?",
+            faqs: [
+                { id: 'f1', q: "How long is delivery?", a: "Delivery usually takes 2-3 days." },
+                { id: 'f2', q: "How can I track my order?", a: "You can track your order from your account dashboard." },
+                { id: 'f3', q: "What is your refund policy?", a: "Refunds are processed within 5 business days." }
+            ],
+            quickReplies: [
+                { id: 'q1', keyword: "delivery", reply: "Standard delivery takes 2-3 business days. Express takes 1 day." },
+                { id: 'q2', keyword: "refund", reply: "Refunds are initiated immediately and reflect in 5 business days." }
+            ],
+            messages: [],
+            lastAdminActive: Date.now() - 120000, // 2 mins ago default
+            unreadCount: 0
+        };
+
+        let isChatOpen = false;
+        let dbRef = null;
+        let useFirebase = false;
+
+        /* --------------------------------------------------------------------------
+           2. DATABASE WRAPPER (Firebase / LocalStorage Fallback)
+        -------------------------------------------------------------------------- */
+        
+        function initDatabase() {
+            try {
+                if (Object.keys(FIREBASE_CONFIG).length > 0) {
+                    firebase.initializeApp(FIREBASE_CONFIG);
+                    const db = firebase.database();
+                    dbRef = db.ref('chatWidgetData');
+                    useFirebase = true;
+                    console.log("🔥 Connected to Firebase");
+                    
+                    // Listen for real-time updates
+                    dbRef.on('value', (snapshot) => {
+                        const data = snapshot.val();
+                        if (data) {
+                            state = { ...state, ...data };
+                            if(!state.messages) state.messages = [];
+                            if(!state.faqs) state.faqs = [];
+                            if(!state.quickReplies) state.quickReplies = [];
+                            updateUI();
+                        } else {
+                            saveData(); // Save default state to fresh Firebase
+                        }
+                    });
+                } else {
+                    throw new Error("No Firebase config provided.");
+                }
+            } catch (error) {
+                console.log("💾 Using LocalStorage Fallback.", error.message);
+                useFirebase = false;
+                const localData = localStorage.getItem('chatWidgetData');
+                if (localData) {
+                    state = { ...state, ...JSON.parse(localData) };
+                    if(!state.messages) state.messages = [];
+                } else {
+                    saveData();
+                }
+                updateUI();
+            }
+        }
+
+        function saveData() {
+            if (useFirebase && dbRef) {
+                dbRef.set(state);
+            } else {
+                localStorage.setItem('chatWidgetData', JSON.stringify(state));
+                updateUI();
+            }
+        }
+
+        /* --------------------------------------------------------------------------
+           3. UI & DOM MANIPULATION
+        -------------------------------------------------------------------------- */
+
+        function updateUI() {
+            renderMessages();
+            renderAdminStatus();
+            renderNotificationBadge();
+            renderAdminPanelData();
+        }
+
+        function toggleChat() {
+            const widget = document.getElementById('chat-widget');
+            const overlay = document.getElementById('chat-overlay');
+            isChatOpen = !isChatOpen;
+            
+            if (isChatOpen) {
+                widget.classList.add('open');
+                overlay.classList.add('open');
+                state.unreadCount = 0;
+                renderNotificationBadge();
+                
+                // Show welcome message if chat is empty
+                if (state.messages.length === 0) {
+                    sendAdminMessage(state.welcomeMessage);
+                }
+                scrollToBottom();
+            } else {
+                widget.classList.remove('open');
+                overlay.classList.remove('open');
+                closeAdmin();
+            }
+        }
+
+        // Close on overlay click (Mobile)
+        document.getElementById('chat-overlay').addEventListener('click', toggleChat);
+
+        function renderAdminStatus() {
+            const statusEl = document.getElementById('admin-status');
+            const diffMins = Math.floor((Date.now() - state.lastAdminActive) / 60000);
+            
+            if (diffMins < 1) statusEl.innerText = "Active now";
+            else if (diffMins === 1) statusEl.innerText = "Active 1 minute ago";
+            else statusEl.innerText = `Active ${diffMins} minutes ago`;
+        }
+
+        function renderNotificationBadge() {
+            const badge = document.getElementById('notification-badge');
+            if (state.unreadCount > 0 && !isChatOpen) {
+                badge.innerText = state.unreadCount;
+                badge.classList.add('active');
+            } else {
+                badge.classList.remove('active');
+            }
+        }
+
+        function scrollToBottom() {
+            const msgArea = document.getElementById('chat-messages');
+            setTimeout(() => {
+                msgArea.scrollTop = msgArea.scrollHeight;
+            }, 50);
+        }
+
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function getStatusIcon(status) {
+            if (status === 'sent') return `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
+            if (status === 'delivered') return `<svg viewBox="0 0 24 24"><path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z"/></svg>`;
+            if (status === 'read') return `<svg class="status-read" viewBox="0 0 24 24"><path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z"/></svg>`;
+            return '';
+        }
+
+        function renderMessages() {
+            const msgContainer = document.getElementById('chat-messages');
+            // Remove all existing messages but keep typing indicator
+            const typingInd = document.getElementById('typing-indicator');
+            msgContainer.innerHTML = '';
+            
+            state.messages.forEach(msg => {
+                const row = document.createElement('div');
+                row.className = `message-row ${msg.sender}`;
+                
+                const editedTag = msg.edited ? `<span class="edited-tag">(edited)</span>` : '';
+                const statusIcon = msg.sender === 'user' ? `<span class="message-status">${getStatusIcon(msg.status)}</span>` : '';
+                const editBtn = msg.sender === 'user' ? `<button class="edit-btn" onclick="promptEditMessage('${msg.id}')"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button>` : '';
+
+                row.innerHTML = `
+                    <div class="message-bubble">
+                        ${editBtn}
+                        ${msg.text}
+                        <div class="message-meta">
+                            ${editedTag}
+                            ${formatTime(msg.timestamp)}
+                            ${statusIcon}
+                        </div>
+                    </div>
+                `;
+                msgContainer.appendChild(row);
+            });
+
+            // Append FAQs at the bottom if the last message is from admin or empty
+            if (state.faqs && state.faqs.length > 0) {
+                const faqContainer = document.createElement('div');
+                faqContainer.className = 'faq-container';
+                state.faqs.forEach(faq => {
+                    const chip = document.createElement('div');
+                    chip.className = 'faq-chip';
+                    chip.innerText = faq.q;
+                    chip.onclick = () => sendFaqMessage(faq.q, faq.a);
+                    faqContainer.appendChild(chip);
+                });
+                msgContainer.appendChild(faqContainer);
+            }
+
+            msgContainer.appendChild(typingInd);
+            scrollToBottom();
+        }
+
+        /* --------------------------------------------------------------------------
+           4. CHAT FUNCTIONALITY (Send, Edit, Bot Logic)
+        -------------------------------------------------------------------------- */
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendUserMessage();
+            }
+        }
+
+        function sendUserMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const msgId = 'msg_' + Date.now();
+            const newMsg = {
+                id: msgId,
+                text: text,
+                sender: 'user',
+                timestamp: Date.now(),
+                status: 'sent',
+                edited: false
+            };
+
+            state.messages.push(newMsg);
+            input.value = '';
+            saveData();
+            
+            // Simulate message status change (Sent -> Delivered)
+            setTimeout(() => { updateMessageStatus(msgId, 'delivered'); }, 1000);
+
+            // Check for Auto-Reply
+            checkBotReply(text, msgId);
+        }
+
+        function updateMessageStatus(id, newStatus) {
+            const msg = state.messages.find(m => m.id === id);
+            if (msg) {
+                msg.status = newStatus;
+                saveData();
+            }
+        }
+
+        function promptEditMessage(id) {
+            const msg = state.messages.find(m => m.id === id);
+            if (!msg) return;
+            const newText = prompt("Edit your message:", msg.text);
+            if (newText !== null && newText.trim() !== "" && newText !== msg.text) {
+                msg.text = newText.trim();
+                msg.edited = true;
+                saveData();
+                checkBotReply(msg.text, msg.id); // Re-trigger bot on edited message
+            }
+        }
+
+        function sendFaqMessage(question, answer) {
+            // User sends question
+            const msgId = 'msg_' + Date.now();
+            state.messages.push({
+                id: msgId, text: question, sender: 'user',
+                timestamp: Date.now(), status: 'read', edited: false
+            });
+            saveData();
+            
+            // Admin replies
+            showTypingIndicator();
+            setTimeout(() => {
+                sendAdminMessage(answer);
+                hideTypingIndicator();
+            }, 1000);
+        }
+
+        function checkBotReply(text, userMsgId) {
+            const lowerText = text.toLowerCase();
+            let matchedReply = null;
+
+            for (let qr of state.quickReplies) {
+                if (lowerText.includes(qr.keyword.toLowerCase())) {
+                    matchedReply = qr.reply;
+                    break;
+                }
+            }
+
+            if (matchedReply) {
+                showTypingIndicator();
+                setTimeout(() => {
+                    updateMessageStatus(userMsgId, 'read');
+                    sendAdminMessage(matchedReply);
+                    hideTypingIndicator();
+                }, 1500 + Math.random() * 1000); // 1.5 to 2.5 sec delay
+            }
+        }
+
+        function sendAdminMessage(text) {
+            state.messages.push({
+                id: 'msg_' + Date.now(),
+                text: text,
+                sender: 'admin',
+                timestamp: Date.now(),
+                status: 'sent',
+                edited: false
+            });
+            state.lastAdminActive = Date.now();
+            
+            if (!isChatOpen) {
+                state.unreadCount++;
+            }
+            
+            saveData();
+        }
+
+        function showTypingIndicator() {
+            document.getElementById('typing-indicator').classList.add('active');
+            scrollToBottom();
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById('typing-indicator').classList.remove('active');
+        }
+
+        /* --------------------------------------------------------------------------
+           5. ADMIN PANEL FUNCTIONALITY
+        -------------------------------------------------------------------------- */
+
+        function openAdmin() {
+            const pass = prompt("Enter Admin Password:");
+            if (pass === ADMIN_PASSWORD) {
+                document.getElementById('admin-modal').classList.add('open');
+                renderAdminPanelData();
+            } else if (pass !== null) {
+                alert("Incorrect Password!");
+            }
+        }
+
+        function closeAdmin() {
+            document.getElementById('admin-modal').classList.remove('open');
+        }
+
+        function renderAdminPanelData() {
+            document.getElementById('admin-welcome-msg').value = state.welcomeMessage;
+            
+            // Render Quick Replies
+            const qrList = document.getElementById('qr-list');
+            qrList.innerHTML = '';
+            state.quickReplies.forEach(qr => {
+                qrList.innerHTML += `
+                    <li>
+                        <span><b>${qr.keyword}</b>: ${qr.reply}</span>
+                        <button class="admin-btn danger" onclick="deleteQuickReply('${qr.id}')">Del</button>
+                    </li>
+                `;
+            });
+
+            // Render FAQs
+            const faqList = document.getElementById('faq-list');
+            faqList.innerHTML = '';
+            state.faqs.forEach(faq => {
+                faqList.innerHTML += `
+                    <li>
+                        <span><b>${faq.q}</b></span>
+                        <button class="admin-btn danger" onclick="deleteFAQ('${faq.id}')">Del</button>
+                    </li>
+                `;
+            });
+        }
+
+        function updateWelcomeMessage() {
+            const val = document.getElementById('admin-welcome-msg').value.trim();
+            if (val) {
+                state.welcomeMessage = val;
+                saveData();
+                alert("Welcome message updated!");
+            }
+        }
+
+        function addQuickReply() {
+            const kw = document.getElementById('qr-keyword').value.trim();
+            const rep = document.getElementById('qr-reply').value.trim();
+            if (kw && rep) {
+                state.quickReplies.push({ id: 'qr_' + Date.now(), keyword: kw, reply: rep });
+                document.getElementById('qr-keyword').value = '';
+                document.getElementById('qr-reply').value = '';
+                saveData();
+            }
+        }
+
+        function deleteQuickReply(id) {
+            state.quickReplies = state.quickReplies.filter(q => q.id !== id);
+            saveData();
+        }
+
+        function addFAQ() {
+            const q = document.getElementById('faq-q').value.trim();
+            const a = document.getElementById('faq-a').value.trim();
+            if (q && a) {
+                state.faqs.push({ id: 'faq_' + Date.now(), q: q, a: a });
+                document.getElementById('faq-q').value = '';
+                document.getElementById('faq-a').value = '';
+                saveData();
+            }
+        }
+
+        function deleteFAQ(id) {
+            state.faqs = state.faqs.filter(f => f.id !== id);
+            saveData();
+        }
+
+        function clearChatHistory() {
+            if (confirm("Are you sure you want to clear all chat messages?")) {
+                state.messages = [];
+                saveData();
+                closeAdmin();
+            }
+        }
+
+        /* --------------------------------------------------------------------------
+           INITIALIZATION
+        -------------------------------------------------------------------------- */
+        window.onload = () => {
+            initDatabase();
+        };
+
+    </script>
+</body>
+</html>
