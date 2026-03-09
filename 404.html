@@ -299,7 +299,7 @@
         .cart-footer { padding: 20px; border-top: 1px solid #e5e7eb; }
         .cart-total { display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: 700; margin-bottom: 20px; color: #111;}
         
-        footer { background-color: var(--dark); color: white; padding: 60px 0 30px; }
+        footer { background-color: #14532d; color: white; padding: 60px 0 30px; }
         .footer-content { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; margin-bottom: 40px; }
         .footer-logo { display: flex; align-items: center; max-width: 180px; cursor: pointer; margin-bottom: 20px; }
         .footer-logo img { max-height: 50px; width: auto; object-fit: contain; filter: brightness(0) invert(1); }
@@ -548,6 +548,24 @@
         .picker-item { height: 40px; line-height: 40px; font-size: 1.1rem; color: #999; scroll-snap-align: center; transition: all 0.2s; cursor: pointer;}
         .picker-item.active { color: #000; font-weight: 600; font-size: 1.2rem;}
 
+        /* Action Loader Styles */
+        .action-loader-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+            z-index: 9999999; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; opacity: 0;
+            pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .action-loader-overlay.active { opacity: 1; pointer-events: auto; }
+        .ios-spinner { width: 60px; height: 60px; animation: spin 1s steps(12, end) infinite; }
+        .ios-spinner line { stroke: var(--primary); stroke-width: 4; stroke-linecap: round; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .wait-text {
+            margin-top: 20px; font-weight: 600; color: var(--primary); font-size: 1.1rem; font-family: 'Poppins', sans-serif;
+        }
+        .wait-text::after { content: ''; animation: dots 1.5s steps(4, end) infinite; }
+        @keyframes dots { 0%, 20% { content: ''; } 40% { content: '.'; } 60% { content: '..'; } 80%, 100% { content: '...'; } }
+
         @media (max-width: 992px) { .details-wrapper { grid-template-columns: 1fr; } .form-row { flex-direction: column; gap: 0; } }
         @media (max-width: 768px) { 
             .header-actions .auth-buttons, .search-container { display: none; } 
@@ -562,16 +580,6 @@
         @media (max-width: 576px) { 
             .product-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } 
             
-            #searchResultsGrid.product-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            #searchResultsGrid .product-card { border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-            #searchResultsGrid .card-info { padding: 0.4rem; }
-            #searchResultsGrid .product-title { font-size: 0.65rem; margin-bottom: 0.2rem; -webkit-line-clamp: 2; line-height: 1.2; }
-            #searchResultsGrid .new-price { font-size: 0.75rem; }
-            #searchResultsGrid .old-price { font-size: 0.6rem; }
-            #searchResultsGrid .rating-section { display: none; }
-            #searchResultsGrid .btn-view { font-size: 0.6rem; padding: 0.3rem 0; gap: 2px; }
-            #searchResultsGrid .off-badge { font-size: 0.6rem; padding: 2px 4px; top: 5px; right: 5px; }
-            
             .category-card { width: 80px; height: 80px; border-radius: 12px; } 
             .category-icon { font-size: 1.2rem; } 
             .category-card h3 { font-size: 0.7rem; } 
@@ -581,6 +589,27 @@
     </style>
 </head>
 <body>
+    <!-- Action Loader Overlay -->
+    <div class="action-loader-overlay" id="actionLoader">
+        <svg class="ios-spinner" viewBox="0 0 100 100">
+            <g transform="translate(50,50)">
+                <line x1="0" y1="-22" x2="0" y2="-40" opacity="1" transform="rotate(0)"/>
+                <line x1="0" y1="-22" x2="0" y2="-40" opacity="0.9" transform="rotate(30)"/>
+                <line x1="0" y1="-22" x2="0" y2="-40" opacity="0.8" transform="rotate(60)"/>
+                <line x1="0" y1="-22" x2="0" y2="-40" opacity="0.7" transform="rotate(90)"/>
+                <line x1="0" y1="-22" x2="0" y2="-40" opacity="0.6" transform="rotate(120)"/>
+                <line x1="0" y1="-22" x2="0" y2="-40" opacity="0.5" transform="rotate(150)"/>
+                <line x1="0" y1="-22" x2="0" y2="-40" opacity="0.4" transform="rotate(180)"/>
+                <line x1="0" y1="-22" x2="0" y2="-40" opacity="0.3" transform="rotate(210)"/>
+                <line x1="0" y1="-22" x2="0" y2="-40" opacity="0.2" transform="rotate(240)"/>
+                <line x1="0" y1="-22" x2="0" y2="-40" opacity="0.1" transform="rotate(270)"/>
+                <line x1="0" y1="-22" x2="0" y2="-40" opacity="0.05" transform="rotate(300)"/>
+                <line x1="0" y1="-22" x2="0" y2="-40" opacity="0.05" transform="rotate(330)"/>
+            </g>
+        </svg>
+        <div class="wait-text">wait</div>
+    </div>
+
     <!-- Global Light Skeleton Overlay (White Theme with Shadow Design) -->
     <div id="globalSkeletonOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#ffffff; z-index:999999; display:flex; flex-direction:column; padding:15px; box-sizing:border-box; transition:opacity 0.5s ease;">
         <style>
@@ -1656,6 +1685,9 @@
         const customAlert = document.getElementById('customAlert');
         const welcomeOverlay = document.getElementById('welcomeOverlay');
         const promoPopup = document.getElementById('promoPopup');
+
+        function showLoader() { document.getElementById('actionLoader').classList.add('active'); }
+        function hideLoader() { document.getElementById('actionLoader').classList.remove('active'); }
 
         window.formatNumberKM = function(num) {
             if (num === undefined || num === null) return '0';
@@ -3620,29 +3652,43 @@
 
             async function deleteAddress(index) {
                 if (!confirm("Are you sure you want to delete this address?")) return;
-                savedAddresses.splice(index, 1);
-                if (savedAddresses.length > 0 && !savedAddresses.some(a => a.isDefault)) {
-                    savedAddresses[0].isDefault = true; 
+                showLoader();
+                try {
+                    savedAddresses.splice(index, 1);
+                    if (savedAddresses.length > 0 && !savedAddresses.some(a => a.isDefault)) {
+                        savedAddresses[0].isDefault = true; 
+                    }
+                    await saveAddressesToFirebase();
+                    renderSavedAddressesList();
+                    updateDeliveryDisplay();
+                    hideLoader();
+                    showNotification("Address deleted.");
+                } catch(err) {
+                    hideLoader();
+                    showCustomAlert("Error", "Could not delete address.");
                 }
-                await saveAddressesToFirebase();
-                renderSavedAddressesList();
-                updateDeliveryDisplay();
-                showNotification("Address deleted.");
             }
 
             async function setDefaultAddress(index) {
-                savedAddresses.forEach((a, i) => a.isDefault = (i === index));
-                await saveAddressesToFirebase();
-                renderSavedAddressesList();
-                updateDeliveryDisplay();
-                
-                if(document.getElementById('order-summary-page').classList.contains('active')) {
-                    renderOrderSummary();
+                showLoader();
+                try {
+                    savedAddresses.forEach((a, i) => a.isDefault = (i === index));
+                    await saveAddressesToFirebase();
+                    renderSavedAddressesList();
+                    updateDeliveryDisplay();
+                    
+                    if(document.getElementById('order-summary-page').classList.contains('active')) {
+                        renderOrderSummary();
+                    }
+                    if(document.getElementById('checkout-page').classList.contains('active')) {
+                        renderPaymentPage();
+                    }
+                    hideLoader();
+                    showNotification("Delivery address updated.");
+                } catch(err) {
+                    hideLoader();
+                    showCustomAlert("Error", "Could not set default address.");
                 }
-                if(document.getElementById('checkout-page').classList.contains('active')) {
-                    renderPaymentPage();
-                }
-                showNotification("Delivery address updated.");
             }
 
             function renderSavedAddressesList() {
@@ -3809,6 +3855,7 @@
                 } catch (error) {
                     console.error("Error saving address:", error);
                     showCustomAlert("Error", "Failed to save address to database.");
+                    throw error;
                 }
             }
             
@@ -3954,13 +4001,14 @@
             }
             
             function showPromoPopupWithCheck() {
-                const isAnyOverlayActive = document.querySelector('.cart-overlay.active, .options-panel-overlay.active, .custom-alert-overlay.active, .welcome-overlay.active, .order-details-overlay.active, .lightbox[style*="display: flex"], .cod-confirm-overlay.active');
+                const isAnyOverlayActive = document.querySelector('.cart-overlay.active, .options-panel-overlay.active, .custom-alert-overlay.active, .welcome-overlay.active, .order-details-overlay.active, .lightbox[style*="display: flex"], .cod-confirm-overlay.active, .action-loader-overlay.active');
                 if (!isAnyOverlayActive) {
                     showPromoPopup();
                 }
             }
 
             function executeOrderPlacement(orderAddress, selectedItems, paymentMethodText, subtotal, shippingFee, codFee, couponDiscount = 0) {
+                showLoader();
                 const orderNo = Math.floor(Math.random() * 1000000000000) + 1000000000000;
                 const dateObj = new Date();
                 const date = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + dateObj.toLocaleTimeString('en-GB', { hour12: false });
@@ -4007,38 +4055,49 @@
                          })),
                          userId: auth.currentUser.uid
                      };
-                     db.collection('orders').doc(orderNo.toString()).set(orderData);
-                }
-                
-                document.querySelector('.od-actions').style.display = 'block'; 
-                
-                document.getElementById('odBody').innerHTML = itemsHtml;
-                document.getElementById('odSubtotal').parentNode.style.display = 'flex';
-                document.getElementById('odShipping').parentNode.style.display = 'flex';
-                document.getElementById('odCOD').parentNode.style.display = 'flex';
-                
-                if (couponDiscount > 0) {
-                    document.getElementById('odCouponRow').style.display = 'flex';
-                    document.getElementById('odCoupon').textContent = `-৳ ${couponDiscount.toFixed(0)}`;
+                     db.collection('orders').doc(orderNo.toString()).set(orderData).then(() => {
+                         hideLoader();
+                         showOrderSuccessModal();
+                     }).catch(err => {
+                         hideLoader();
+                         showCustomAlert('Error', 'Failed to place order.');
+                     });
                 } else {
-                    document.getElementById('odCouponRow').style.display = 'none';
+                    hideLoader();
+                    showOrderSuccessModal();
                 }
-                
-                document.getElementById('odSubtotal').textContent = `৳ ${subtotal.toFixed(0)}`;
-                document.getElementById('odShipping').textContent = `৳ ${shippingFee}`;
-                document.getElementById('odCOD').textContent = codFee === 0 ? 'Free' : `৳ ${codFee}`;
-                document.getElementById('odTotal').textContent = `৳ ${total.toFixed(0)}`;
-                document.getElementById('odPaidAmount').textContent = `৳ ${total.toFixed(0)}`;
-                document.getElementById('odPaidMethodName').textContent = paymentMethodText;
-                document.getElementById('odOrderNo').textContent = orderNo;
-                document.getElementById('odDate').textContent = date;
-                document.getElementById('odPaymentMethod').textContent = paymentMethodText;
-                
-                document.getElementById('orderDetailsOverlay').classList.add('active');
-                
-                cart = cart.filter(item => !item.selected);
-                updateCartCount();
-                renderCartItems();
+
+                function showOrderSuccessModal() {
+                    document.querySelector('.od-actions').style.display = 'block'; 
+                    
+                    document.getElementById('odBody').innerHTML = itemsHtml;
+                    document.getElementById('odSubtotal').parentNode.style.display = 'flex';
+                    document.getElementById('odShipping').parentNode.style.display = 'flex';
+                    document.getElementById('odCOD').parentNode.style.display = 'flex';
+                    
+                    if (couponDiscount > 0) {
+                        document.getElementById('odCouponRow').style.display = 'flex';
+                        document.getElementById('odCoupon').textContent = `-৳ ${couponDiscount.toFixed(0)}`;
+                    } else {
+                        document.getElementById('odCouponRow').style.display = 'none';
+                    }
+                    
+                    document.getElementById('odSubtotal').textContent = `৳ ${subtotal.toFixed(0)}`;
+                    document.getElementById('odShipping').textContent = `৳ ${shippingFee}`;
+                    document.getElementById('odCOD').textContent = codFee === 0 ? 'Free' : `৳ ${codFee}`;
+                    document.getElementById('odTotal').textContent = `৳ ${total.toFixed(0)}`;
+                    document.getElementById('odPaidAmount').textContent = `৳ ${total.toFixed(0)}`;
+                    document.getElementById('odPaidMethodName').textContent = paymentMethodText;
+                    document.getElementById('odOrderNo').textContent = orderNo;
+                    document.getElementById('odDate').textContent = date;
+                    document.getElementById('odPaymentMethod').textContent = paymentMethodText;
+                    
+                    document.getElementById('orderDetailsOverlay').classList.add('active');
+                    
+                    cart = cart.filter(item => !item.selected);
+                    updateCartCount();
+                    renderCartItems();
+                }
             }
 
             // --- Custom Date Picker Functions ---
@@ -4390,18 +4449,22 @@
 
                 document.getElementById('loginForm')?.addEventListener('submit', async (e) => { 
                     e.preventDefault(); 
+                    showLoader();
                     const email = e.target.querySelector('input[type=email]').value;
                     const password = e.target.querySelector('input[type=password]').value;
                     try {
                         await auth.signInWithEmailAndPassword(email, password);
+                        hideLoader();
                         showCustomAlert('Login Successful', 'Welcome back!', () => navigateTo('profile')); 
                     } catch(error) {
+                        hideLoader();
                         showCustomAlert('Login Failed', error.message);
                     }
                 });
 
                 document.getElementById('registerForm')?.addEventListener('submit', async (e) => { 
                     e.preventDefault(); 
+                    showLoader();
                     const name = document.getElementById('registerName').value;
                     const email = document.getElementById('registerEmail').value;
                     const phone = document.getElementById('registerPhone').value;
@@ -4410,6 +4473,7 @@
                     const confirmPassword = passwords[1].value;
 
                     if (password !== confirmPassword) {
+                        hideLoader();
                         showCustomAlert('Error', 'Passwords do not match');
                         return;
                     }
@@ -4417,8 +4481,10 @@
                         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                         await userCredential.user.updateProfile({ displayName: name });
                         await db.collection('users').doc(userCredential.user.uid).set({ name, email, phone, gender: '', birthday: '' });
+                        hideLoader();
                         showCustomAlert('Registration Successful', 'Your account has been created successfully.', () => navigateTo('profile'));
                     } catch(error) {
+                        hideLoader();
                         showCustomAlert('Registration Failed', error.message);
                     }
                 });
@@ -4426,6 +4492,7 @@
                 document.querySelectorAll('.google-btn').forEach(btn => {
                     btn.addEventListener('click', async (e) => {
                         e.preventDefault();
+                        showLoader();
                         const provider = new firebase.auth.GoogleAuthProvider();
                         try {
                             const result = await auth.signInWithPopup(provider);
@@ -4439,8 +4506,10 @@
                                     birthday: ''
                                 });
                             }
+                            hideLoader();
                             showCustomAlert('Login Successful', 'Welcome!', () => navigateTo('profile'));
                         } catch(error) {
+                            hideLoader();
                             showCustomAlert('Login Failed', error.message);
                         }
                     });
@@ -4449,6 +4518,7 @@
                 document.getElementById('profileSetupForm').addEventListener('submit', async (e) => {
                     e.preventDefault();
                     if(!auth.currentUser) return;
+                    showLoader();
                     const newName = document.getElementById('profileName').value;
                     const newPhone = document.getElementById('profilePhone').value;
                     const newGender = document.getElementById('profileGender').value;
@@ -4461,8 +4531,10 @@
                         currentUser.gender = newGender;
                         currentUser.birthday = newBirthday;
                         populateProfileData();
+                        hideLoader();
                         showNotification("Profile updated successfully!");
                     } catch(error) {
+                        hideLoader();
                         showCustomAlert('Error', error.message);
                     }
                 });
@@ -4479,6 +4551,7 @@
                         return;
                     }
 
+                    showLoader();
                     const addr = {
                         title: document.getElementById('addrTitle').value,
                         name: document.getElementById('addrName').value,
@@ -4497,17 +4570,22 @@
                         savedAddresses.push(addr);
                     }
                     
-                    await saveAddressesToFirebase();
-                    closeAddressFormLayer();
-                    renderSavedAddressesList();
-                    updateDeliveryDisplay();
-                    showNotification("Address saved successfully!");
-                    
-                    if(document.getElementById('order-summary-page').classList.contains('active')) {
-                        renderOrderSummary();
-                    }
-                    if(document.getElementById('checkout-page').classList.contains('active')) {
-                        renderPaymentPage();
+                    try {
+                        await saveAddressesToFirebase();
+                        closeAddressFormLayer();
+                        renderSavedAddressesList();
+                        updateDeliveryDisplay();
+                        hideLoader();
+                        showNotification("Address saved successfully!");
+                        
+                        if(document.getElementById('order-summary-page').classList.contains('active')) {
+                            renderOrderSummary();
+                        }
+                        if(document.getElementById('checkout-page').classList.contains('active')) {
+                            renderPaymentPage();
+                        }
+                    } catch(err) {
+                        hideLoader();
                     }
                 });
 
@@ -4518,7 +4596,7 @@
                             document.querySelectorAll(`#${id} button`).forEach(btn => btn.classList.remove('active'));
                             e.target.classList.add('active');
                             const grid = id === 'homeFilterOptions' ? productGrid : searchResultsGrid;
-                            const productSource = id === 'homeFilterOptions' ? products : currentlyDisplayedProducts;
+                            const productSource = id === 'homeFilterOptions' ? currentlyDisplayedProducts : currentlyDisplayedProducts;
                             applyFilterAndRender(productSource, filter, grid);
                             document.getElementById(id).classList.remove('active'); 
                         }
