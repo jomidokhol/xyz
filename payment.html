@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="google" content="notranslate">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Payment</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Firebase SDK Compat Version (Same as User/Admin file) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+    <style>
+        :root {
+            --skeleton-bg: #e0e0e0;
+            --theme-color: #d12053; /* Default Pink, will be changed via JS */
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Poppins', 'Noto Sans Bengali', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #f4f6f9;
+            background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+            background-size: 20px 20px;
+            display: flex; justify-content: center; align-items: flex-start;
+            min-height: 100vh; padding-top: 20px;
+        }
+
+        .container { width: 100%; max-width: 400px; margin: 0 auto; padding-bottom: 20px; padding-left: 15px; padding-right: 15px;}
+
+        .header-icons {
+            display: flex; justify-content: space-between; padding: 15px 20px;
+            background: white; border-radius: 8px; margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); align-items: center;
+        }
+        .header-icons span { color: #5f6368; cursor: pointer; font-size: 18px; font-weight: bold;}
+        .header-title { font-weight: 600; color: #333; font-size: 1.1rem;}
+
+        .logo-section { text-align: center; margin-bottom: 20px; min-height: 60px; display: flex; justify-content: center; align-items: center;}
+        .logo-section img { max-width: 240px; max-height: 80px; object-fit: contain; border-radius: 8px;}
+
+        .white-box {
+            background: white; padding: 15px 20px; border-radius: 8px; margin-bottom: 10px;
+            display: flex; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            font-weight: 600; color: #444; font-size: 1.1rem;
+        }
+        .wallet-icon {
+            width: 35px; height: 35px; margin-right: 15px; border: 1px solid #ddd;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 16px; color: var(--theme-color); background: #f9f9f9; overflow: hidden;
+        }
+        .wallet-icon img { width: 100%; height: 100%; object-fit: cover;}
+
+        .theme-card {
+            background-color: var(--theme-color); color: white; padding: 25px 20px;
+            border-radius: 8px 8px 0 0; margin-top: 15px; position: relative; transition: background-color 0.3s;
+        }
+
+        .section-title { text-align: center; margin-bottom: 20px; font-size: 16px; font-weight: 600; letter-spacing: 0.5px;}
+
+        .input-group { margin-bottom: 25px; }
+        .input-group input {
+            width: 100%; padding: 14px; border-radius: 6px; border: none;
+            font-size: 15px; outline: none; text-align: center; font-weight: 600; letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .input-group input::placeholder { color: #aaa; text-transform: none; letter-spacing: normal; font-weight: 400;}
+
+        .instructions { list-style: none; font-size: 13.5px; line-height: 1.7; }
+        .instructions li { position: relative; padding-left: 18px; margin-bottom: 12px; }
+        .instructions li::before { content: "\f105"; font-family: "Font Awesome 6 Free"; font-weight: 900; position: absolute; left: 0; font-size: 12px; top: 2px;}
+
+        .highlight-yellow { color: #ffe600; font-weight: 700; font-size: 15px;}
+
+        .copy-btn {
+            background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);
+            color: white; padding: 3px 10px; border-radius: 4px; font-size: 12px;
+            cursor: pointer; margin-left: 8px; display: inline-flex; align-items: center; transition: 0.2s;
+        }
+        .copy-btn:hover { background: white; color: var(--theme-color); }
+        
+        .verify-btn {
+            width: 100%; background-color: var(--theme-color); color: white; border: none;
+            padding: 16px; font-size: 16px; font-weight: bold; border-radius: 0 0 8px 8px;
+            cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: background-color 0.3s, filter 0.3s;
+        }
+        .verify-btn:hover { filter: brightness(0.9); }
+        .verify-btn:disabled { cursor: not-allowed; opacity: 0.7; filter: grayscale(50%);}
+
+        /* Skeleton Loader */
+        .skeleton {
+            background-color: var(--skeleton-bg);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        .skeleton::before {
+            content: '';
+            position: absolute; top: 0; left: -150%; height: 100%; width: 150%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: skeleton-wave 1.5s infinite;
+        }
+        @keyframes skeleton-wave { 0% { left: -150%; } 100% { left: 150%; } }
+        .skeleton-header { height: 54px; margin-bottom: 20px; background-color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .skeleton-logo { height: 60px; width: 200px; margin: 0 auto 20px auto; }
+        .skeleton-box { height: 65px; margin-bottom: 10px; background-color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .skeleton-card { background-color: #ddd; padding: 25px 20px; border-radius: 8px 8px 0 0; margin-top: 15px;}
+        .skeleton-btn { height: 55px; border-radius: 0 0 8px 8px; background: #ccc;}
+
+        /* Full Screen Loader Overlay */
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(255, 255, 255, 0.95); 
+            z-index: 10000; display: none; justify-content: center; align-items: center;
+        }
+
+        .loader-svg { width: 80px; height: 80px; }
+        .ring { fill: none; stroke: var(--theme-color); stroke-width: 7; stroke-linecap: round; transform-origin: center; opacity: 0.8;}
+        .ring-1 { stroke-dasharray: 200; stroke-dashoffset: 80; animation: spin 1.5s linear infinite; }
+        .ring-2 { stroke-dasharray: 140; stroke-dashoffset: 60; animation: spin 1.2s linear infinite reverse; }
+        .ring-3 { stroke-dasharray: 80; stroke-dashoffset: 40; animation: spin 1s linear infinite; }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Toast Notifications */
+        #toast-box { position: fixed; top: 20px; right: 20px; z-index: 10001; }
+        .toast {
+            width: 320px; padding: 15px; margin-bottom: 10px; border-radius: 8px; color: #fff;
+            font-size: 14px; font-weight: 600; display: flex; align-items: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            opacity: 0; transform: translateX(100%); animation: slideIn 0.4s forwards, fadeOut 0.4s forwards 3s;
+        }
+        .toast-error { background: rgba(220, 38, 38, 0.9); border-left: 5px solid #991b1b; }
+        .toast-success { background: rgba(22, 163, 74, 0.9); border-left: 5px solid #14532d; }
+        .toast i { margin-right: 12px; font-size: 20px; }
+
+        @keyframes slideIn { to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+
+    </style>
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div id="loading-overlay">
+    <svg class="loader-svg" viewBox="0 0 120 120">
+        <circle class="ring ring-1" cx="60" cy="60" r="50"></circle>
+        <circle class="ring ring-2" cx="60" cy="60" r="35"></circle>
+        <circle class="ring ring-3" cx="60" cy="60" r="20"></circle>
+    </svg>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-box"></div>
+
+<!-- Skeleton Loader -->
+<div class="container" id="skeleton-loader">
+    <div class="skeleton skeleton-header"></div>
+    <div class="skeleton skeleton-logo"></div>
+    <div class="skeleton skeleton-box"></div>
+    <div class="skeleton skeleton-box"></div>
+    <div class="skeleton-card">
+        <div class="skeleton" style="height: 20px; width: 150px; margin: 0 auto 20px;"></div>
+        <div class="skeleton" style="height: 45px; margin-bottom: 20px;"></div>
+        <div class="skeleton" style="height: 15px; margin-bottom: 10px;"></div>
+        <div class="skeleton" style="height: 15px; margin-bottom: 10px; width: 80%;"></div>
+        <div class="skeleton" style="height: 15px; margin-bottom: 10px; width: 60%;"></div>
+    </div>
+    <div class="skeleton skeleton-btn"></div>
+</div>
+
+<!-- Main Content -->
+<div class="container" id="main-content" style="display: none;">
+    
+    <div class="header-icons">
+        <span onclick="goBack()"><i class="fas fa-arrow-left"></i></span>
+        <div class="header-title" id="headerTitleDisplay">Payment Checkout</div>
+        <span onclick="goBack()"><i class="fas fa-times"></i></span>
+    </div>
+
+    <div class="logo-section">
+        <img id="gwBannerDisplay" src="" alt="Payment Gateway Banner">
+    </div>
+
+    <div class="white-box">
+        <div class="wallet-icon">
+            <i class="fas fa-wallet" id="walletIconFallback"></i>
+            <img id="walletIconImg" src="" style="display:none;">
+        </div>
+        <span id="gwNameDisplay">Payment Method</span>
+    </div>
+
+    <div class="white-box" id="amountDisplayBox">
+        <i class="fas fa-money-bill-wave" style="color: var(--theme-color); margin-right: 15px; font-size: 18px;"></i>
+        <span>৳ <span id="mainAmountDisplay">0.00</span></span>
+    </div>
+
+    <div class="theme-card" id="themeCard">
+        <div class="section-title">ট্রানজেকশন আইডি দিন</div>
+
+        <div class="input-group">
+            <input type="text" id="trxID" placeholder="Transaction ID (TrxID)">
+        </div>
+
+        <ul class="instructions">
+            <li>আপনার মোবাইল ব্যাংকিং অ্যাপে প্রবেশ করুন।</li>
+            <li>"<span class="highlight-yellow">Send Money</span>" অপশনটি সিলেক্ট করুন।</li>
+            <li>
+                প্রাপক নম্বর হিসেবে এই নম্বরটি লিখুনঃ <br>
+                <span class="highlight-yellow" id="adminNumberDisplay" style="font-size: 18px; letter-spacing: 1px;">...</span>
+                <button class="copy-btn" onclick="copyNumber()"><i class="fas fa-copy" style="margin-right: 4px;"></i> Copy</button>
+            </li>
+            <li>টাকার পরিমাণঃ <span class="highlight-yellow">৳ <span id="instructionAmountDisplay">0.00</span></span></li>
+            <li>পেমেন্ট সফল হলে প্রাপ্ত মেসেজ বা অ্যাপ থেকে <span class="highlight-yellow">Transaction ID</span> টি কপি করুন।</li>
+            <li>উপরের বক্সে কপি করা ট্রানজেকশন আইডিটি দিন এবং নিচের <span class="highlight-yellow">VERIFY</span> বাটনে ক্লিক করুন।</li>
+        </ul>
+    </div>
+
+    <button class="verify-btn" id="verifyBtn" onclick="initiateValidation()" disabled>অপেক্ষা করুন...</button>
+
+</div>
+
+<script>
+    // Firebase Configuration from user.html
+    const firebaseConfig = {
+        apiKey: "AIzaSyD5p-7Cgep9aGf6omMXDH8LOTy0C76jJaQ",
+        authDomain: "e-commerce-shop-24.firebaseapp.com",
+        projectId: "e-commerce-shop-24",
+        storageBucket: "e-commerce-shop-24.firebasestorage.app",
+        messagingSenderId: "1000897291264",
+        appId: "1:1000897291264:web:4f1e78554c3e69d310a4e5",
+        measurementId: "G-MCFXRFDFT5"
+    };
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const auth = firebase.auth();
+
+    // Data Extraction from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const amountParam = urlParams.get('amount') || '0';
+    const orderIdParam = urlParams.get('orderId') || '';
+    const gwNameParam = urlParams.get('gwName') || 'Payment';
+    const gwColorParam = urlParams.get('gwColor') || 'Pink';
+    const gwMobileParam = urlParams.get('gwMobile') || '';
+    const gwBannerParam = urlParams.get('gwBanner') || '';
+
+    // Color Dictionary matching Admin Panel
+    const colorMap = {
+        'Red': '#dc2626',
+        'Pink': '#d12053',
+        'Green': '#16a34a',
+        'Blue': '#2563eb',
+        'Sky Blue': '#0ea5e9',
+        'Purple': '#9333ea',
+        'Yellow': '#ca8a04'
+    };
+
+    let themeColor = colorMap[gwColorParam] || colorMap['Pink'];
+
+    // Update UI Elements
+    window.onload = function() {
+        if(!orderIdParam) {
+            alert('No Order found. Redirecting to home.');
+            window.location.href = 'user.html';
+            return;
+        }
+
+        // Apply Theme Color
+        document.documentElement.style.setProperty('--theme-color', themeColor);
+        document.querySelector('.ring').style.stroke = themeColor;
+
+        // Masking the URL for aesthetics (domain.com/payment/bkash/order123)
+        const cleanGwName = gwNameParam.replace(/\s+/g, '-').toLowerCase();
+        window.history.replaceState(null, '', `/payment/${cleanGwName}/${orderIdParam}`);
+
+        // Set Data
+        document.getElementById('headerTitleDisplay').innerText = `${gwNameParam} Checkout`;
+        document.getElementById('gwNameDisplay').innerText = `Pay via ${gwNameParam}`;
+        document.getElementById('mainAmountDisplay').innerText = amountParam;
+        document.getElementById('instructionAmountDisplay').innerText = amountParam;
+        document.getElementById('adminNumberDisplay').innerText = gwMobileParam || 'No Number Provided';
+        
+        if (gwBannerParam) {
+            document.getElementById('gwBannerDisplay').src = gwBannerParam;
+            document.getElementById('walletIconImg').src = gwBannerParam;
+            document.getElementById('walletIconImg').style.display = 'block';
+            document.getElementById('walletIconFallback').style.display = 'none';
+        } else {
+            document.getElementById('gwBannerDisplay').style.display = 'none';
+        }
+
+        // Auth Check
+        auth.onAuthStateChanged(user => {
+            const btn = document.getElementById('verifyBtn');
+            if (user) {
+                btn.disabled = false;
+                btn.innerText = "VERIFY PAYMENT";
+            } else {
+                // Allow guest checkout based on user.html logic, so enable button anyway
+                btn.disabled = false;
+                btn.innerText = "VERIFY PAYMENT";
+            }
+        });
+
+        // Hide Skeleton, Show Content
+        setTimeout(() => {
+            document.getElementById('skeleton-loader').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+        }, 800);
+    };
+
+    function goBack() {
+        window.location.href = 'user.html';
+    }
+
+    function copyNumber() {
+        if(gwMobileParam) {
+            navigator.clipboard.writeText(gwMobileParam).then(() => {
+                showToast('নম্বরটি কপি করা হয়েছে!', 'success');
+            });
+        }
+    }
+
+    // Toast Notification
+    function showToast(message, type) {
+        const toastBox = document.getElementById('toast-box');
+        const toast = document.createElement('div');
+        toast.classList.add('toast');
+        
+        let iconHtml = '';
+        if (type === 'error') {
+            toast.classList.add('toast-error');
+            iconHtml = '<i class="fas fa-exclamation-circle"></i>';
+        } else if (type === 'success') {
+            toast.classList.add('toast-success');
+            iconHtml = '<i class="fas fa-check-circle"></i>';
+        }
+
+        toast.innerHTML = iconHtml + message;
+        toastBox.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 3500);
+    }
+
+    // Validation & Processing
+    function initiateValidation() {
+        const inputField = document.getElementById('trxID');
+        const rawTrx = inputField.value;
+        const trxID = rawTrx.trim(); 
+
+        if (!trxID) {
+            showToast("অনুগ্রহ করে ট্রানজেকশন আইডি দিন।", "error");
+            inputField.focus();
+            return;
+        }
+
+        if (rawTrx.includes(' ') && rawTrx.trim().includes(' ')) {
+             showToast("ট্রানজেকশন আইডিতে স্পেস গ্রহণযোগ্য নয়।", "error");
+             return;
+        }
+
+        const regex = /^[a-zA-Z0-9]{6,15}$/;
+        if (!regex.test(trxID)) {
+            showToast("সঠিক ট্রানজেকশন আইডি প্রদান করুন।", "error");
+            return;
+        }
+
+        // Show Loader
+        const loadingOverlay = document.getElementById('loading-overlay');
+        loadingOverlay.style.display = 'flex';
+        
+        const btn = document.getElementById('verifyBtn');
+        btn.disabled = true;
+        btn.innerText = "যাচাইকরণ চলছে...";
+
+        // Simulate Network Request Delay
+        const times = [1500, 2000, 2500, 3000];
+        const randomTime = times[Math.floor(Math.random() * times.length)];
+
+        setTimeout(() => {
+            loadingOverlay.style.display = 'none';
+            showToast("পেমেন্ট সফল হয়েছে। রিডাইরেক্ট করা হচ্ছে...", "success");
+
+            // Redirect back to user.html with the transaction ID
+            setTimeout(() => {
+                // Restore original URL before redirect so params are not lost
+                window.location.href = `user.html?payment=success&trxId=${encodeURIComponent(trxID)}`;
+            }, 1000); 
+
+        }, randomTime);
+    }
+</script>
+
+</body>
+</html>
