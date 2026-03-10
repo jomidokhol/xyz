@@ -3,101 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Support</title>
+    <title>Admin Panel - Support System</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-
     <style>
-        :root { --primary: #0f5132; --bg: #f4f6f9; --white: #fff; --border: #ddd; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { display: flex; height: 100vh; background: var(--bg); }
+        :root { --primary: #0f5132; --primary-dark: #09331e; --bg: #f4f6f9; --white: #fff; --border: #ddd; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { display: flex; height: 100vh; background: var(--bg); overflow: hidden; }
         
-        /* Sidebar layout */
-        .sidebar { width: 350px; background: var(--white); border-right: 1px solid var(--border); padding: 20px; overflow-y: auto; }
-        .main-chat { flex: 1; display: flex; flex-direction: column; background: #e5ddd5; position: relative;}
+        /* Layout */
+        .sidebar { width: 250px; background: var(--primary-dark); color: white; transition: 0.3s; display: flex; flex-direction: column; }
+        .sidebar.closed { width: 0; overflow: hidden; }
+        .main-content { flex: 1; display: flex; flex-direction: column; background: var(--bg); transition: 0.3s; }
         
-        h2, h3 { color: var(--primary); margin-bottom: 15px; }
-        .section { margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 20px;}
+        /* Sidebar Elements */
+        .logo-area { padding: 20px; font-size: 18px; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between;}
+        .menu-item { padding: 15px 20px; cursor: pointer; transition: 0.2s; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .menu-item:hover, .menu-item.active { background: var(--primary); }
         
-        input, button { padding: 10px; margin-bottom: 5px; width: 100%; border: 1px solid var(--border); border-radius: 5px; }
-        button { background: var(--primary); color: white; cursor: pointer; border: none; font-weight: bold; }
-        button.danger { background: #dc3545; }
+        /* Topbar */
+        .topbar { background: var(--white); padding: 15px 20px; display: flex; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 10; }
+        .menu-btn { background: var(--primary); color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin-right: 15px; }
+
+        /* Screens */
+        .screen { display: none; height: calc(100vh - 60px); }
+        .screen.active { display: flex; }
+
+        /* --- CHAT SCREEN --- */
+        #chats-screen { flex-direction: row; }
+        .user-list { width: 300px; background: var(--white); border-right: 1px solid var(--border); overflow-y: auto; }
+        .user-item { padding: 15px; border-bottom: 1px solid var(--border); cursor: pointer; transition: 0.2s; }
+        .user-item:hover { background: #f8f9fa; }
+        .user-item.active { background: #e9ecef; border-left: 4px solid var(--primary); }
+        .user-item h4 { font-size: 15px; color: var(--text-dark); margin-bottom: 5px; }
+        .user-item p { font-size: 12px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .unread-badge { background: red; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; float: right;}
+
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: #e5ddd5; }
+        .chat-header { background: var(--white); padding: 15px; border-bottom: 1px solid var(--border); font-weight: bold;}
+        .messages-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         
-        /* Admin Chat UI */
-        .chat-header { background: var(--primary); color: white; padding: 15px; text-align: center; }
-        .messages-area { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         .msg-row { display: flex; width: 100%; }
-        /* Note: In Admin panel, Admin is Right, User is Left */
         .msg-row.admin { justify-content: flex-end; }
         .msg-row.user { justify-content: flex-start; }
-        
-        .bubble { max-width: 60%; padding: 10px 15px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .bubble { max-width: 60%; padding: 10px 15px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); font-size: 14px;}
         .msg-row.user .bubble { background: var(--white); }
         .msg-row.admin .bubble { background: #dcf8c6; }
-        .bubble img { max-width: 100px; border-radius: 5px; cursor: pointer;}
+        .bubble img { max-width: 200px; border-radius: 5px; cursor: pointer;}
         
-        .chat-input-area { padding: 15px; background: var(--white); display: flex; gap: 10px; }
-        .chat-input-area input { margin: 0; flex: 1; }
-        .chat-input-area button { width: 100px; margin: 0; }
+        .chat-input-box { padding: 15px; background: var(--white); display: flex; gap: 10px; }
+        .chat-input-box input { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 5px; outline: none;}
+        .chat-input-box button { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer;}
+
+        /* --- SETTINGS SCREEN --- */
+        #settings-screen { flex-direction: column; padding: 20px; overflow-y: auto; }
+        .settings-card { background: var(--white); padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px;}
+        .settings-card h3 { margin-bottom: 15px; color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 10px;}
+        .input-group { display: flex; gap: 10px; margin-bottom: 10px; }
+        .input-group input { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 5px;}
+        .btn { padding: 10px 15px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .btn.danger { background: #dc3545; }
         
-        .list-item { background: #f9f9f9; padding: 10px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center;}
-        .list-item button { width: auto; padding: 5px 10px; margin: 0;}
-        
-        #user-typing { color: green; font-size: 12px; display: none; padding: 0 20px; }
+        .data-list { list-style: none; margin-top: 10px; }
+        .data-list li { background: #f8f9fa; padding: 10px; border: 1px solid var(--border); margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; border-radius: 4px;}
+
     </style>
 </head>
 <body>
 
-    <!-- Sidebar Settings -->
-    <div class="sidebar">
-        <h2>Admin Panel</h2>
-        
-        <div class="section">
-            <h3>Welcome Message</h3>
-            <input type="text" id="welcome-msg">
-            <button onclick="saveWelcomeMsg()">Update Settings</button>
-        </div>
-
-        <div class="section">
-            <h3>Auto Replies (Bot)</h3>
-            <input type="text" id="qr-kw" placeholder="Keyword">
-            <input type="text" id="qr-ans" placeholder="Reply">
-            <button onclick="addQR()">Add Auto Reply</button>
-            <div id="qr-list"></div>
-        </div>
-
-        <div class="section">
-            <h3>FAQ Buttons</h3>
-            <input type="text" id="faq-q" placeholder="Question">
-            <input type="text" id="faq-a" placeholder="Answer">
-            <button onclick="addFAQ()">Add FAQ</button>
-            <div id="faq-list"></div>
-        </div>
-
-        <button class="danger" onclick="clearChat()">Clear Full Chat History</button>
+    <!-- Sidebar Menu -->
+    <div class="sidebar" id="sidebar">
+        <div class="logo-area">Support Admin</div>
+        <div class="menu-item active" onclick="switchTab('chats')">💬 Live Chats</div>
+        <div class="menu-item" onclick="switchTab('settings')">⚙️ Settings</div>
+        <div class="menu-item" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);" onclick="location.reload()">🔒 Logout</div>
     </div>
 
-    <!-- Live Chat Area -->
-    <div class="main-chat">
-        <div class="chat-header">
-            <h3>Live Chat with User</h3>
+    <div class="main-content">
+        <!-- Topbar -->
+        <div class="topbar">
+            <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+            <h3 id="page-title">Live Chats</h3>
         </div>
-        
-        <div class="messages-area" id="admin-chat-messages">
-            <!-- Messages -->
+
+        <!-- 1. CHATS SCREEN -->
+        <div class="screen active" id="chats-screen">
+            <div class="user-list" id="user-list">
+                <!-- User list will populate here -->
+            </div>
+            <div class="chat-area">
+                <div class="chat-header" id="active-user-name">Select a user to start chatting</div>
+                <div class="messages-box" id="admin-chat-box"></div>
+                <div style="font-size: 12px; color: green; padding: 0 20px; display: none;" id="user-typing">User is typing...</div>
+                <div class="chat-input-box" id="input-box" style="display: none;">
+                    <input type="text" id="admin-input" placeholder="Type a reply..." onkeyup="handleAdminTyping(event)">
+                    <button onclick="sendAdminReply()">Send</button>
+                </div>
+            </div>
         </div>
-        <div id="user-typing">User is typing...</div>
-        
-        <div class="chat-input-area">
-            <input type="text" id="admin-chat-input" placeholder="Type manual reply..." onkeyup="handleAdminTyping(event)">
-            <button onclick="sendAdminMessage()">Send</button>
+
+        <!-- 2. SETTINGS SCREEN -->
+        <div class="screen" id="settings-screen">
+            <div class="settings-card">
+                <h3>Welcome Message</h3>
+                <div class="input-group">
+                    <input type="text" id="welcome-msg" placeholder="Default welcome message...">
+                    <button class="btn" onclick="saveWelcomeMsg()">Save</button>
+                </div>
+            </div>
+
+            <div class="settings-card">
+                <h3>Bot Auto Replies (Keyword Based)</h3>
+                <div class="input-group">
+                    <input type="text" id="qr-kw" placeholder="Keyword (e.g., price)">
+                    <input type="text" id="qr-ans" placeholder="Auto Reply">
+                    <button class="btn" onclick="addSetting('quickReplies')">Add</button>
+                </div>
+                <ul class="data-list" id="qr-list"></ul>
+            </div>
+
+            <div class="settings-card">
+                <h3>User FAQs (Buttons)</h3>
+                <div class="input-group">
+                    <input type="text" id="faq-q" placeholder="Question">
+                    <input type="text" id="faq-a" placeholder="Answer">
+                    <button class="btn" onclick="addSetting('faqs')">Add FAQ</button>
+                </div>
+                <ul class="data-list" id="faq-list"></ul>
+            </div>
         </div>
     </div>
 
     <script>
         // Security Check
         if(prompt("Enter Admin Password:") !== "123456") {
-            document.body.innerHTML = "<h2 style='color:red; text-align:center; margin-top:50px;'>Access Denied!</h2>";
+            document.body.innerHTML = "<h2 style='text-align:center; padding:50px; color:red;'>Access Denied</h2>";
             throw new Error("Wrong password");
         }
 
@@ -109,120 +149,179 @@
             messagingSenderId: "1000897291264",
             appId: "1:1000897291264:web:4f1e78554c3e69d310a4e5"
         };
-
         firebase.initializeApp(FIREBASE_CONFIG);
-        const dbRef = firebase.database().ref('ecommerceSupportChat');
-        
-        let state = { messages: [], faqs: [], quickReplies: [] };
-        let typingTimeout;
+        const db = firebase.database();
+        const chatsRef = db.ref('supportSystem/chats');
+        const settingsRef = db.ref('supportSystem/settings');
 
-        // Keep Admin Active Status Updated
-        setInterval(() => { dbRef.child('lastAdminActive').set(Date.now()); }, 30000);
-        dbRef.child('lastAdminActive').set(Date.now());
+        let allChats = {};
+        let globalSettings = { faqs: [], quickReplies: [] };
+        let activeUserId = null;
+        let adminTypingTimeout;
 
-        dbRef.on('value', (snapshot) => {
-            const data = snapshot.val() || {};
-            state = { messages: data.messages || [], faqs: data.faqs || [], quickReplies: data.quickReplies || [], welcomeMessage: data.welcomeMessage || ""};
+        // --- UI Interactions ---
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('closed');
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
             
-            document.getElementById('welcome-msg').value = state.welcomeMessage;
-            renderSettings();
-            renderChat();
+            document.getElementById(`${tab}-screen`).classList.add('active');
+            event.target.classList.add('active');
+            document.getElementById('page-title').innerText = tab === 'chats' ? 'Live Chats' : 'System Settings';
+        }
 
-            document.getElementById('user-typing').style.display = data.userTyping ? 'block' : 'none';
+        // --- Fetch & Render Chats ---
+        chatsRef.on('value', (snap) => {
+            allChats = snap.val() || {};
+            renderUserList();
+            if(activeUserId && allChats[activeUserId]) {
+                renderActiveChat();
+            }
         });
 
-        function renderSettings() {
-            // FAQs
-            const fList = document.getElementById('faq-list');
-            fList.innerHTML = '';
-            state.faqs.forEach(f => {
-                fList.innerHTML += `<div class="list-item"><span>${f.q}</span> <button class="danger" onclick="deleteItem('faqs', '${f.id}')">X</button></div>`;
-            });
-
-            // Quick Replies
-            const qList = document.getElementById('qr-list');
-            qList.innerHTML = '';
-            state.quickReplies.forEach(q => {
-                qList.innerHTML += `<div class="list-item"><span><b>${q.keyword}</b></span> <button class="danger" onclick="deleteItem('quickReplies', '${q.id}')">X</button></div>`;
-            });
-        }
-
-        function renderChat() {
-            const area = document.getElementById('admin-chat-messages');
-            area.innerHTML = '';
-            state.messages.forEach(msg => {
-                let content = msg.type === 'image' ? `<a href="${msg.text}" target="_blank"><img src="${msg.text}"></a>` : msg.text;
-                area.innerHTML += `
-                    <div class="msg-row ${msg.sender}">
-                        <div class="bubble">
-                            ${content} <br>
-                            <small style="font-size:10px; color:gray;">${new Date(msg.timestamp).toLocaleTimeString()}</small>
-                        </div>
-                    </div>`;
-            });
-            area.scrollTop = area.scrollHeight;
-        }
-
-        // Live Chat Functions
-        function handleAdminTyping(e) {
-            if (e.key === 'Enter') { sendAdminMessage(); return; }
-            dbRef.child('adminTyping').set(true);
-            clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => dbRef.child('adminTyping').set(false), 1500);
-        }
-
-        function sendAdminMessage() {
-            const input = document.getElementById('admin-chat-input');
-            const text = input.value.trim();
-            if (!text) return;
+        function renderUserList() {
+            const listDiv = document.getElementById('user-list');
+            listDiv.innerHTML = '';
             
-            state.messages.push({
+            // Sort by last active
+            const sortedUsers = Object.keys(allChats).sort((a, b) => allChats[b].lastActive - allChats[a].lastActive);
+            
+            sortedUsers.forEach(uid => {
+                const userData = allChats[uid];
+                const lastMsg = userData.messages ? userData.messages[userData.messages.length - 1].text : "No message";
+                const unread = userData.unread ? `<span class="unread-badge">New</span>` : '';
+                const time = new Date(userData.lastActive).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
+                listDiv.innerHTML += `
+                    <div class="user-item ${activeUserId === uid ? 'active' : ''}" onclick="selectUser('${uid}')">
+                        <h4>${uid} ${unread}</h4>
+                        <p>${time} - ${lastMsg}</p>
+                    </div>
+                `;
+            });
+        }
+
+        function selectUser(uid) {
+            activeUserId = uid;
+            chatsRef.child(uid).update({ unread: false }); // Mark as read
+            document.getElementById('active-user-name').innerHTML = `Chatting with: ${uid} <button class="btn danger" style="float:right; padding:5px 10px;" onclick="clearUserChat('${uid}')">Clear Chat</button>`;
+            document.getElementById('input-box').style.display = 'flex';
+            renderUserList(); // Update active class
+            renderActiveChat();
+        }
+
+        function renderActiveChat() {
+            const box = document.getElementById('admin-chat-box');
+            box.innerHTML = '';
+            const userData = allChats[activeUserId];
+            
+            if(!userData) return;
+
+            // Typing indicator
+            document.getElementById('user-typing').style.display = userData.userTyping ? 'block' : 'none';
+
+            if(userData.messages) {
+                userData.messages.forEach(msg => {
+                    let content = msg.type === 'image' ? `<a href="${msg.text}" target="_blank"><img src="${msg.text}"></a>` : msg.text;
+                    box.innerHTML += `
+                        <div class="msg-row ${msg.sender}">
+                            <div class="bubble">
+                                ${content} <br>
+                                <small style="font-size:10px; color:gray;">${new Date(msg.timestamp).toLocaleTimeString()}</small>
+                            </div>
+                        </div>`;
+                });
+            }
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function handleAdminTyping(e) {
+            if (e.key === 'Enter') { sendAdminReply(); return; }
+            if(!activeUserId) return;
+            chatsRef.child(activeUserId).child('adminTyping').set(true);
+            clearTimeout(adminTypingTimeout);
+            adminTypingTimeout = setTimeout(() => chatsRef.child(activeUserId).child('adminTyping').set(false), 1500);
+        }
+
+        function sendAdminReply() {
+            if(!activeUserId) return alert("Select a user first!");
+            const input = document.getElementById('admin-input');
+            const text = input.value.trim();
+            if(!text) return;
+
+            let messages = allChats[activeUserId].messages || [];
+            messages.push({
                 id: 'msg_' + Date.now(), text: text, type: 'text', sender: 'admin', timestamp: Date.now()
             });
-            dbRef.child('messages').set(state.messages);
-            dbRef.child('adminTyping').set(false);
+
+            chatsRef.child(activeUserId).update({ messages: messages, adminTyping: false, lastActive: Date.now() });
             input.value = '';
         }
 
-        // Settings Functions
+        function clearUserChat(uid) {
+            if(confirm("Delete this user's chat history?")) {
+                chatsRef.child(uid).remove();
+                activeUserId = null;
+                document.getElementById('admin-chat-box').innerHTML = '';
+                document.getElementById('active-user-name').innerText = 'Select a user to start chatting';
+                document.getElementById('input-box').style.display = 'none';
+            }
+        }
+
+        // --- Settings Management ---
+        settingsRef.on('value', (snap) => {
+            if(snap.exists()) {
+                globalSettings = { faqs: [], quickReplies: [], ...snap.val() };
+                document.getElementById('welcome-msg').value = globalSettings.welcomeMessage || "";
+                renderSettingsLists();
+            }
+        });
+
         function saveWelcomeMsg() {
-            dbRef.child('welcomeMessage').set(document.getElementById('welcome-msg').value);
-            alert("Updated!");
+            settingsRef.child('welcomeMessage').set(document.getElementById('welcome-msg').value);
+            alert("Welcome message saved!");
         }
 
-        function addFAQ() {
-            const q = document.getElementById('faq-q').value;
-            const a = document.getElementById('faq-a').value;
-            if(q && a) {
-                state.faqs.push({id: 'f_'+Date.now(), q, a});
-                dbRef.child('faqs').set(state.faqs);
-                document.getElementById('faq-q').value = '';
-                document.getElementById('faq-a').value = '';
+        function addSetting(type) {
+            if(type === 'faqs') {
+                const q = document.getElementById('faq-q').value;
+                const a = document.getElementById('faq-a').value;
+                if(q && a) {
+                    globalSettings.faqs.push({ id: 'f_'+Date.now(), q, a });
+                    settingsRef.child('faqs').set(globalSettings.faqs);
+                    document.getElementById('faq-q').value = ''; document.getElementById('faq-a').value = '';
+                }
+            } else if(type === 'quickReplies') {
+                const kw = document.getElementById('qr-kw').value;
+                const ans = document.getElementById('qr-ans').value;
+                if(kw && ans) {
+                    globalSettings.quickReplies.push({ id: 'q_'+Date.now(), keyword: kw, reply: ans });
+                    settingsRef.child('quickReplies').set(globalSettings.quickReplies);
+                    document.getElementById('qr-kw').value = ''; document.getElementById('qr-ans').value = '';
+                }
             }
         }
 
-        function addQR() {
-            const keyword = document.getElementById('qr-kw').value;
-            const reply = document.getElementById('qr-ans').value;
-            if(keyword && reply) {
-                state.quickReplies.push({id: 'q_'+Date.now(), keyword, reply});
-                dbRef.child('quickReplies').set(state.quickReplies);
-                document.getElementById('qr-kw').value = '';
-                document.getElementById('qr-ans').value = '';
-            }
+        function renderSettingsLists() {
+            const fList = document.getElementById('faq-list');
+            fList.innerHTML = '';
+            (globalSettings.faqs || []).forEach(f => {
+                fList.innerHTML += `<li><span><b>Q:</b> ${f.q}</span> <button class="btn danger" onclick="deleteSetting('faqs', '${f.id}')">Delete</button></li>`;
+            });
+
+            const qList = document.getElementById('qr-list');
+            qList.innerHTML = '';
+            (globalSettings.quickReplies || []).forEach(q => {
+                qList.innerHTML += `<li><span><b>Kw:</b> ${q.keyword}</span> <button class="btn danger" onclick="deleteSetting('quickReplies', '${q.id}')">Delete</button></li>`;
+            });
         }
 
-        function deleteItem(type, id) {
-            const filtered = state[type].filter(item => item.id !== id);
-            dbRef.child(type).set(filtered);
-        }
-
-        function clearChat() {
-            if(confirm("Clear all messages?")) {
-                dbRef.child('messages').set([{
-                    id: 'msg_0', text: state.welcomeMessage || "Welcome!", type: 'text', sender: 'admin', timestamp: Date.now()
-                }]);
-            }
+        function deleteSetting(type, id) {
+            globalSettings[type] = globalSettings[type].filter(item => item.id !== id);
+            settingsRef.child(type).set(globalSettings[type]);
         }
     </script>
 </body>
