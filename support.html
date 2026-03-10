@@ -2,538 +2,75 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Support</title>
-    
-    <!-- Firebase SDKs (Compat version for simple drop-in) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
     <style>
-        /* ============================
-           THEME & VARIABLES
-        ============================ */
         :root {
-            --primary: #0f5132;      /* Deep Green */
-            --primary-light: #198754;
-            --secondary: #ffffff;    /* White */
-            --accent: #d1e7dd;       /* Light Green */
-            --text-dark: #212529;
-            --text-muted: #6c757d;
-            --bg-body: #f8f9fa;
-            --bg-chat: #e5ddd5;      /* WhatsApp style background */
-            --shadow-soft: 0 2px 5px rgba(0,0,0,0.1);
-            --transition: all 0.3s ease;
+            --primary: #0f5132; --primary-light: #198754; --secondary: #ffffff;
+            --accent: #d1e7dd; --text-dark: #212529; --text-muted: #6c757d;
+            --bg-body: #f8f9fa; --bg-chat: #e5ddd5;
         }
-
-        /* ============================
-           RESET & GLOBAL
-        ============================ */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        body, html {
-            height: 100%;
-            width: 100%;
-            background-color: var(--bg-body);
-            overflow: hidden; /* Prevent body scroll */
-        }
-
-        /* ============================
-           FULL PAGE CHAT CONTAINER
-        ============================ */
-        #chat-app {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            height: 100%;
-            background-color: var(--secondary);
-            position: relative;
-        }
-
-        /* ============================
-           CHAT HEADER
-        ============================ */
-        .chat-header {
-            background-color: var(--primary);
-            color: var(--secondary);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            z-index: 10;
-        }
-
-        .header-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .header-title {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .header-status {
-            font-size: 13px;
-            color: var(--accent);
-            margin-top: 3px;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .icon-btn {
-            background: none;
-            border: none;
-            color: var(--secondary);
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
-
-        .icon-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .icon-btn svg {
-            width: 24px;
-            height: 24px;
-            fill: currentColor;
-        }
-
-        /* ============================
-           MESSAGE AREA
-        ============================ */
-        .chat-messages {
-            flex: 1;
-            background-color: var(--bg-chat);
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            scroll-behavior: smooth;
-        }
-
-        .message-row {
-            display: flex;
-            width: 100%;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body, html { height: 100%; width: 100%; background: var(--bg-body); overflow: hidden; }
+        
+        #chat-app { display: flex; flex-direction: column; height: 100%; }
+        .chat-header { background: var(--primary); color: var(--secondary); padding: 15px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; }
+        .header-title { font-size: 18px; font-weight: 600; display: block; }
+        .header-status { font-size: 13px; color: var(--accent); }
+        
+        .chat-messages { flex: 1; background: var(--bg-chat); padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        .message-row { display: flex; width: 100%; }
         .message-row.user { justify-content: flex-end; }
         .message-row.admin { justify-content: flex-start; }
-
-        .message-bubble {
-            max-width: 85%;
-            padding: 10px 14px;
-            border-radius: 12px;
-            position: relative;
-            font-size: 15px;
-            line-height: 1.4;
-            box-shadow: var(--shadow-soft);
-            word-wrap: break-word;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .message-row.user .message-bubble {
-            background-color: var(--primary-light);
-            color: var(--secondary);
-            border-top-right-radius: 4px;
-        }
-
-        .message-row.admin .message-bubble {
-            background-color: var(--secondary);
-            color: var(--text-dark);
-            border-top-left-radius: 4px;
-        }
-
-        .message-meta {
-            font-size: 11px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 5px;
-            margin-top: 5px;
-            opacity: 0.85;
-        }
-
-        .message-row.user .message-meta { color: var(--accent); }
-        .message-row.admin .message-meta { color: var(--text-muted); }
-
-        .message-status svg {
-            width: 14px; height: 14px;
-            fill: currentColor;
-        }
-
-        .status-read { color: #4facfe !important; }
-
-        .edited-tag {
-            font-style: italic;
-            font-size: 11px;
-        }
-
-        .edit-btn {
-            position: absolute;
-            top: 50%;
-            left: -35px;
-            transform: translateY(-50%);
-            background: var(--secondary);
-            border: none;
-            border-radius: 50%;
-            width: 28px; height: 28px;
-            cursor: pointer;
-            box-shadow: var(--shadow-soft);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-muted);
-        }
-
-        .message-row.user:hover .edit-btn {
-            display: flex;
-        }
-
-        .edit-btn svg { width: 14px; height: 14px; fill: currentColor; }
-
-        /* ============================
-           TYPING INDICATOR
-        ============================ */
-        .typing-indicator {
-            display: flex;
-            gap: 4px;
-            padding: 12px 16px;
-            background: var(--secondary);
-            border-radius: 15px;
-            border-top-left-radius: 4px;
-            width: fit-content;
-            box-shadow: var(--shadow-soft);
-            align-items: center;
-            margin-bottom: 15px;
-            display: none;
-        }
-
-        .typing-indicator.active { display: flex; }
-
-        .typing-dot {
-            width: 7px; height: 7px;
-            background: var(--text-muted);
-            border-radius: 50%;
-            animation: bounce 1.4s infinite ease-in-out both;
-        }
-
-        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
-        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
-
-        @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
-        }
-
-        /* ============================
-           FAQ SECTION
-        ============================ */
-        .faq-container {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 5px;
-            margin-bottom: 10px;
-            align-items: flex-start;
-        }
-
-        .faq-chip {
-            background-color: var(--secondary);
-            color: var(--primary);
-            border: 1px solid var(--primary-light);
-            padding: 10px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: var(--transition);
-            box-shadow: var(--shadow-soft);
-        }
-
-        .faq-chip:hover {
-            background-color: var(--primary);
-            color: var(--secondary);
-        }
-
-        /* ============================
-           INPUT AREA
-        ============================ */
-        .chat-input-area {
-            padding: 15px 20px;
-            background-color: var(--secondary);
-            border-top: 1px solid #e9ecef;
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            z-index: 10;
-        }
-
-        .chat-input {
-            flex: 1;
-            border: 1px solid #dee2e6;
-            border-radius: 25px;
-            padding: 12px 20px;
-            font-size: 15px;
-            outline: none;
-            resize: none;
-            max-height: 120px;
-            background-color: var(--bg-body);
-            transition: border-color 0.2s;
-        }
-
-        .chat-input:focus {
-            border-color: var(--primary-light);
-        }
-
-        .send-btn {
-            background-color: var(--primary);
-            color: var(--secondary);
-            border: none;
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition);
-            flex-shrink: 0;
-        }
-
-        .send-btn:hover {
-            background-color: var(--primary-light);
-            transform: scale(1.05);
-        }
-
-        .send-btn svg {
-            width: 22px; height: 22px; fill: currentColor;
-            transform: translateX(2px);
-        }
-
-        /* ============================
-           ADMIN MODAL (FULL SCREEN)
-        ============================ */
-        .admin-modal {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--bg-body);
-            z-index: 1001;
-            display: flex;
-            flex-direction: column;
-            transform: translateY(100%);
-            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-
-        .admin-modal.open {
-            transform: translateY(0);
-        }
-
-        .admin-header {
-            background-color: var(--text-dark);
-            color: var(--secondary);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .admin-content {
-            padding: 20px;
-            flex: 1;
-            overflow-y: auto;
-            max-width: 800px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .admin-section {
-            background: var(--secondary);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            box-shadow: var(--shadow-soft);
-        }
-
-        .admin-section h3 {
-            font-size: 16px;
-            margin-bottom: 15px;
-            color: var(--primary);
-            border-bottom: 2px solid var(--accent);
-            padding-bottom: 5px;
-            display: inline-block;
-        }
-
-        .admin-input-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .admin-input {
-            flex: 1;
-            min-width: 200px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        .admin-btn {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-        }
         
-        .admin-btn.danger { background-color: #dc3545; }
-
-        .data-list {
-            list-style: none;
-            margin-top: 10px;
-        }
-
-        .data-list li {
-            background: var(--bg-body);
-            padding: 12px;
-            margin-bottom: 8px;
-            border-radius: 6px;
-            font-size: 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid #e9ecef;
-        }
-
-        @media (max-width: 600px) {
-            .admin-input-group { flex-direction: column; }
-            .admin-btn { width: 100%; }
-        }
+        .message-bubble { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-wrap: break-word; }
+        .message-row.user .message-bubble { background: var(--primary-light); color: var(--secondary); border-top-right-radius: 4px; }
+        .message-row.admin .message-bubble { background: var(--secondary); color: var(--text-dark); border-top-left-radius: 4px; }
+        .message-bubble img { max-width: 100%; border-radius: 8px; margin-top: 5px; }
+        
+        .message-meta { font-size: 11px; display: flex; justify-content: flex-end; gap: 5px; margin-top: 5px; opacity: 0.8; }
+        
+        .faq-container { display: flex; flex-direction: column; gap: 8px; margin-top: 5px; }
+        .faq-chip { background: var(--secondary); color: var(--primary); border: 1px solid var(--primary-light); padding: 8px 15px; border-radius: 20px; font-size: 14px; cursor: pointer; display: inline-block; width: fit-content;}
+        
+        .chat-input-area { padding: 15px; background: var(--secondary); display: flex; gap: 10px; align-items: center; }
+        .attach-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 5px; }
+        .attach-btn svg { width: 24px; height: 24px; fill: currentColor; }
+        .chat-input { flex: 1; border: 1px solid #ccc; border-radius: 20px; padding: 10px 15px; outline: none; }
+        .send-btn { background: var(--primary); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
+        
+        .typing-indicator { font-size: 12px; color: var(--text-muted); font-style: italic; display: none; }
+        .typing-indicator.active { display: block; }
     </style>
 </head>
 <body>
-
-    <!-- Full Page Chat App Container -->
     <div id="chat-app">
-        
-        <!-- Header -->
         <div class="chat-header">
-            <div class="header-info">
-                <span class="header-title">Customer Support</span>
-                <span class="header-status" id="admin-status">Active now</span>
-            </div>
-            <div class="header-actions">
-                <button class="icon-btn" onclick="openAdmin()" title="Admin Settings">
-                    <!-- 3 Dot Menu Icon -->
-                    <svg viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
-                </button>
-            </div>
+            <span class="header-title">Customer Support</span>
+            <span class="header-status" id="admin-status">Connecting...</span>
         </div>
 
-        <!-- Messages Area -->
         <div class="chat-messages" id="chat-messages">
-            <!-- Messages will be injected here via JS -->
-            
-            <!-- Typing Indicator -->
-            <div class="typing-indicator" id="typing-indicator">
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-            </div>
+            <!-- Messages Here -->
         </div>
+        <div class="typing-indicator" id="typing-indicator" style="padding: 0 20px 10px;">Admin is typing...</div>
 
-        <!-- Input Area -->
         <div class="chat-input-area">
-            <textarea class="chat-input" id="chat-input" placeholder="Type a message..." rows="1" onkeypress="handleKeyPress(event)"></textarea>
-            <button class="send-btn" onclick="sendUserMessage()">
-                <!-- Send Icon -->
-                <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            <input type="file" id="file-input" accept="image/*" style="display: none;" onchange="handleFileUpload(event)">
+            <button class="attach-btn" onclick="document.getElementById('file-input').click()">
+                <svg viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 015 0v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5a2.5 2.5 0 005 0V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></svg>
             </button>
+            <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." onkeyup="handleTyping(event)">
+            <button class="send-btn" onclick="sendUserMessage()">►</button>
         </div>
-
-        <!-- Admin Settings Modal (Full Screen Overlay) -->
-        <div class="admin-modal" id="admin-modal">
-            <div class="admin-header">
-                <span class="header-title">Admin Panel</span>
-                <button class="icon-btn" onclick="closeAdmin()">
-                    <!-- Close Icon -->
-                    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-                </button>
-            </div>
-            <div class="admin-content">
-                <div class="admin-section">
-                    <h3>Welcome Message</h3>
-                    <div class="admin-input-group">
-                        <input type="text" id="admin-welcome-msg" class="admin-input">
-                        <button class="admin-btn" onclick="updateWelcomeMessage()">Save</button>
-                    </div>
-                </div>
-
-                <div class="admin-section">
-                    <h3>Quick Replies (Keyword Based)</h3>
-                    <div class="admin-input-group">
-                        <input type="text" id="qr-keyword" class="admin-input" placeholder="Keyword (e.g. delivery)">
-                        <input type="text" id="qr-reply" class="admin-input" placeholder="Auto Reply text">
-                        <button class="admin-btn" onclick="addQuickReply()">Add Reply</button>
-                    </div>
-                    <ul class="data-list" id="qr-list"></ul>
-                </div>
-
-                <div class="admin-section">
-                    <h3>FAQ (Stock Questions)</h3>
-                    <div class="admin-input-group">
-                        <input type="text" id="faq-q" class="admin-input" placeholder="Question">
-                        <input type="text" id="faq-a" class="admin-input" placeholder="Answer">
-                        <button class="admin-btn" onclick="addFAQ()">Add FAQ</button>
-                    </div>
-                    <ul class="data-list" id="faq-list"></ul>
-                </div>
-
-                <div class="admin-section">
-                    <h3>Danger Zone</h3>
-                    <button class="admin-btn danger" onclick="clearChatHistory()">Clear Chat History</button>
-                </div>
-            </div>
-        </div>
-
     </div>
 
-    <!-- ============================
-         JAVASCRIPT LOGIC
-    ============================ -->
     <script>
-        /* --------------------------------------------------------------------------
-           1. CONFIGURATION & STATE
-        -------------------------------------------------------------------------- */
-        
-        
-        const ADMIN_PASSWORD = "123456"
         const FIREBASE_CONFIG = {
-             apiKey: "AIzaSyD5p-7Cgep9aGf6omMXDH8LOTy0C76jJaQ",
+            apiKey: "AIzaSyD5p-7Cgep9aGf6omMXDH8LOTy0C76jJaQ",
             authDomain: "e-commerce-shop-24.firebaseapp.com",
             projectId: "e-commerce-shop-24",
             storageBucket: "e-commerce-shop-24.firebasestorage.app",
@@ -542,389 +79,120 @@
             measurementId: "G-MCFXRFDFT5"
         };
 
-        // Application Default State
-        let state = {
-            welcomeMessage: "Hello 👋 Welcome to our support. How can we help you today?",
-            faqs: [
-                { id: 'f1', q: "How long is delivery?", a: "Delivery usually takes 2-3 days." },
-                { id: 'f2', q: "How can I track my order?", a: "You can track your order from your account dashboard." },
-                { id: 'f3', q: "What is your refund policy?", a: "Refunds are processed within 5 business days." }
-            ],
-            quickReplies: [
-                { id: 'q1', keyword: "delivery", reply: "Standard delivery takes 2-3 business days. Express delivery takes 1 day." },
-                { id: 'q2', keyword: "refund", reply: "Refunds are initiated immediately and reflect in your account within 5 business days." }
-            ],
-            messages: [],
-            lastAdminActive: Date.now() - 120000 // Default: 2 minutes ago
-        };
+        let state = { messages: [], faqs: [], quickReplies: [], welcomeMessage: "" };
+        let typingTimeout;
 
-        let dbRef = null;
-        let useFirebase = false;
+        firebase.initializeApp(FIREBASE_CONFIG);
+        const db = firebase.database();
+        const dbRef = db.ref('ecommerceSupportChat');
 
-        /* --------------------------------------------------------------------------
-           2. DATABASE WRAPPER (Firebase / LocalStorage Fallback)
-        -------------------------------------------------------------------------- */
-        
-        function initDatabase() {
-            try {
-                if (Object.keys(FIREBASE_CONFIG).length > 0) {
-                    firebase.initializeApp(FIREBASE_CONFIG);
-                    const db = firebase.database();
-                    dbRef = db.ref('ecommerceSupportChat');
-                    useFirebase = true;
-                    console.log("🔥 Connected to Firebase");
-                    
-                    dbRef.on('value', (snapshot) => {
-                        const data = snapshot.val();
-                        if (data) {
-                            state = { ...state, ...data };
-                            if(!state.messages) state.messages = [];
-                            if(!state.faqs) state.faqs = [];
-                            if(!state.quickReplies) state.quickReplies = [];
-                            updateUI();
-                        } else {
-                            saveData();
-                        }
-                    });
-                } else {
-                    throw new Error("No Firebase config.");
+        // Sync Data
+        dbRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                let oldMsgCount = state.messages ? state.messages.length : 0;
+                state = data;
+                if (!state.messages) state.messages = [];
+                
+                // New Message Notification
+                if(state.messages.length > oldMsgCount && state.messages[state.messages.length-1].sender === 'admin'){
+                    document.title = "(1) New Message!";
                 }
-            } catch (error) {
-                console.log("💾 Using LocalStorage Fallback.");
-                useFirebase = false;
-                const localData = localStorage.getItem('ecommerceSupportChat');
-                if (localData) {
-                    state = { ...state, ...JSON.parse(localData) };
-                    if(!state.messages) state.messages = [];
+
+                renderMessages();
+                document.getElementById('admin-status').innerText = (Date.now() - state.lastAdminActive < 60000) ? "Active now" : "Offline";
+                
+                if(state.adminTyping) {
+                    document.getElementById('typing-indicator').classList.add('active');
                 } else {
-                    saveData();
+                    document.getElementById('typing-indicator').classList.remove('active');
                 }
-                updateUI();
             }
-            
-            // Send welcome message automatically if chat is completely empty
-            if (state.messages.length === 0) {
-                sendAdminMessage(state.welcomeMessage);
-            }
-        }
+        });
 
-        function saveData() {
-            if (useFirebase && dbRef) {
-                dbRef.set(state);
-            } else {
-                localStorage.setItem('ecommerceSupportChat', JSON.stringify(state));
-                updateUI();
-            }
-        }
-
-        /* --------------------------------------------------------------------------
-           3. UI & DOM MANIPULATION
-        -------------------------------------------------------------------------- */
-
-        function updateUI() {
-            renderMessages();
-            renderAdminStatus();
-            if (document.getElementById('admin-modal').classList.contains('open')) {
-                renderAdminPanelData();
-            }
-        }
-
-        function renderAdminStatus() {
-            const statusEl = document.getElementById('admin-status');
-            const diffMins = Math.floor((Date.now() - state.lastAdminActive) / 60000);
-            
-            if (diffMins < 1) statusEl.innerText = "Active now";
-            else if (diffMins === 1) statusEl.innerText = "Active 1 minute ago";
-            else statusEl.innerText = `Active ${diffMins} minutes ago`;
-        }
-
-        function scrollToBottom() {
-            const msgArea = document.getElementById('chat-messages');
-            setTimeout(() => {
-                msgArea.scrollTop = msgArea.scrollHeight;
-            }, 50);
-        }
-
-        function formatTime(timestamp) {
-            const date = new Date(timestamp);
-            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        }
-
-        function getStatusIcon(status) {
-            if (status === 'sent') return `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
-            if (status === 'delivered') return `<svg viewBox="0 0 24 24"><path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z"/></svg>`;
-            if (status === 'read') return `<svg class="status-read" viewBox="0 0 24 24"><path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z"/></svg>`;
-            return '';
-        }
+        // Reset title on click
+        window.onclick = () => document.title = "Customer Support";
 
         function renderMessages() {
             const msgContainer = document.getElementById('chat-messages');
-            const typingInd = document.getElementById('typing-indicator');
-            
-            // Clear current messages (keep typing indicator safe)
             msgContainer.innerHTML = '';
             
             state.messages.forEach(msg => {
                 const row = document.createElement('div');
                 row.className = `message-row ${msg.sender}`;
+                let content = msg.type === 'image' ? `<img src="${msg.text}" alt="attachment">` : msg.text;
                 
-                const editedTag = msg.edited ? `<span class="edited-tag">(edited)</span>` : '';
-                const statusIcon = msg.sender === 'user' ? `<span class="message-status">${getStatusIcon(msg.status)}</span>` : '';
-                const editBtn = msg.sender === 'user' ? `<button class="edit-btn" onclick="promptEditMessage('${msg.id}')" title="Edit Message"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button>` : '';
-
                 row.innerHTML = `
                     <div class="message-bubble">
-                        ${editBtn}
-                        ${msg.text}
-                        <div class="message-meta">
-                            ${editedTag}
-                            ${formatTime(msg.timestamp)}
-                            ${statusIcon}
-                        </div>
-                    </div>
-                `;
+                        ${content}
+                        <div class="message-meta">${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                    </div>`;
                 msgContainer.appendChild(row);
             });
 
-            // FAQ Logic: Only show if USER has NEVER sent a message
+            // Show FAQ if user hasn't typed
             const hasUserMessaged = state.messages.some(m => m.sender === 'user');
-            
             if (!hasUserMessaged && state.faqs && state.faqs.length > 0) {
                 const faqContainer = document.createElement('div');
                 faqContainer.className = 'faq-container';
                 state.faqs.forEach(faq => {
-                    const chip = document.createElement('div');
-                    chip.className = 'faq-chip';
-                    chip.innerText = faq.q;
-                    chip.onclick = () => sendFaqMessage(faq.q, faq.a);
-                    faqContainer.appendChild(chip);
+                    faqContainer.innerHTML += `<div class="faq-chip" onclick="sendUserMessage('${faq.q}')">${faq.q}</div>`;
                 });
                 msgContainer.appendChild(faqContainer);
             }
-
-            // Put typing indicator back at the bottom
-            msgContainer.appendChild(typingInd);
-            scrollToBottom();
+            msgContainer.scrollTop = msgContainer.scrollHeight;
         }
 
-        /* --------------------------------------------------------------------------
-           4. CHAT FUNCTIONALITY
-        -------------------------------------------------------------------------- */
+        function handleTyping(e) {
+            if (e.key === 'Enter') { sendUserMessage(); return; }
+            dbRef.child('userTyping').set(true);
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => dbRef.child('userTyping').set(false), 1500);
+        }
 
-        function handleKeyPress(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendUserMessage();
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    sendDataToDB(e.target.result, 'image');
+                };
+                reader.readAsDataURL(file);
             }
         }
 
-        function sendUserMessage() {
+        function sendUserMessage(forcedText = null) {
             const input = document.getElementById('chat-input');
-            const text = input.value.trim();
+            const text = forcedText || input.value.trim();
             if (!text) return;
-
-            const msgId = 'msg_' + Date.now();
-            state.messages.push({
-                id: msgId,
-                text: text,
-                sender: 'user',
-                timestamp: Date.now(),
-                status: 'sent',
-                edited: false
-            });
-
+            
             input.value = '';
-            
-            // Save data triggers UI re-render, hiding FAQs automatically
-            saveData();
-            
-            // Simulate Delivery Status
-            setTimeout(() => { updateMessageStatus(msgId, 'delivered'); }, 800);
-
-            // Check if there's an Auto-Reply for this keyword
-            checkBotReply(text, msgId);
+            dbRef.child('userTyping').set(false);
+            sendDataToDB(text, 'text');
+            checkBotReply(text);
         }
 
-        function updateMessageStatus(id, newStatus) {
-            const msg = state.messages.find(m => m.id === id);
-            if (msg) {
-                msg.status = newStatus;
-                saveData();
-            }
-        }
-
-        function promptEditMessage(id) {
-            const msg = state.messages.find(m => m.id === id);
-            if (!msg) return;
-            const newText = prompt("Edit your message:", msg.text);
-            if (newText !== null && newText.trim() !== "" && newText !== msg.text) {
-                msg.text = newText.trim();
-                msg.edited = true;
-                saveData();
-                checkBotReply(msg.text, msg.id); 
-            }
-        }
-
-        function sendFaqMessage(question, answer) {
-            const msgId = 'msg_' + Date.now();
-            state.messages.push({
-                id: msgId, text: question, sender: 'user',
-                timestamp: Date.now(), status: 'read', edited: false
-            });
-            saveData(); // Hide FAQs instantly
-            
-            showTypingIndicator();
-            setTimeout(() => {
-                sendAdminMessage(answer);
-                hideTypingIndicator();
-            }, 1200);
-        }
-
-        function checkBotReply(text, userMsgId) {
-            const lowerText = text.toLowerCase();
-            let matchedReply = null;
-
-            for (let qr of state.quickReplies) {
-                if (lowerText.includes(qr.keyword.toLowerCase())) {
-                    matchedReply = qr.reply;
-                    break;
-                }
-            }
-
-            if (matchedReply) {
-                showTypingIndicator();
-                setTimeout(() => {
-                    updateMessageStatus(userMsgId, 'read');
-                    sendAdminMessage(matchedReply);
-                    hideTypingIndicator();
-                }, 1500 + Math.random() * 1000); // Admin typing delay (1.5s - 2.5s)
-            }
-        }
-
-        function sendAdminMessage(text) {
+        function sendDataToDB(text, type) {
             state.messages.push({
                 id: 'msg_' + Date.now(),
-                text: text,
-                sender: 'admin',
-                timestamp: Date.now(),
-                status: 'sent',
-                edited: false
+                text: text, type: type, sender: 'user', timestamp: Date.now()
             });
-            state.lastAdminActive = Date.now();
-            saveData();
+            dbRef.child('messages').set(state.messages);
         }
 
-        function showTypingIndicator() {
-            document.getElementById('typing-indicator').classList.add('active');
-            scrollToBottom();
-        }
-
-        function hideTypingIndicator() {
-            document.getElementById('typing-indicator').classList.remove('active');
-        }
-
-        /* --------------------------------------------------------------------------
-           5. ADMIN PANEL FUNCTIONALITY
-        -------------------------------------------------------------------------- */
-
-        function openAdmin() {
-            const pass = prompt("Enter Admin Password:");
-            if (pass === ADMIN_PASSWORD) {
-                document.getElementById('admin-modal').classList.add('open');
-                renderAdminPanelData();
-            } else if (pass !== null) {
-                alert("Incorrect Password!");
-            }
-        }
-
-        function closeAdmin() {
-            document.getElementById('admin-modal').classList.remove('open');
-        }
-
-        function renderAdminPanelData() {
-            document.getElementById('admin-welcome-msg').value = state.welcomeMessage;
+        function checkBotReply(text) {
+            const lowerText = text.toLowerCase();
+            const matched = (state.quickReplies || []).find(qr => lowerText.includes(qr.keyword.toLowerCase()));
             
-            const qrList = document.getElementById('qr-list');
-            qrList.innerHTML = '';
-            state.quickReplies.forEach(qr => {
-                qrList.innerHTML += `
-                    <li>
-                        <span><b>${qr.keyword}</b>: ${qr.reply}</span>
-                        <button class="admin-btn danger" onclick="deleteQuickReply('${qr.id}')">Delete</button>
-                    </li>
-                `;
-            });
-
-            const faqList = document.getElementById('faq-list');
-            faqList.innerHTML = '';
-            state.faqs.forEach(faq => {
-                faqList.innerHTML += `
-                    <li>
-                        <span><b>${faq.q}</b></span>
-                        <button class="admin-btn danger" onclick="deleteFAQ('${faq.id}')">Delete</button>
-                    </li>
-                `;
-            });
-        }
-
-        function updateWelcomeMessage() {
-            const val = document.getElementById('admin-welcome-msg').value.trim();
-            if (val) {
-                state.welcomeMessage = val;
-                saveData();
-                alert("Welcome message updated!");
+            if (matched) {
+                setTimeout(() => {
+                    state.messages.push({
+                        id: 'msg_' + Date.now(), text: matched.reply, type: 'text', sender: 'admin', timestamp: Date.now()
+                    });
+                    dbRef.child('messages').set(state.messages);
+                }, 1000);
             }
         }
-
-        function addQuickReply() {
-            const kw = document.getElementById('qr-keyword').value.trim();
-            const rep = document.getElementById('qr-reply').value.trim();
-            if (kw && rep) {
-                state.quickReplies.push({ id: 'qr_' + Date.now(), keyword: kw, reply: rep });
-                document.getElementById('qr-keyword').value = '';
-                document.getElementById('qr-reply').value = '';
-                saveData();
-            }
-        }
-
-        function deleteQuickReply(id) {
-            state.quickReplies = state.quickReplies.filter(q => q.id !== id);
-            saveData();
-        }
-
-        function addFAQ() {
-            const q = document.getElementById('faq-q').value.trim();
-            const a = document.getElementById('faq-a').value.trim();
-            if (q && a) {
-                state.faqs.push({ id: 'faq_' + Date.now(), q: q, a: a });
-                document.getElementById('faq-q').value = '';
-                document.getElementById('faq-a').value = '';
-                saveData();
-            }
-        }
-
-        function deleteFAQ(id) {
-            state.faqs = state.faqs.filter(f => f.id !== id);
-            saveData();
-        }
-
-        function clearChatHistory() {
-            if (confirm("Are you sure you want to clear all chat messages?")) {
-                state.messages = [];
-                // Re-send the welcome message after clearing
-                sendAdminMessage(state.welcomeMessage);
-                saveData();
-                closeAdmin();
-            }
-        }
-
-        /* --------------------------------------------------------------------------
-           INITIALIZATION
-        -------------------------------------------------------------------------- */
-        window.onload = () => {
-            initDatabase();
-        };
-
     </script>
 </body>
 </html>
