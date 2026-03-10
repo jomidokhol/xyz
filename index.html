@@ -422,11 +422,6 @@
         .custom-alert-actions .btn-outline { color: white; border-color: rgba(255,255,255,0.4); }
         .custom-alert-actions .btn-outline:hover { background: rgba(255,255,255,0.1); border-color: white; color: white; }
         
-        .payment-mobile-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 3000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; display: flex; align-items: center; justify-content: center; }
-        .payment-mobile-overlay.active { opacity: 1; pointer-events: auto; }
-        .payment-mobile-box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); text-align: center; max-width: 400px; width: 90%; transform: scale(0.9); transition: transform 0.3s ease; }
-        .payment-mobile-overlay.active .payment-mobile-box { transform: scale(1); }
-
         .welcome-box { width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; transform: scale(1); background: transparent !important; box-shadow: none !important; padding: 0 !important; }
 
         .order-details-modal { background: #f5f5f5; width: 100%; max-width: 500px; height: 90vh; border-radius: 12px 12px 0 0; display: flex; flex-direction: column; overflow-y: auto; position: relative; font-family: 'Poppins', sans-serif; animation: slideUp 0.4s ease; }
@@ -591,6 +586,8 @@
             min-height: 100vh;
             padding-top: 20px;
             padding-bottom: 20px;
+        }
+        #payment-page.active, #trx-confirmation-page.active {
             display: flex;
             justify-content: center;
             align-items: flex-start;
@@ -1105,6 +1102,18 @@
             </div>
         </div>
 
+        <!-- NEW TRANSACTION CONFIRMATION PAGE -->
+        <div id="trx-confirmation-page" class="page-section payment-page-bg">
+            <div class="payment-container" style="max-width: 400px; width: 100%; margin: 0 auto; display: flex; align-items: center; min-height: 80vh;">
+                <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); text-align: center; width: 100%;">
+                    <h3 style="color: var(--dark); margin-bottom: 15px;">Payment Confirmation</h3>
+                    <p style="color: var(--gray); font-size: 0.95rem; margin-bottom: 25px;">Please enter the mobile number from which you completed the payment.</p>
+                    <input type="tel" id="userPaymentMobile" class="form-control" placeholder="e.g. 017..." style="margin-bottom: 25px; text-align: center; font-weight: 600; font-size: 1.1rem;">
+                    <button class="btn btn-primary" id="submitPaymentMobile" style="width: 100%; padding: 14px; font-size: 1.1rem; border-radius: 8px;">Confirm Order</button>
+                </div>
+            </div>
+        </div>
+
         <div id="write-review-page" class="page-section">
             <div class="container" style="max-width: 600px; padding: 40px 20px;">
                 <div class="back-btn" onclick="goBack()">
@@ -1572,19 +1581,6 @@
             <div class="custom-alert-actions">
                 <button class="btn btn-outline" id="customAlertCancel">Cancel</button>
                 <button class="btn btn-primary" id="customAlertOk">OK</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- New Payment Mobile Popup Overlay -->
-    <div class="payment-mobile-overlay" id="paymentMobileOverlay">
-        <div class="payment-mobile-box">
-            <h3 style="color: var(--dark); margin-bottom: 15px;">Payment Confirmation</h3>
-            <p style="color: var(--gray); font-size: 0.95rem; margin-bottom: 25px;">Please enter the mobile number from which you completed the payment.</p>
-            <input type="tel" id="userPaymentMobile" class="form-control" placeholder="e.g. 017..." style="margin-bottom: 25px; text-align: center; font-weight: 600; font-size: 1.1rem;">
-            <div style="display: flex; gap: 15px; justify-content: center;">
-                <button class="btn btn-outline" id="cancelPaymentMobile" style="color: var(--dark); border-color: #ddd; flex: 1;">Cancel</button>
-                <button class="btn btn-primary" id="submitPaymentMobile" style="flex: 1;">Confirm Order</button>
             </div>
         </div>
     </div>
@@ -2220,7 +2216,7 @@
                         const pageId = path.split('?')[0];
                         const profilePages = ['profile', 'profile-location', 'profile-tracking', 'profile-setup', 'profile-topay', 'profile-toship', 'profile-toreceive', 'profile-toreview', 'profile-returns'];
                         
-                        if (!isLoggedIn && (profilePages.includes(pageId) || pageId === 'checkout' || pageId === 'order-summary' || pageId === 'payment')) {
+                        if (!isLoggedIn && (profilePages.includes(pageId) || pageId === 'checkout' || pageId === 'order-summary' || pageId === 'payment' || pageId === 'trx-confirmation')) {
                             navigateTo('login');
                         } else if (isLoggedIn && (pageId === 'login' || pageId === 'register')) {
                             navigateTo('profile');
@@ -2398,7 +2394,7 @@
                     let finalPageId = path.split('?')[0];
                     const profilePages = ['profile', 'profile-location', 'profile-tracking', 'profile-setup', 'profile-topay', 'profile-toship', 'profile-toreceive', 'profile-toreview', 'profile-returns'];
                     
-                    if (!isLoggedIn && (profilePages.includes(finalPageId) || finalPageId === 'checkout' || finalPageId === 'order-summary' || finalPageId === 'write-review' || finalPageId === 'payment')) {
+                    if (!isLoggedIn && (profilePages.includes(finalPageId) || finalPageId === 'checkout' || finalPageId === 'order-summary' || finalPageId === 'write-review' || finalPageId === 'payment' || finalPageId === 'trx-confirmation')) {
                         finalPageId = 'login';
                     }
 
@@ -2414,7 +2410,7 @@
 
                     const headerEl = document.querySelector('header');
                     const footerEl = document.querySelector('footer');
-                    if (finalPageId === 'payment') {
+                    if (finalPageId === 'payment' || finalPageId === 'trx-confirmation') {
                         if(headerEl) headerEl.style.display = 'none';
                         if(footerEl) footerEl.style.display = 'none';
                     } else {
@@ -4396,7 +4392,7 @@
             }
             
             function showPromoPopupWithCheck() {
-                const isAnyOverlayActive = document.querySelector('.cart-overlay.active, .options-panel-overlay.active, .custom-alert-overlay.active, .welcome-overlay.active, .order-details-overlay.active, .lightbox[style*="display: flex"], .cod-confirm-overlay.active, .action-loader-overlay.active, .tracking-overlay.active, .payment-mobile-overlay.active');
+                const isAnyOverlayActive = document.querySelector('.cart-overlay.active, .options-panel-overlay.active, .custom-alert-overlay.active, .welcome-overlay.active, .order-details-overlay.active, .lightbox[style*="display: flex"], .cod-confirm-overlay.active, .action-loader-overlay.active, .tracking-overlay.active');
                 if (!isAnyOverlayActive) {
                     showPromoPopup();
                 }
@@ -4438,7 +4434,7 @@
                          address: `${orderAddress.address}, ${orderAddress.region} - ${orderAddress.postcode}`,
                          amount: total,
                          date: date,
-                         status: (paymentMethodText === 'Cash on Delivery') ? 'Pending' : 'Pending Payment',
+                         status: 'Pending', // <-- FIX: Set explicitly to 'Pending' for ALL order types
                          payment: paymentMethodText,
                          trxId: trxId || '',
                          paymentMobile: paymentMobile || '',
@@ -4645,10 +4641,9 @@
                     document.getElementById('payment-loading-overlay').style.display = 'none';
                     showNotification("পেমেন্ট সফল হয়েছে।");
 
-                    // Show mobile number input overlay and redirect back to checkout natively
+                    // Set global pending TRX ID and navigate to the internal confirmation page
                     window.pendingTrxId = trxID;
-                    navigateTo('checkout');
-                    document.getElementById('paymentMobileOverlay').classList.add('active');
+                    navigateTo('trx-confirmation');
 
                 }, randomTime);
             };
@@ -4931,7 +4926,7 @@
                     }
                 });
 
-                // Handle Submitting the User Payment Mobile Number after successful payment validation
+                // Handle Submitting the User Payment Mobile Number after successful payment validation in trx-confirmation page
                 document.getElementById('submitPaymentMobile').addEventListener('click', () => {
                     const userMobile = document.getElementById('userPaymentMobile').value.trim();
                     if(!userMobile) {
@@ -4941,7 +4936,6 @@
                     
                     const savedParams = JSON.parse(sessionStorage.getItem('pendingOrderParams'));
                     if(savedParams) {
-                        document.getElementById('paymentMobileOverlay').classList.remove('active');
                         executeOrderPlacement(
                             savedParams.orderAddress, 
                             savedParams.selectedItems, 
@@ -4957,12 +4951,6 @@
                         sessionStorage.removeItem('pendingOrderParams');
                         window.pendingTrxId = '';
                     }
-                });
-
-                document.getElementById('cancelPaymentMobile').addEventListener('click', () => {
-                    document.getElementById('paymentMobileOverlay').classList.remove('active');
-                    sessionStorage.removeItem('pendingOrderParams');
-                    showCustomAlert('Payment Cancelled', 'Your order was not placed.');
                 });
 
                 document.getElementById('closeOrderDetails').addEventListener('click', () => {
