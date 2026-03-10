@@ -24,6 +24,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
     
+    <!-- JsBarcode Library for Barcode Generation -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    
     <!-- Media Caching Service Worker -->
     <script>
         if ('serviceWorker' in navigator) {
@@ -1637,7 +1640,8 @@
                 <div class="od-row"><span>Paid by</span><span id="odPaymentMethod" style="color:#333;"></span></div>
             </div>
             <div class="od-actions">
-                <button class="btn btn-primary" id="odContinueShopping" style="width: 100%;">Continue Shopping</button>
+                <button class="btn btn-primary" id="odContinueShopping" style="width: 100%; margin-bottom: 10px;">Continue Shopping</button>
+                <button class="btn btn-outline" id="odPrintBtn" style="width: 100%; display: none;"><i class="fas fa-print"></i> Print / Download PDF</button>
             </div>
         </div>
     </div>
@@ -1795,7 +1799,11 @@
 
             let products = [];
             let heroSlidesData = [];
-            let cart =[];
+            
+            // Cart state initialized from LocalStorage
+            let savedCart = localStorage.getItem('userCart');
+            let cart = savedCart ? JSON.parse(savedCart) : [];
+            
             let currentProduct = null;
             let imageSliderInterval = null;
             let selectedVariant = null;
@@ -1870,6 +1878,110 @@
             const customAlert = document.getElementById('customAlert');
             const welcomeOverlay = document.getElementById('welcomeOverlay');
             const promoPopup = document.getElementById('promoPopup');
+
+            // --- CART SYNC FUNCTION ---
+            async function syncCart() {
+                localStorage.setItem('userCart', JSON.stringify(cart));
+                if (isLoggedIn && currentUser && auth.currentUser) {
+                    try {
+                        await db.collection('users').doc(auth.currentUser.uid).update({ cart: cart });
+                    } catch (e) {
+                        console.error('Error syncing cart to DB', e);
+                    }
+                }
+            }
+
+            // --- INVOICE/PDF GENERATOR FUNCTION ---
+            window.printOrderInvoice = function(orderIdOrObj) {
+                let order = typeof orderIdOrObj === 'object' ? orderIdOrObj : (window.userOrders ? window.userOrders.find(o => o.id === orderIdOrObj) : null);
+                if(!order) return;
+                
+                const shopName = document.getElementById('pageTitle').textContent || 'Online Shop';
+                const domain = appDomainName;
+                
+                let itemsHtml = '';
+                order.cartItems.forEach(item => {
+                    itemsHtml += `
+                        <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.name} ${item.color && item.color !== 'N/A' ? '('+item.color+')' : ''}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align:center;">${item.qty}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align:right;">৳${item.price.toFixed(2)}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align:right;">৳${(item.price * item.qty).toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+
+                let printWin = window.open('', '', 'width=800,height=600');
+                printWin.document.write(`
+                    <html>
+                        <head>
+                            <title>Invoice - ${order.id}</title>
+                            <style>
+                                body { font-family: 'Poppins', sans-serif; color: #333; padding: 20px; }
+                                .header { text-align: center; margin-bottom: 30px; }
+                                .header h1 { margin: 0; color: #166534; }
+                                .header p { margin: 5px 0; color: #666; }
+                                .invoice-details { display: flex; justify-content: space-between; margin-bottom: 30px; line-height: 1.5; }
+                                table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+                                th { background: #f5f5f5; padding: 10px; text-align: left; border-bottom: 2px solid #ddd; }
+                                .totals { text-align: right; font-size: 1.1rem; }
+                                .totals p { margin: 5px 0; }
+                                .barcode { text-align: center; margin-top: 40px; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="header">
+                                <h1>${shopName}</h1>
+                                <p>${domain}</p>
+                                <h2>INVOICE</h2>
+                            </div>
+                            <div class="invoice-details">
+                                <div>
+                                    <strong>Bill To:</strong><br>
+                                    ${order.customer}<br>
+                                    ${order.phone}<br>
+                                    ${order.address}
+                                </div>
+                                <div style="text-align: right;">
+                                    <strong>Order ID:</strong> ${order.id}<br>
+                                    <strong>Date:</strong> ${order.date}<br>
+                                    <strong>Payment Method:</strong> ${order.payment}<br>
+                                    ${order.trxId ? `<strong>TrxID:</strong> ${order.trxId}<br>` : ''}
+                                    ${order.paymentMobile ? `<strong>Sender Mobile:</strong> ${order.paymentMobile}<br>` : ''}
+                                    <strong>Status:</strong> ${order.status}
+                                </div>
+                            </div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th style="text-align:center;">Qty</th>
+                                        <th style="text-align:right;">Price</th>
+                                        <th style="text-align:right;">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${itemsHtml}
+                                </tbody>
+                            </table>
+                            <div class="totals">
+                                <p><strong>Total Amount:</strong> ৳${Number(order.amount).toFixed(2)}</p>
+                            </div>
+                            <div class="barcode">
+                                <svg id="printBarcode"></svg>
+                            </div>
+                            <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"><\/script>
+                            <script>
+                                window.onload = function() {
+                                    JsBarcode("#printBarcode", "${order.id}", { format: "CODE128", width: 2, height: 50, displayValue: true });
+                                    setTimeout(function() { window.print(); window.close(); }, 500);
+                                }
+                            <\/script>
+                        </body>
+                    </html>
+                `);
+                printWin.document.close();
+            }
 
             function showLoader() { document.getElementById('actionLoader').classList.add('active'); }
             function hideLoader() { document.getElementById('actionLoader').classList.remove('active'); }
@@ -2184,6 +2296,19 @@
                             savedAddresses = userDoc.data().addresses;
                         } else {
                             savedAddresses = [];
+                        }
+
+                        // Sync Database Cart items
+                        if (userDoc.exists) {
+                            let dbCart = userDoc.data().cart || [];
+                            if (dbCart.length > 0) {
+                                cart = dbCart;
+                                localStorage.setItem('userCart', JSON.stringify(cart));
+                            } else if (cart.length > 0) {
+                                db.collection('users').doc(user.uid).update({ cart: cart });
+                            }
+                            updateCartCount();
+                            renderCartItems();
                         }
 
                         let profilePicHtml = defaultProfileSvgStr;
@@ -2557,6 +2682,7 @@
                     await auth.signOut();
                     isLoggedIn = false;
                     currentUser = null;
+                    savedAddresses = [];
                     updateAuthStateUI();
                     navigateTo('home');
                     showNotification("You have been logged out.");
@@ -2639,8 +2765,8 @@
                     let recentUpdates = [];
 
                     window.userOrders.forEach(order => {
-                        let isToPay = ['Pending', 'Pending Payment'].includes(order.status) && order.payment !== 'Cash on Delivery';
-                        let isToShip = ['Pending', 'Pending Payment', 'Processing', 'Handed Over'].includes(order.status);
+                        let isToPay = order.status === 'Pending Payment' && order.payment !== 'Cash on Delivery';
+                        let isToShip = ['Pending', 'Processing', 'Handed Over'].includes(order.status);
                         let isToReceive = ['Shipped', 'Delivered'].includes(order.status);
                         let isReturns = ['Cancelled', 'Returned'].includes(order.status);
                         let isToReview = false;
@@ -2913,6 +3039,7 @@
                     size: item.size || 'N/A'
                 }));
                 
+                syncCart();
                 updateCartCount();
                 renderCartItems();
                 window.currentOrderSubtotal = order.amount;
@@ -2941,7 +3068,7 @@
                     `;
                 });
                 
-                document.querySelector('.od-actions').style.display = 'none'; 
+                document.querySelector('.od-actions').style.display = 'block'; 
                 
                 document.getElementById('odBody').innerHTML = itemsHtml;
                 document.getElementById('odSubtotal').parentNode.style.display = 'none';
@@ -2956,6 +3083,12 @@
                 document.getElementById('odDate').textContent = order.date;
                 document.getElementById('odPaymentMethod').textContent = order.payment || 'N/A';
                 
+                const printBtn = document.getElementById('odPrintBtn');
+                if(printBtn) {
+                    printBtn.style.display = 'block';
+                    printBtn.onclick = () => printOrderInvoice(orderId);
+                }
+
                 document.getElementById('orderDetailsOverlay').classList.add('active');
             };
 
@@ -3819,6 +3952,7 @@
                     });
                 }
                 
+                syncCart();
                 updateCartCount();
                 renderCartItems();
                 showNotification(`${product.name} added to cart!`);
@@ -3826,6 +3960,7 @@
 
             function removeFromCart(cartId) {
                 cart = cart.filter(item => item.cartId !== cartId);
+                syncCart();
                 updateCartCount();
                 renderCartItems();
             }
@@ -3838,6 +3973,7 @@
                 }
                 if (item) {
                     item.quantity = quantity;
+                    syncCart();
                     updateCartCount();
                     renderCartItems();
                 }
@@ -3906,6 +4042,7 @@
                     selectAllCheckbox.addEventListener('change', function() {
                         const isChecked = this.checked;
                         cart.forEach(item => item.selected = isChecked);
+                        syncCart();
                         renderCartItems();
                     });
                 }
@@ -3937,6 +4074,7 @@
                         const item = cart.find(i => i.cartId === cartId);
                         if (item) {
                             item.selected = this.checked;
+                            syncCart();
                             renderCartItems(); 
                         }
                     });
@@ -4434,7 +4572,7 @@
                          address: `${orderAddress.address}, ${orderAddress.region} - ${orderAddress.postcode}`,
                          amount: total,
                          date: date,
-                         status: 'Pending', // <-- FIX: Set explicitly to 'Pending' for ALL order types
+                         status: 'Pending', 
                          payment: paymentMethodText,
                          trxId: trxId || '',
                          paymentMobile: paymentMobile || '',
@@ -4452,7 +4590,7 @@
                      };
                      db.collection('orders').doc(orderNo.toString()).set(orderData).then(() => {
                          hideLoader();
-                         showOrderSuccessModal();
+                         showOrderSuccessModal(orderData);
                      }).catch(err => {
                          hideLoader();
                          showCustomAlert('Error', 'Failed to place order.');
@@ -4462,7 +4600,7 @@
                     showOrderSuccessModal();
                 }
 
-                function showOrderSuccessModal() {
+                function showOrderSuccessModal(orderDataObj = null) {
                     document.querySelector('.od-actions').style.display = 'block'; 
                     
                     document.getElementById('odBody').innerHTML = itemsHtml;
@@ -4487,9 +4625,18 @@
                     document.getElementById('odDate').textContent = date;
                     document.getElementById('odPaymentMethod').textContent = paymentMethodText;
                     
+                    const printBtn = document.getElementById('odPrintBtn');
+                    if (printBtn && orderDataObj) {
+                        printBtn.style.display = 'block';
+                        printBtn.onclick = () => printOrderInvoice(orderDataObj);
+                    } else if (printBtn) {
+                        printBtn.style.display = 'none';
+                    }
+
                     document.getElementById('orderDetailsOverlay').classList.add('active');
                     
                     cart = cart.filter(item => !item.selected);
+                    syncCart();
                     updateCartCount();
                     renderCartItems();
                 }
@@ -5004,7 +5151,7 @@
                     try {
                         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                         await userCredential.user.updateProfile({ displayName: name });
-                        await db.collection('users').doc(userCredential.user.uid).set({ name, email, phone, gender: '', birthday: '' });
+                        await db.collection('users').doc(userCredential.user.uid).set({ name, email, phone, gender: '', birthday: '', cart: [] });
                         hideLoader();
                         showCustomAlert('Registration Successful', 'Your account has been created successfully.', () => navigateTo('profile'));
                     } catch(error) {
@@ -5027,7 +5174,8 @@
                                     email: result.user.email,
                                     phone: '',
                                     gender: '',
-                                    birthday: ''
+                                    birthday: '',
+                                    cart: []
                                 });
                             }
                             hideLoader();
