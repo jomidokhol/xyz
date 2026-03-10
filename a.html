@@ -11,6 +11,10 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    
+    <!-- JsBarcode & html2pdf (Requirement 4) -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         :root {
@@ -180,6 +184,7 @@
         .btn-edit { background-color: var(--primary-color); }
         .btn-delete { background-color: var(--danger-color); }
         .btn-view { background-color: var(--secondary-color); }
+        .btn-success { background-color: var(--success-color); }
         
         /* Modals */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
@@ -264,6 +269,24 @@
         .toggle-sidebar.notification-dot::after { top: 0; right: 0; }
         .stat-card.notification-dot::after { top: 20px; right: 20px; width: 12px; height: 12px; }
 
+        /* Loader Striped Progress Bar (Requirement 3) */
+        .global-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); backdrop-filter: blur(5px); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; }
+        .dark-mode .global-loader { background: rgba(15,23,42,0.8); }
+        .loader-bar-container { width: 250px; height: 15px; border: 2px solid var(--dark-color); border-radius: 4px; overflow: hidden; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .loader-bar { width: 100%; height: 100%; background: repeating-linear-gradient(45deg, var(--dark-color), var(--dark-color) 10px, transparent 10px, transparent 20px); animation: progress 1s linear infinite; }
+        .dark-mode .loader-bar-container { border-color: #fff; background: var(--dark-color); }
+        .dark-mode .loader-bar { background: repeating-linear-gradient(45deg, #fff, #fff 10px, transparent 10px, transparent 20px); }
+        @keyframes progress { 0% { background-position: 0 0; } 100% { background-position: 28px 0; } }
+
+        /* Invoice Print Area (Requirement 4) */
+        @media print { 
+            body * { visibility: hidden; } 
+            #invoicePrintArea, #invoicePrintArea * { visibility: visible; } 
+            #invoicePrintArea { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; background: white; color: black; box-shadow: none; border: none;} 
+            .modal { position: absolute; left: 0; top: 0; margin: 0; padding: 0; min-height: 550px; visibility: visible; background: transparent; backdrop-filter: none;}
+            .close-modal-btn, .print-hide { display: none !important; }
+        }
+
         @media (max-width: 1024px) { .stats-cards { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 768px) { 
             .sidebar { transform: translateX(-100%); } 
@@ -282,6 +305,13 @@
     </style>
 </head>
 <body>
+
+    <!-- Global Loader (Requirement 3) -->
+    <div id="globalLoader" class="global-loader hidden">
+        <div class="loader-bar-container"><div class="loader-bar"></div></div>
+        <div style="margin-top: 10px; font-weight: 600; font-size: 14px; letter-spacing: 1px; color: var(--dark-color);">PROCESSING...</div>
+    </div>
+
     <div id="loginPage" class="login-container">
         <div class="login-card">
             <div class="login-logo">
@@ -450,7 +480,7 @@
                         <h3 class="table-title">Orders Management</h3>
                         <div style="display: flex; gap: 15px; align-items: center;">
                             <input type="text" id="orderSearchById" class="form-control" placeholder="Search by Order ID..." style="width: 250px;">
-                            <button class="btn-refresh" onclick="refreshOrders()" style="margin-right: 0;"><i class="fas fa-sync-alt"></i></button>
+                            <button class="btn-refresh" onclick="refreshOrders()" style="margin-right: 0;" title="Reload Orders"><i class="fas fa-sync-alt"></i></button>
                         </div>
                     </div>
                     
@@ -1008,7 +1038,29 @@
         </div>
     </div>
 
+    <!-- Invoice Modal (Requirement 4) -->
+    <div id="invoiceModal" class="modal">
+        <div class="modal-content" style="max-width: 650px; border-radius: 8px;">
+            <button class="close-modal-btn print-hide" onclick="closeModal('invoiceModal')"><i class="fas fa-times"></i></button>
+            <div class="print-hide" style="display:flex; justify-content:space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 22px;">Billing Paper</h3>
+                <div style="display:flex; gap: 10px;">
+                    <button class="btn-secondary" onclick="printInvoice()" style="margin-top:0; padding: 10px 15px; border-radius: 6px;"><i class="fas fa-print"></i> Print</button>
+                    <button class="btn-primary" onclick="downloadInvoice()" style="padding: 10px 15px; border-radius: 6px;"><i class="fas fa-download"></i> Download</button>
+                </div>
+            </div>
+            
+            <div id="invoicePrintArea">
+                <!-- Data will be populated by JS -->
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Global Loader Functions (Requirement 3)
+        function showLoader() { document.getElementById('globalLoader').classList.remove('hidden'); }
+        function hideLoader() { document.getElementById('globalLoader').classList.add('hidden'); }
+
         // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyD5p-7Cgep9aGf6omMXDH8LOTy0C76jJaQ",
@@ -1312,11 +1364,18 @@
                 }
             });
 
-            loginForm.addEventListener('submit', function(e) {
+            loginForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
+                showLoader();
                 const email = document.getElementById('adminEmail').value;
                 const password = document.getElementById('adminPassword').value;
-                auth.signInWithEmailAndPassword(email, password).catch(err => alert('Login Failed: ' + err.message));
+                try {
+                    await auth.signInWithEmailAndPassword(email, password);
+                } catch(err) { 
+                    alert('Login Failed: ' + err.message); 
+                } finally {
+                    hideLoader();
+                }
             });
 
             togglePasswordBtn.addEventListener('click', function() {
@@ -1326,9 +1385,11 @@
                 this.classList.toggle('fa-eye-slash');
             });
 
-            logoutBtn.addEventListener('click', function(e) {
+            logoutBtn.addEventListener('click', async function(e) {
                 e.preventDefault();
-                auth.signOut();
+                showLoader();
+                await auth.signOut();
+                hideLoader();
             });
 
             toggleSidebar.addEventListener('click', () => sidebar.classList.add('active'));
@@ -1442,14 +1503,19 @@
 
         // Firebase Data Fetching
         async function loadAllFirebaseData() {
-            loadSettings();
-            loadCategories();
-            loadProducts();
-            loadOrders();
-            loadCustomers();
-            loadOffers();
-            loadPopups();
-            loadGateways();
+            showLoader();
+            try {
+                await loadSettings();
+                loadCategories();
+                loadProducts();
+                loadOrders();
+                loadCustomers();
+                loadOffers();
+                loadPopups();
+                loadGateways();
+            } finally {
+                hideLoader();
+            }
         }
 
         async function loadSettings() {
@@ -1575,6 +1641,9 @@
                 if (currentStatus === 'Out of Stock') statusClass = 'status-out';
                 if (currentStatus === 'Inactive') statusClass = 'status-cancelled';
 
+                // Requirement 1: Variant Toggle Button
+                let toggleBtnHtml = (p.variants && p.variants.length > 0) ? `<button class="btn-action" style="background:var(--gray-color);" onclick="toggleVariants('${p.id}')" title="Toggle Variants"><i class="fas fa-chevron-down" id="icon-var-${p.id}"></i></button>` : '';
+
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>
@@ -1590,6 +1659,7 @@
                     <td><span class="status ${statusClass}">${currentStatus}</span></td>
                     <td>
                         <div class="action-buttons">
+                            ${toggleBtnHtml}
                             <button class="btn-action btn-edit" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i></button>
                             <button class="btn-action btn-delete" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash"></i></button>
                         </div>
@@ -1604,6 +1674,8 @@
                         if (v.sizes && v.sizes.length > 0) {
                             v.sizes.forEach(s => {
                                 const varRow = document.createElement('tr');
+                                varRow.className = `variant-row-${p.id}`;
+                                varRow.style.display = 'none';
                                 varRow.style.backgroundColor = 'rgba(59, 130, 246, 0.02)';
                                 varRow.innerHTML = `
                                     <td style="padding-left: 35px;">
@@ -1624,6 +1696,8 @@
                             });
                         } else {
                             const varRow = document.createElement('tr');
+                            varRow.className = `variant-row-${p.id}`;
+                            varRow.style.display = 'none';
                             varRow.style.backgroundColor = 'rgba(59, 130, 246, 0.02)';
                             varRow.innerHTML = `
                                 <td style="padding-left: 35px;">
@@ -1646,6 +1720,28 @@
                 }
             });
         }
+
+        // Toggle Variants Logic (Requirement 1)
+        window.toggleVariants = function(pid) {
+            const rows = document.querySelectorAll(`.variant-row-${pid}`);
+            const icon = document.getElementById(`icon-var-${pid}`);
+            let isHidden = false;
+            rows.forEach(row => {
+                if (row.style.display === 'none') {
+                    row.style.display = 'table-row';
+                    isHidden = true;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            if (isHidden) {
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        };
 
         function populateCategoriesTable() {
             categoriesTable.innerHTML = '';
@@ -1731,6 +1827,9 @@
                     </div>`;
                 }
 
+                // Requirement 4: Billing Paper Button
+                let invoiceBtnHtml = (o.status === 'Received' || o.status === 'Delivered') ? `<button class="btn-action btn-success" onclick="generateInvoice('${o.id}')" title="Billing Paper"><i class="fas fa-file-invoice"></i></button>` : '';
+
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td style="font-weight: 600; color: var(--primary-color);">#${o.id.substring(0,8)}</td>
@@ -1750,6 +1849,7 @@
                     </td>
                     <td>
                         <div class="action-buttons">
+                            ${invoiceBtnHtml}
                             <button class="btn-action btn-view" onclick="viewOrderDetails('${o.id}')"><i class="fas fa-eye"></i></button>
                             <button class="btn-action btn-delete" onclick="deleteOrder('${o.id}')"><i class="fas fa-trash"></i></button>
                         </div>
@@ -1799,7 +1899,7 @@
                     <td><span style="background: var(--light-gray); padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">${o.category}</span></td>
                     <td style="color: var(--gray-color); font-size: 13px;">${o.expiry}</td>
                     <td><span class="status status-active">Active</span></td>
-                    <td><button class="btn-action btn-delete" onclick="db.collection('offers').doc('${o.id}').delete()"><i class="fas fa-trash"></i></button></td>
+                    <td><button class="btn-action btn-delete" onclick="deleteOffer('${o.id}')"><i class="fas fa-trash"></i></button></td>
                 `;
                 offersTable.appendChild(row);
             });
@@ -1820,7 +1920,7 @@
                     <td><span class="status status-active">Live</span></td>
                     <td>
                         <button class="btn-action btn-edit" onclick="editPopUp('${p.id}')"><i class="fas fa-edit"></i></button>
-                        <button class="btn-action btn-delete" onclick="db.collection('popups').doc('${p.id}').delete()"><i class="fas fa-trash"></i></button>
+                        <button class="btn-action btn-delete" onclick="deletePopUp('${p.id}')"><i class="fas fa-trash"></i></button>
                     </td>
                 `;
                 popUpsTable.appendChild(row);
@@ -1870,6 +1970,7 @@
         // Submits & Actions
         async function handleProductSubmit(e) {
             e.preventDefault();
+            showLoader();
             let pid = (isEditingProduct && editingProductId) ? (adminProducts.find(p => p.id === editingProductId)?.pid || generatePID()) : generatePID();
 
             const name = document.getElementById('productName').value;
@@ -1971,11 +2072,16 @@
                     await db.collection('products').add(payload);
                 }
                 closeModal('productModal');
-            } catch(e) { alert(e.message); }
+            } catch(e) { 
+                alert(e.message); 
+            } finally {
+                hideLoader();
+            }
         }
 
         async function handleCategorySubmit(e) {
             e.preventDefault();
+            showLoader();
             const name = document.getElementById('categoryName').value;
             const slug = name.toLowerCase().replace(/\s+/g, '-');
             const mediaType = document.querySelector('input[name="catMediaType"]:checked').value;
@@ -1995,146 +2101,166 @@
                     await db.collection('categories').add(payload);
                 }
                 closeModal('categoryModal');
-            } catch(e) { alert(e.message); }
+            } catch(e) { 
+                alert(e.message); 
+            } finally {
+                hideLoader();
+            }
         }
 
         async function handleOfferSubmit(e) {
             e.preventDefault();
-            const payload = {
-                name: document.getElementById('offerName').value,
-                discount: parseInt(document.getElementById('offerDiscount').value),
-                category: document.getElementById('offerCategory').value || 'All Categories',
-                expiry: document.getElementById('offerExpiry').value,
-                offerTitle: document.getElementById('offerTitle').value,
-                offerSubtitle: document.getElementById('offerSubtitle').value
-            };
-            if(offerForm.hasAttribute('data-editing-id')) {
-                const editId = offerForm.getAttribute('data-editing-id');
-                await db.collection('offers').doc(editId).update(payload);
-                offerForm.removeAttribute('data-editing-id');
-            } else {
-                await db.collection('offers').add(payload);
-            }
-            closeModal('offerModal');
+            showLoader();
+            try {
+                const payload = {
+                    name: document.getElementById('offerName').value,
+                    discount: parseInt(document.getElementById('offerDiscount').value),
+                    category: document.getElementById('offerCategory').value || 'All Categories',
+                    expiry: document.getElementById('offerExpiry').value,
+                    offerTitle: document.getElementById('offerTitle').value,
+                    offerSubtitle: document.getElementById('offerSubtitle').value
+                };
+                if(offerForm.hasAttribute('data-editing-id')) {
+                    const editId = offerForm.getAttribute('data-editing-id');
+                    await db.collection('offers').doc(editId).update(payload);
+                    offerForm.removeAttribute('data-editing-id');
+                } else {
+                    await db.collection('offers').add(payload);
+                }
+                closeModal('offerModal');
+            } finally { hideLoader(); }
         }
 
         async function handlePopUpSubmit(e) {
             e.preventDefault();
-            const section = document.getElementById('popUpSection').value;
-            const type = section === 'random-product' ? document.getElementById('popUpType').value : 'advertisement';
-            
-            let payload = { section, type };
+            showLoader();
+            try {
+                const section = document.getElementById('popUpSection').value;
+                const type = section === 'random-product' ? document.getElementById('popUpType').value : 'advertisement';
+                
+                let payload = { section, type };
 
-            if (type === 'product') {
-                payload.productId = document.getElementById('popUpProductSelect').value;
-                if (!payload.productId) {
-                    alert("Please select a product from the list.");
-                    return;
+                if (type === 'product') {
+                    payload.productId = document.getElementById('popUpProductSelect').value;
+                    if (!payload.productId) {
+                        alert("Please select a product from the list.");
+                        hideLoader();
+                        return;
+                    }
+                    const selectedProd = adminProducts.find(p => p.id === payload.productId);
+                    payload.name = selectedProd ? selectedProd.name : '';
+                    payload.title = selectedProd ? selectedProd.name : '';
+                    payload.bannerLogo = selectedProd && selectedProd.images && selectedProd.images.length ? selectedProd.images[0] : '';
+                    payload.image = payload.bannerLogo; // Explicitly adding image
+                    
+                    payload.price = selectedProd ? selectedProd.price : 0;
+                    payload.originalPrice = selectedProd ? selectedProd.originalPrice : 0;
+                    payload.discount = selectedProd ? selectedProd.discount : 0;
+                    payload.actionButton = true;
+                    payload.actionButtonName = "Shop Now";
+                    payload.actionButtonLink = selectedProd ? `/product/${selectedProd.id}` : '';
+                } else {
+                    const actionButton = document.getElementById('popUpActionButtonToggle').checked;
+                    payload.name = section === 'random-product' ? document.getElementById('popUpName').value : '';
+                    payload.bannerLogo = document.getElementById('popUpBannerLogo').value;
+                    payload.actionButton = actionButton;
+                    payload.actionButtonName = actionButton ? document.getElementById('popUpActionButtonName').value : '';
+                    payload.actionButtonLink = actionButton ? document.getElementById('popUpActionButtonLink').value : '';
+                    
+                    payload.price = parseFloat(document.getElementById('popUpAdPrice').value) || 0;
+                    payload.discount = parseInt(document.getElementById('popUpAdDiscount').value) || 0;
                 }
-                const selectedProd = adminProducts.find(p => p.id === payload.productId);
-                payload.name = selectedProd ? selectedProd.name : '';
-                payload.title = selectedProd ? selectedProd.name : '';
-                payload.bannerLogo = selectedProd && selectedProd.images && selectedProd.images.length ? selectedProd.images[0] : '';
-                payload.image = payload.bannerLogo; // Explicitly adding image
                 
-                payload.price = selectedProd ? selectedProd.price : 0;
-                payload.originalPrice = selectedProd ? selectedProd.originalPrice : 0;
-                payload.discount = selectedProd ? selectedProd.discount : 0;
-                payload.actionButton = true;
-                payload.actionButtonName = "Shop Now";
-                payload.actionButtonLink = selectedProd ? `/product/${selectedProd.id}` : '';
-            } else {
-                const actionButton = document.getElementById('popUpActionButtonToggle').checked;
-                payload.name = section === 'random-product' ? document.getElementById('popUpName').value : '';
-                payload.bannerLogo = document.getElementById('popUpBannerLogo').value;
-                payload.actionButton = actionButton;
-                payload.actionButtonName = actionButton ? document.getElementById('popUpActionButtonName').value : '';
-                payload.actionButtonLink = actionButton ? document.getElementById('popUpActionButtonLink').value : '';
-                
-                payload.price = parseFloat(document.getElementById('popUpAdPrice').value) || 0;
-                payload.discount = parseInt(document.getElementById('popUpAdDiscount').value) || 0;
-            }
-            
-            if(isEditingPopUp && editingPopUpId) {
-                await db.collection('popups').doc(editingPopUpId).update(payload);
-            } else {
-                await db.collection('popups').add(payload);
-            }
-            closeModal('popUpModal');
+                if(isEditingPopUp && editingPopUpId) {
+                    await db.collection('popups').doc(editingPopUpId).update(payload);
+                } else {
+                    await db.collection('popups').add(payload);
+                }
+                closeModal('popUpModal');
+            } finally { hideLoader(); }
         }
 
         async function handleGatewaySubmit(e) {
             e.preventDefault();
-            const isPlugin = document.getElementById('gatewayPluginToggle').checked;
-            const payload = {
-                logo: document.getElementById('gatewayLogo').value,
-                mobileNo: document.getElementById('gatewayMobileNo').value,
-                banner: document.getElementById('gatewayBanner').value,
-                name: document.getElementById('gatewayName').value,
-                color: document.getElementById('gatewayColor').value,
-                integrationType: isPlugin ? 'plugin' : 'none',
-                pluginUrl: isPlugin ? document.getElementById('gatewayPlugin').value : ''
-            };
-            if(isEditingGateway && editingGatewayId) {
-                await db.collection('paymentGateways').doc(editingGatewayId).update(payload);
-            } else {
-                await db.collection('paymentGateways').add(payload);
-            }
-            closeModal('gatewayModal');
+            showLoader();
+            try {
+                const isPlugin = document.getElementById('gatewayPluginToggle').checked;
+                const payload = {
+                    logo: document.getElementById('gatewayLogo').value,
+                    mobileNo: document.getElementById('gatewayMobileNo').value,
+                    banner: document.getElementById('gatewayBanner').value,
+                    name: document.getElementById('gatewayName').value,
+                    color: document.getElementById('gatewayColor').value,
+                    integrationType: isPlugin ? 'plugin' : 'none',
+                    pluginUrl: isPlugin ? document.getElementById('gatewayPlugin').value : ''
+                };
+                if(isEditingGateway && editingGatewayId) {
+                    await db.collection('paymentGateways').doc(editingGatewayId).update(payload);
+                } else {
+                    await db.collection('paymentGateways').add(payload);
+                }
+                closeModal('gatewayModal');
+            } finally { hideLoader(); }
         }
 
         async function saveGeneralSettings(e) {
             e.preventDefault();
-            const payload = {
-                siteName: document.getElementById('siteName').value,
-                domainName: document.getElementById('domainName').value,
-                logoUrl: document.getElementById('logoUrl').value,
-                heroTitle: document.getElementById('heroTitle').value,
-                heroDesc: document.getElementById('heroDesc').value,
-                deliveryInside: parseFloat(document.getElementById('deliveryInside').value),
-                deliveryOutside: parseFloat(document.getElementById('deliveryOutside').value),
-                codHandlingFee: parseFloat(document.getElementById('codHandlingFee').value),
-                footerPhone: document.getElementById('footerPhone').value,
-                footerEmail: document.getElementById('footerEmail').value,
-                footerAddress: document.getElementById('footerAddress').value,
-                footerAbout: document.getElementById('footerAbout').value,
-                footerCopyright: document.getElementById('footerCopyright').value
-            };
-            await db.collection('settings').doc('general').set(payload, {merge:true});
-            alert('Settings Saved Successfully!');
+            showLoader();
+            try {
+                const payload = {
+                    siteName: document.getElementById('siteName').value,
+                    domainName: document.getElementById('domainName').value,
+                    logoUrl: document.getElementById('logoUrl').value,
+                    heroTitle: document.getElementById('heroTitle').value,
+                    heroDesc: document.getElementById('heroDesc').value,
+                    deliveryInside: parseFloat(document.getElementById('deliveryInside').value),
+                    deliveryOutside: parseFloat(document.getElementById('deliveryOutside').value),
+                    codHandlingFee: parseFloat(document.getElementById('codHandlingFee').value),
+                    footerPhone: document.getElementById('footerPhone').value,
+                    footerEmail: document.getElementById('footerEmail').value,
+                    footerAddress: document.getElementById('footerAddress').value,
+                    footerAbout: document.getElementById('footerAbout').value,
+                    footerCopyright: document.getElementById('footerCopyright').value
+                };
+                await db.collection('settings').doc('general').set(payload, {merge:true});
+                alert('Settings Saved Successfully!');
+            } finally { hideLoader(); }
         }
 
         async function saveSlidesAndSocials(e) {
             e.preventDefault();
-            const slideDocs = await db.collection('heroSlides').get();
-            const socialDocs = await db.collection('socials').get();
-            
-            const batch = db.batch();
-            slideDocs.forEach(d => batch.delete(d.ref));
-            socialDocs.forEach(d => batch.delete(d.ref));
+            showLoader();
+            try {
+                const slideDocs = await db.collection('heroSlides').get();
+                const socialDocs = await db.collection('socials').get();
+                
+                const batch = db.batch();
+                slideDocs.forEach(d => batch.delete(d.ref));
+                socialDocs.forEach(d => batch.delete(d.ref));
 
-            const bannerItems = document.querySelectorAll('#bannerContainer .dynamic-item');
-            bannerItems.forEach((item, idx) => {
-                const src = item.querySelector('.banner-url').value;
-                const type = item.querySelector('.banner-type').value;
-                if(src) {
-                    const ref = db.collection('heroSlides').doc();
-                    batch.set(ref, { src, type, order: idx });
-                }
-            });
+                const bannerItems = document.querySelectorAll('#bannerContainer .dynamic-item');
+                bannerItems.forEach((item, idx) => {
+                    const src = item.querySelector('.banner-url').value;
+                    const type = item.querySelector('.banner-type').value;
+                    if(src) {
+                        const ref = db.collection('heroSlides').doc();
+                        batch.set(ref, { src, type, order: idx });
+                    }
+                });
 
-            const socialItems = document.querySelectorAll('#socialsContainer .dynamic-item');
-            socialItems.forEach((item) => {
-                const iconClass = item.querySelector('.social-icon-input').value;
-                const url = item.querySelector('.social-url').value;
-                if(url && iconClass) {
-                    const ref = db.collection('socials').doc();
-                    batch.set(ref, { iconClass, url });
-                }
-            });
+                const socialItems = document.querySelectorAll('#socialsContainer .dynamic-item');
+                socialItems.forEach((item) => {
+                    const iconClass = item.querySelector('.social-icon-input').value;
+                    const url = item.querySelector('.social-url').value;
+                    if(url && iconClass) {
+                        const ref = db.collection('socials').doc();
+                        batch.set(ref, { iconClass, url });
+                    }
+                });
 
-            await batch.commit();
-            alert('Hero Slides & Socials Updated!');
+                await batch.commit();
+                alert('Hero Slides & Socials Updated!');
+            } finally { hideLoader(); }
         }
 
         // Edit & Delete
@@ -2228,8 +2354,30 @@
             openModal('categoryModal');
         };
 
-        window.deleteProduct = function(id) { if(confirm("Confirm product deletion?")) db.collection('products').doc(id).delete(); };
-        window.deleteCategory = function(id) { if(confirm("Confirm category deletion?")) db.collection('categories').doc(id).delete(); };
+        window.deleteProduct = async function(id) { 
+            if(confirm("Confirm product deletion?")) {
+                showLoader();
+                try { await db.collection('products').doc(id).delete(); } finally { hideLoader(); }
+            }
+        };
+        window.deleteCategory = async function(id) { 
+            if(confirm("Confirm category deletion?")) {
+                showLoader();
+                try { await db.collection('categories').doc(id).delete(); } finally { hideLoader(); }
+            }
+        };
+        window.deleteOffer = async function(id) { 
+            if(confirm("Confirm offer deletion?")) {
+                showLoader();
+                try { await db.collection('offers').doc(id).delete(); } finally { hideLoader(); }
+            }
+        };
+        window.deletePopUp = async function(id) { 
+            if(confirm("Confirm popup deletion?")) {
+                showLoader();
+                try { await db.collection('popups').doc(id).delete(); } finally { hideLoader(); }
+            }
+        };
 
         window.editPopUp = function(id) {
             const p = adminPopups.find(x => x.id === id);
@@ -2287,10 +2435,33 @@
             openModal('gatewayModal');
         };
 
-        window.deleteGateway = function(id) { if(confirm("Delete this Payment Gateway?")) db.collection('paymentGateways').doc(id).delete(); };
+        window.deleteGateway = async function(id) { 
+            if(confirm("Delete this Payment Gateway?")) {
+                showLoader();
+                try { await db.collection('paymentGateways').doc(id).delete(); } finally { hideLoader(); }
+            }
+        };
 
-        function updateOrderStatus(id, status) { db.collection('orders').doc(id).update({status: status}); }
-        window.deleteOrder = function(id) { if(confirm("Permanently delete this order?")) db.collection('orders').doc(id).delete(); };
+        function updateOrderStatus(id, status) { 
+            showLoader();
+            db.collection('orders').doc(id).update({status: status}).finally(()=> hideLoader()); 
+        }
+        
+        window.deleteOrder = async function(id) { 
+            if(confirm("Permanently delete this order?")) {
+                showLoader();
+                try { await db.collection('orders').doc(id).delete(); } finally { hideLoader(); }
+            }
+        };
+
+        // Requirement 2: Functional Refresh Orders Button
+        window.refreshOrders = function() { 
+            showLoader();
+            setTimeout(() => {
+                populateOrdersTable();
+                hideLoader();
+            }, 600); // UI visual feedback for reloading
+        }
 
         // Dynamic Field Generators
         window.addMediaField = function() {
@@ -2459,8 +2630,6 @@
             populateOrdersTable();
         }
         
-        window.refreshOrders = function() { populateOrdersTable(); }
-        
         window.viewOrderDetails = function(id) {
             const o = adminOrders.find(x => x.id === id);
             if(!o) return;
@@ -2486,6 +2655,142 @@
                 <div class="detail-row"><div class="detail-label">Order Date:</div><div class="detail-value" style="color: var(--gray-color);">${o.date || 'N/A'}</div></div>
             `;
             openModal('orderDetailsModal');
+        };
+
+        // Requirement 4: Billing Paper Generation Logic
+        window.generateInvoice = function(id) {
+            showLoader();
+            setTimeout(() => {
+                const o = adminOrders.find(x => x.id === id);
+                if(!o) { hideLoader(); return; }
+
+                const siteName = document.getElementById('siteName').value || 'My Store';
+                const domainName = document.getElementById('domainName').value || 'www.example.com';
+
+                let itemsHtml = '';
+                let itemsArray = Array.isArray(o.cartItems) ? o.cartItems : (Array.isArray(o.products) ? o.products : []);
+                let subTotal = 0;
+
+                if (itemsArray.length) {
+                    itemsArray.forEach(item => {
+                        let v = [];
+                        if (item.color && item.color !== 'N/A') v.push(item.color);
+                        if (item.size && item.size !== 'N/A') v.push(item.size);
+                        let variantStr = v.length ? `(${v.join(', ')})` : '';
+                        let itemTotal = (item.price || 0) * (item.qty || 1);
+                        subTotal += itemTotal;
+
+                        itemsHtml += `
+                            <tr style="border-bottom: 1px dashed #eee;">
+                                <td style="padding: 12px 5px; text-align:left;">
+                                    <strong>${item.name}</strong><br>
+                                    <small style="color:#666;">PID: ${item.pid || 'N/A'} ${variantStr}</small>
+                                </td>
+                                <td style="padding: 12px 5px; text-align:center;">${item.qty || 1}</td>
+                                <td style="padding: 12px 5px; text-align:right;">৳${item.price || 0}</td>
+                                <td style="padding: 12px 5px; text-align:right;">৳${itemTotal}</td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                let total = parseFloat(o.amount) || 0;
+                let shippingAndDiscounts = total - subTotal; // Calculate the extra costs (shipping - discount)
+                let vat = 0; // Configured manually if needed
+
+                document.getElementById('invoicePrintArea').innerHTML = `
+                    <div style="text-align: center; margin-bottom: 25px; border-bottom: 2px solid #333; padding-bottom: 20px;">
+                        <h1 style="margin: 0; font-size: 28px; color: #000; font-weight: 700;">${siteName}</h1>
+                        <p style="margin: 5px 0 0; color: #555;">${domainName}</p>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 30px; line-height: 1.6;">
+                        <div>
+                            <strong style="font-size: 16px;">Billed To:</strong><br>
+                            <span style="font-weight: 600;">${o.customer || 'N/A'}</span><br>
+                            ${o.address || ''}<br>
+                            Phone: ${o.phone || 'N/A'}
+                        </div>
+                        <div style="text-align: right;">
+                            <strong>Order ID:</strong> #${o.id.substring(0,8)}<br>
+                            <strong>Order Date:</strong> ${o.date || new Date().toLocaleDateString()}<br>
+                            <strong>Status:</strong> ${o.status}<br>
+                            <strong>Payment:</strong> ${o.payment}
+                        </div>
+                    </div>
+
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
+                        <thead>
+                            <tr style="background: #f8f8f8; border-bottom: 2px solid #ccc;">
+                                <th style="padding: 12px 5px; text-align:left;">Item Description</th>
+                                <th style="padding: 12px 5px; text-align:center;">Qty</th>
+                                <th style="padding: 12px 5px; text-align:right;">Unit Price</th>
+                                <th style="padding: 12px 5px; text-align:right;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsHtml}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" style="text-align: right; padding: 10px 5px; font-weight: bold;">Subtotal:</td>
+                                <td style="text-align: right; padding: 10px 5px; font-weight: bold;">৳${subTotal.toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" style="text-align: right; padding: 5px 5px; color: #555;">Delivery/Discounts:</td>
+                                <td style="text-align: right; padding: 5px 5px; color: #555;">৳${shippingAndDiscounts.toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" style="text-align: right; padding: 5px 5px; color: #555;">VAT/Tax:</td>
+                                <td style="text-align: right; padding: 5px 5px; color: #555;">৳${vat.toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" style="text-align: right; padding: 15px 5px; font-weight: bold; font-size: 18px; border-top: 2px solid #333;">Grand Total:</td>
+                                <td style="text-align: right; padding: 15px 5px; font-weight: bold; font-size: 18px; border-top: 2px solid #333;">৳${total.toFixed(2)}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <div style="text-align: center; margin-top: 40px;">
+                        <svg id="invoiceBarcode"></svg>
+                        <p style="margin-top: 10px; font-size: 12px; color: #888;">Thank you for your purchase!</p>
+                    </div>
+                `;
+
+                openModal('invoiceModal');
+                
+                // Generating Barcode
+                JsBarcode("#invoiceBarcode", o.id, {
+                    format: "CODE128",
+                    width: 1.5,
+                    height: 40,
+                    displayValue: true,
+                    fontSize: 14,
+                    margin: 0
+                });
+
+                hideLoader();
+            }, 300);
+        };
+
+        window.printInvoice = function() {
+            window.print();
+        };
+
+        window.downloadInvoice = function() {
+            showLoader();
+            const element = document.getElementById('invoicePrintArea');
+            const opt = {
+                margin:       [0.5, 0.5, 0.5, 0.5],
+                filename:     'Invoice_Order.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            
+            html2pdf().set(opt).from(element).save().then(() => {
+                hideLoader();
+            });
         };
     </script>
 </body>
