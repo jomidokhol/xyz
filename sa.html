@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Support</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+    <style>
+        :root { --primary: #0f5132; --bg: #f4f6f9; --white: #fff; --border: #ddd; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { display: flex; height: 100vh; background: var(--bg); }
+        
+        /* Sidebar layout */
+        .sidebar { width: 350px; background: var(--white); border-right: 1px solid var(--border); padding: 20px; overflow-y: auto; }
+        .main-chat { flex: 1; display: flex; flex-direction: column; background: #e5ddd5; position: relative;}
+        
+        h2, h3 { color: var(--primary); margin-bottom: 15px; }
+        .section { margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 20px;}
+        
+        input, button { padding: 10px; margin-bottom: 5px; width: 100%; border: 1px solid var(--border); border-radius: 5px; }
+        button { background: var(--primary); color: white; cursor: pointer; border: none; font-weight: bold; }
+        button.danger { background: #dc3545; }
+        
+        /* Admin Chat UI */
+        .chat-header { background: var(--primary); color: white; padding: 15px; text-align: center; }
+        .messages-area { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .msg-row { display: flex; width: 100%; }
+        /* Note: In Admin panel, Admin is Right, User is Left */
+        .msg-row.admin { justify-content: flex-end; }
+        .msg-row.user { justify-content: flex-start; }
+        
+        .bubble { max-width: 60%; padding: 10px 15px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .msg-row.user .bubble { background: var(--white); }
+        .msg-row.admin .bubble { background: #dcf8c6; }
+        .bubble img { max-width: 100px; border-radius: 5px; cursor: pointer;}
+        
+        .chat-input-area { padding: 15px; background: var(--white); display: flex; gap: 10px; }
+        .chat-input-area input { margin: 0; flex: 1; }
+        .chat-input-area button { width: 100px; margin: 0; }
+        
+        .list-item { background: #f9f9f9; padding: 10px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center;}
+        .list-item button { width: auto; padding: 5px 10px; margin: 0;}
+        
+        #user-typing { color: green; font-size: 12px; display: none; padding: 0 20px; }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Settings -->
+    <div class="sidebar">
+        <h2>Admin Panel</h2>
+        
+        <div class="section">
+            <h3>Welcome Message</h3>
+            <input type="text" id="welcome-msg">
+            <button onclick="saveWelcomeMsg()">Update Settings</button>
+        </div>
+
+        <div class="section">
+            <h3>Auto Replies (Bot)</h3>
+            <input type="text" id="qr-kw" placeholder="Keyword">
+            <input type="text" id="qr-ans" placeholder="Reply">
+            <button onclick="addQR()">Add Auto Reply</button>
+            <div id="qr-list"></div>
+        </div>
+
+        <div class="section">
+            <h3>FAQ Buttons</h3>
+            <input type="text" id="faq-q" placeholder="Question">
+            <input type="text" id="faq-a" placeholder="Answer">
+            <button onclick="addFAQ()">Add FAQ</button>
+            <div id="faq-list"></div>
+        </div>
+
+        <button class="danger" onclick="clearChat()">Clear Full Chat History</button>
+    </div>
+
+    <!-- Live Chat Area -->
+    <div class="main-chat">
+        <div class="chat-header">
+            <h3>Live Chat with User</h3>
+        </div>
+        
+        <div class="messages-area" id="admin-chat-messages">
+            <!-- Messages -->
+        </div>
+        <div id="user-typing">User is typing...</div>
+        
+        <div class="chat-input-area">
+            <input type="text" id="admin-chat-input" placeholder="Type manual reply..." onkeyup="handleAdminTyping(event)">
+            <button onclick="sendAdminMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Security Check
+        if(prompt("Enter Admin Password:") !== "123456") {
+            document.body.innerHTML = "<h2 style='color:red; text-align:center; margin-top:50px;'>Access Denied!</h2>";
+            throw new Error("Wrong password");
+        }
+
+        const FIREBASE_CONFIG = {
+            apiKey: "AIzaSyD5p-7Cgep9aGf6omMXDH8LOTy0C76jJaQ",
+            authDomain: "e-commerce-shop-24.firebaseapp.com",
+            projectId: "e-commerce-shop-24",
+            storageBucket: "e-commerce-shop-24.firebasestorage.app",
+            messagingSenderId: "1000897291264",
+            appId: "1:1000897291264:web:4f1e78554c3e69d310a4e5"
+        };
+
+        firebase.initializeApp(FIREBASE_CONFIG);
+        const dbRef = firebase.database().ref('ecommerceSupportChat');
+        
+        let state = { messages: [], faqs: [], quickReplies: [] };
+        let typingTimeout;
+
+        // Keep Admin Active Status Updated
+        setInterval(() => { dbRef.child('lastAdminActive').set(Date.now()); }, 30000);
+        dbRef.child('lastAdminActive').set(Date.now());
+
+        dbRef.on('value', (snapshot) => {
+            const data = snapshot.val() || {};
+            state = { messages: data.messages || [], faqs: data.faqs || [], quickReplies: data.quickReplies || [], welcomeMessage: data.welcomeMessage || ""};
+            
+            document.getElementById('welcome-msg').value = state.welcomeMessage;
+            renderSettings();
+            renderChat();
+
+            document.getElementById('user-typing').style.display = data.userTyping ? 'block' : 'none';
+        });
+
+        function renderSettings() {
+            // FAQs
+            const fList = document.getElementById('faq-list');
+            fList.innerHTML = '';
+            state.faqs.forEach(f => {
+                fList.innerHTML += `<div class="list-item"><span>${f.q}</span> <button class="danger" onclick="deleteItem('faqs', '${f.id}')">X</button></div>`;
+            });
+
+            // Quick Replies
+            const qList = document.getElementById('qr-list');
+            qList.innerHTML = '';
+            state.quickReplies.forEach(q => {
+                qList.innerHTML += `<div class="list-item"><span><b>${q.keyword}</b></span> <button class="danger" onclick="deleteItem('quickReplies', '${q.id}')">X</button></div>`;
+            });
+        }
+
+        function renderChat() {
+            const area = document.getElementById('admin-chat-messages');
+            area.innerHTML = '';
+            state.messages.forEach(msg => {
+                let content = msg.type === 'image' ? `<a href="${msg.text}" target="_blank"><img src="${msg.text}"></a>` : msg.text;
+                area.innerHTML += `
+                    <div class="msg-row ${msg.sender}">
+                        <div class="bubble">
+                            ${content} <br>
+                            <small style="font-size:10px; color:gray;">${new Date(msg.timestamp).toLocaleTimeString()}</small>
+                        </div>
+                    </div>`;
+            });
+            area.scrollTop = area.scrollHeight;
+        }
+
+        // Live Chat Functions
+        function handleAdminTyping(e) {
+            if (e.key === 'Enter') { sendAdminMessage(); return; }
+            dbRef.child('adminTyping').set(true);
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => dbRef.child('adminTyping').set(false), 1500);
+        }
+
+        function sendAdminMessage() {
+            const input = document.getElementById('admin-chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+            
+            state.messages.push({
+                id: 'msg_' + Date.now(), text: text, type: 'text', sender: 'admin', timestamp: Date.now()
+            });
+            dbRef.child('messages').set(state.messages);
+            dbRef.child('adminTyping').set(false);
+            input.value = '';
+        }
+
+        // Settings Functions
+        function saveWelcomeMsg() {
+            dbRef.child('welcomeMessage').set(document.getElementById('welcome-msg').value);
+            alert("Updated!");
+        }
+
+        function addFAQ() {
+            const q = document.getElementById('faq-q').value;
+            const a = document.getElementById('faq-a').value;
+            if(q && a) {
+                state.faqs.push({id: 'f_'+Date.now(), q, a});
+                dbRef.child('faqs').set(state.faqs);
+                document.getElementById('faq-q').value = '';
+                document.getElementById('faq-a').value = '';
+            }
+        }
+
+        function addQR() {
+            const keyword = document.getElementById('qr-kw').value;
+            const reply = document.getElementById('qr-ans').value;
+            if(keyword && reply) {
+                state.quickReplies.push({id: 'q_'+Date.now(), keyword, reply});
+                dbRef.child('quickReplies').set(state.quickReplies);
+                document.getElementById('qr-kw').value = '';
+                document.getElementById('qr-ans').value = '';
+            }
+        }
+
+        function deleteItem(type, id) {
+            const filtered = state[type].filter(item => item.id !== id);
+            dbRef.child(type).set(filtered);
+        }
+
+        function clearChat() {
+            if(confirm("Clear all messages?")) {
+                dbRef.child('messages').set([{
+                    id: 'msg_0', text: state.welcomeMessage || "Welcome!", type: 'text', sender: 'admin', timestamp: Date.now()
+                }]);
+            }
+        }
+    </script>
+</body>
+</html>
