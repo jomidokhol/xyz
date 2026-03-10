@@ -421,6 +421,12 @@
         .custom-alert-actions .btn-outline { color: white; border-color: rgba(255,255,255,0.4); }
         .custom-alert-actions .btn-outline:hover { background: rgba(255,255,255,0.1); border-color: white; color: white; }
         
+        /* New Payment Mobile Overlay Styles */
+        .payment-mobile-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 3000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; display: flex; align-items: center; justify-content: center; }
+        .payment-mobile-overlay.active { opacity: 1; pointer-events: auto; }
+        .payment-mobile-box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); text-align: center; max-width: 400px; width: 90%; transform: scale(0.9); transition: transform 0.3s ease; }
+        .payment-mobile-overlay.active .payment-mobile-box { transform: scale(1); }
+
         .welcome-box { width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; transform: scale(1); background: transparent !important; box-shadow: none !important; padding: 0 !important; }
 
         .order-details-modal { background: #f5f5f5; width: 100%; max-width: 500px; height: 90vh; border-radius: 12px 12px 0 0; display: flex; flex-direction: column; overflow-y: auto; position: relative; font-family: 'Poppins', sans-serif; animation: slideUp 0.4s ease; }
@@ -1435,6 +1441,19 @@
         </div>
     </div>
 
+    <!-- New Payment Mobile Popup Overlay -->
+    <div class="payment-mobile-overlay" id="paymentMobileOverlay">
+        <div class="payment-mobile-box">
+            <h3 style="color: var(--dark); margin-bottom: 15px;">Payment Confirmation</h3>
+            <p style="color: var(--gray); font-size: 0.95rem; margin-bottom: 25px;">Please enter the mobile number from which you completed the payment.</p>
+            <input type="tel" id="userPaymentMobile" class="form-control" placeholder="e.g. 017..." style="margin-bottom: 25px; text-align: center; font-weight: 600; font-size: 1.1rem;">
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button class="btn btn-outline" id="cancelPaymentMobile" style="color: var(--dark); border-color: #ddd; flex: 1;">Cancel</button>
+                <button class="btn btn-primary" id="submitPaymentMobile" style="flex: 1;">Confirm Order</button>
+            </div>
+        </div>
+    </div>
+
     <div class="welcome-overlay" id="welcomeOverlay">
         <div class="welcome-box">
             <div style="position: relative; text-align: center; max-width: 90vw;">
@@ -1652,6 +1671,7 @@
             window.appliedCouponDiscount = 0;
             window.userReviewedProducts = new Set();
             window.deliveryToggleInterval = null;
+            window.pendingTrxId = '';
             let currentReviewProductId = null;
             let currentReviewOrderId = null; 
             let currentReviewRating = 5;
@@ -2060,6 +2080,17 @@
                             navigateTo('profile');
                         } else if (profilePages.includes(pageId)) {
                             populateProfileData(); 
+                        }
+                    }
+
+                    // Check for returned payment success URL parameters
+                    if (user) {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        if (urlParams.get('payment') === 'success') {
+                            window.pendingTrxId = urlParams.get('trxId') || '';
+                            document.getElementById('paymentMobileOverlay').classList.add('active');
+                            // Clean up URL so it doesn't trigger again on refresh
+                            window.history.replaceState({}, document.title, window.location.pathname);
                         }
                     }
                 });
@@ -3382,7 +3413,7 @@
             };
 
             window.openReviewPage = function(productId, orderId = null) {
-                const prod = products.find(p => p.id === productId || p.pid === productId);
+                const prod = products.find(p => p.id === productId|| p.pid === productId);
                 if(!prod) return;
 
                 currentReviewProductId = prod.id;
@@ -4220,15 +4251,15 @@
             }
             
             function showPromoPopupWithCheck() {
-                const isAnyOverlayActive = document.querySelector('.cart-overlay.active, .options-panel-overlay.active, .custom-alert-overlay.active, .welcome-overlay.active, .order-details-overlay.active, .lightbox[style*="display: flex"], .cod-confirm-overlay.active, .action-loader-overlay.active, .tracking-overlay.active');
+                const isAnyOverlayActive = document.querySelector('.cart-overlay.active, .options-panel-overlay.active, .custom-alert-overlay.active, .welcome-overlay.active, .order-details-overlay.active, .lightbox[style*="display: flex"], .cod-confirm-overlay.active, .action-loader-overlay.active, .tracking-overlay.active, .payment-mobile-overlay.active');
                 if (!isAnyOverlayActive) {
                     showPromoPopup();
                 }
             }
 
-            function executeOrderPlacement(orderAddress, selectedItems, paymentMethodText, subtotal, shippingFee, codFee, couponDiscount = 0) {
+            function executeOrderPlacement(orderAddress, selectedItems, paymentMethodText, subtotal, shippingFee, codFee, couponDiscount = 0, trxId = null, paymentMobile = null, predefinedOrderNo = null) {
                 showLoader();
-                const orderNo = Math.floor(Math.random() * 1000000000000) + 1000000000000;
+                const orderNo = predefinedOrderNo || (Math.floor(Math.random() * 1000000000000) + 1000000000000);
                 const dateObj = new Date();
                 const date = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + dateObj.toLocaleTimeString('en-GB', { hour12: false });
                 
@@ -4252,6 +4283,8 @@
                     `;
                 });
                 
+                let targetUserId = isLoggedIn && auth.currentUser ? auth.currentUser.uid : 'guest';
+                
                 if(isLoggedIn && currentUser) {
                      const orderData = {
                          id: orderNo.toString(),
@@ -4260,8 +4293,10 @@
                          address: `${orderAddress.address}, ${orderAddress.region} - ${orderAddress.postcode}`,
                          amount: total,
                          date: date,
-                         status: 'Pending',
+                         status: (paymentMethodText === 'Cash on Delivery') ? 'Pending' : 'Pending Payment',
                          payment: paymentMethodText,
+                         trxId: trxId || '',
+                         paymentMobile: paymentMobile || '',
                          cartItems: selectedItems.map(i => ({
                              id: i.id,
                              pid: i.pid || i.id,
@@ -4272,7 +4307,7 @@
                              size: i.size,
                              image: i.image
                          })),
-                         userId: auth.currentUser.uid
+                         userId: targetUserId
                      };
                      db.collection('orders').doc(orderNo.toString()).set(orderData).then(() => {
                          hideLoader();
@@ -4624,7 +4659,37 @@
                         pendingOrderParams = { orderAddress, selectedItems, paymentMethodText, subtotal, shippingFee, codFee, couponDiscount: window.appliedCouponDiscount };
                         document.getElementById('codConfirmOverlay').classList.add('active');
                     } else {
-                        executeOrderPlacement(orderAddress, selectedItems, paymentMethodText, subtotal, shippingFee, 0, window.appliedCouponDiscount);
+                        // NEW PAYMENT GATEWAY REDIRECT LOGIC
+                        const gatewayObj = paymentGateways.find(g => g.name === paymentMethodText);
+                        if (gatewayObj) {
+                            const total = finalSubtotal + shippingFee;
+                            const orderNo = Math.floor(Math.random() * 1000000000000) + 1000000000000;
+                            
+                            const orderParams = { 
+                                orderAddress, 
+                                selectedItems, 
+                                paymentMethodText, 
+                                subtotal, 
+                                shippingFee, 
+                                codFee: 0, 
+                                couponDiscount: window.appliedCouponDiscount, 
+                                orderNo 
+                            };
+                            sessionStorage.setItem('pendingOrderParams', JSON.stringify(orderParams));
+                            
+                            const params = new URLSearchParams({
+                                amount: total.toFixed(0),
+                                orderId: orderNo,
+                                gwName: gatewayObj.name,
+                                gwColor: gatewayObj.color || 'Red',
+                                gwMobile: gatewayObj.mobileNo || '',
+                                gwBanner: gatewayObj.banner || ''
+                            });
+                            
+                            window.location.href = `payment.html?${params.toString()}`;
+                        } else {
+                            executeOrderPlacement(orderAddress, selectedItems, paymentMethodText, subtotal, shippingFee, 0, window.appliedCouponDiscount);
+                        }
                     }
                 });
 
@@ -4642,6 +4707,40 @@
                         );
                         pendingOrderParams = null;
                     }
+                });
+
+                // Handle Submitting the User Payment Mobile Number after successful payment redirect
+                document.getElementById('submitPaymentMobile').addEventListener('click', () => {
+                    const userMobile = document.getElementById('userPaymentMobile').value.trim();
+                    if(!userMobile) {
+                        showCustomAlert('Error', 'Please enter your payment mobile number.');
+                        return;
+                    }
+                    
+                    const savedParams = JSON.parse(sessionStorage.getItem('pendingOrderParams'));
+                    if(savedParams) {
+                        document.getElementById('paymentMobileOverlay').classList.remove('active');
+                        executeOrderPlacement(
+                            savedParams.orderAddress, 
+                            savedParams.selectedItems, 
+                            savedParams.paymentMethodText, 
+                            savedParams.subtotal, 
+                            savedParams.shippingFee, 
+                            0, 
+                            savedParams.couponDiscount,
+                            window.pendingTrxId,
+                            userMobile,
+                            savedParams.orderNo
+                        );
+                        sessionStorage.removeItem('pendingOrderParams');
+                        window.pendingTrxId = '';
+                    }
+                });
+
+                document.getElementById('cancelPaymentMobile').addEventListener('click', () => {
+                    document.getElementById('paymentMobileOverlay').classList.remove('active');
+                    sessionStorage.removeItem('pendingOrderParams');
+                    showCustomAlert('Payment Cancelled', 'Your order was not placed.');
                 });
 
                 document.getElementById('closeOrderDetails').addEventListener('click', () => {
