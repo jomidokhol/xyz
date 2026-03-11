@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,7 +15,9 @@
     <meta name="twitter:card" content="summary_large_image">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Added Noto Sans Bengali for Payment Page -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Material icons for Product Card -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,1,0" />
     
     <!-- Firebase SDK Compat Version -->
@@ -24,9 +27,6 @@
     
     <!-- JsBarcode Library for Barcode Generation -->
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-    
-    <!-- html2pdf Library for PDF Download -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <!-- Media Caching Service Worker -->
     <script>
@@ -61,6 +61,7 @@
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* Theme Color Updated to Dark Green */
         :root { --primary: #166534; --secondary: #f97316; --dark: #1f2937; --gray: #6b7280; --light: #f9fafb; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --transition: all 0.3s ease; --payment-theme-color: #d12053; }
         body { font-family: 'Poppins', sans-serif; color: var(--dark); background-color: var(--light); line-height: 1.6; overflow-x: hidden; }
         .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
@@ -112,7 +113,7 @@
         .hero::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); z-index: 1; }
         .hero-content { max-width: 600px; position: relative; z-index: 2; padding: 20px; }
         .hero h1 { font-size: 2.8rem; margin-bottom: 20px; line-height: 1.2; }
-        .hero p { font-size: 1.2rem; margin-bottom: 30px; opacity: 0.9; }
+        .hero p { font-size: 1.2rem; margin-bottom: 30px; opacity: 0.9; white-space: pre-wrap; } /* Updated */
         .section-title { text-align: center; font-size: 2rem; margin-bottom: 40px; color: var(--dark); }
         
         .suggested-title { font-size: 1.3rem; font-weight: 400; color: var(--dark); margin-bottom: 25px; text-align: left; padding-bottom: 10px; border-bottom: 1px solid #e5e7eb; }
@@ -129,6 +130,7 @@
         .products { padding: 40px 0; background-color: #f3f4f6; }
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; justify-items: center; }
         
+        /* Updated Shadows and Colors for Dark Green Theme & Product Card UI */
         .product-card { width: 100%; max-width: 240px; background: white; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.2s ease-in-out; border: 1px solid rgba(22, 101, 52, 0.1); overflow: hidden; display: flex; flex-direction: column; cursor: pointer; padding: 10px; }
         .product-card:hover { transform: translateY(-5px); box-shadow: 0 24px 40px -12px #16653455; }
         .img-frame { position: relative; aspect-ratio: 6 / 8; background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 8px; }
@@ -200,6 +202,7 @@
         .variant-option .var-stock { font-size: 0.7rem; color: var(--gray); font-weight: 500; }
         .variant-option .var-discount { position: absolute; top: 0; right: 0; background: #ef4444; color: white; font-size: 0.65rem; font-weight: bold; padding: 2px 6px; border-bottom-left-radius: 8px; z-index: 2; box-shadow: -2px 2px 4px rgba(0,0,0,0.1);}
         
+        /* Updated overlay colors */
         .options-panel-overlay, .custom-alert-overlay, .welcome-overlay, .order-details-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.25); z-index: 1002; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .welcome-overlay { z-index: 3000; display: none; align-items: center; justify-content: center; }
         .order-details-overlay { z-index: 2500; display: none; align-items: flex-end; justify-content: center; }
@@ -387,7 +390,7 @@
         .orders-header span { font-size: 0.85rem; color: var(--gray); cursor: pointer; }
         .orders-status-grid { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
         .order-status-item { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 0.75rem; color: #333; cursor: pointer; position: relative; width: 18%; text-align: center; }
-        .order-status-item i { font-size: 22px; color: #f97316; margin-bottom: 5px; }
+        .order-status-item i { font-size: 22px; color: var(--primary); margin-bottom: 5px; } /* Updated */
         .order-badge-count { position: absolute; top: -8px; right: 0px; background: #ef4444; color: white; font-size: 0.65rem; font-weight: bold; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1.5px solid white; }
         
         .horizontal-nav { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
@@ -774,7 +777,6 @@
                     <li><a href="javascript:void(0)" onclick="navigateTo('home'); toggleMenu(); setTimeout(()=>document.getElementById('shop').scrollIntoView(),300)">Shop</a></li>
                     <li><a href="javascript:void(0)" onclick="navigateTo('home'); toggleMenu(); setTimeout(()=>document.getElementById('categories').scrollIntoView(),300)">Categories</a></li>
                     <li><a href="javascript:void(0)" onclick="navigateTo('home'); toggleMenu(); setTimeout(()=>document.getElementById('contact').scrollIntoView(),300)">About</a></li>
-                    <li><a href="javascript:void(0)" onclick="navigateTo('home'); toggleMenu(); setTimeout(()=>document.getElementById('contact').scrollIntoView(),300)">Contact</a></li>
                 </ul>
                 
                 <div class="mobile-auth" id="mobileAuth">
@@ -793,6 +795,7 @@
                     <div class="hero-content">
                         <h1 id="heroTitle" class="skeleton skeleton-text" style="height:45px; width: 80%;"></h1>
                         <p id="heroDesc" class="skeleton skeleton-text short" style="height:20px;"></p>
+                        <button class="btn btn-secondary btn-shop" style="opacity:0; transition:0.3s;">Start Shoping</button>
                     </div>
                 </div>
             </section>
@@ -1256,6 +1259,7 @@
         <div id="profile-page" class="page-section">
             <div class="container" style="padding-top: 20px; padding-bottom: 20px;">
                 <div class="profile-container">
+                    <!-- Profile Header Card (Light Green Theme) -->
                     <div class="profile-card app-profile-header-card" style="text-align:left; background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border: 1px solid #a5d6a7;">
                         <div class="profile-picture" id="dashboardProfilePic" style="margin:0; width:60px; height:60px;">
                             <svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -1480,7 +1484,6 @@
                     <ul>
                         <li><a href="javascript:void(0)" onclick="navigateTo('home')">Home</a></li>
                         <li><a href="javascript:void(0)" onclick="navigateTo('home')">Shop</a></li>
-                        <li><a href="javascript:void(0)" onclick="navigateTo('home')">Contact</a></li>
                         <li><a href="support.html">Support Chat</a></li>
                     </ul>
                 </div>
@@ -1623,27 +1626,17 @@
                 <button id="closeOrderDetails">&times;</button>
             </div>
             <div class="od-section" id="odBody" style="border-bottom: 8px solid #f5f5f5;"></div>
-            
-            <div class="od-section" style="text-align: center; padding: 10px 0; border-bottom: 8px solid #f5f5f5;">
-                <svg id="odBarcode"></svg>
-            </div>
-            
             <div class="od-section" style="border-bottom: 8px solid #f5f5f5;">
                 <h4 style="margin-bottom: 15px; font-size: 1rem;">Order Summary</h4>
                 <div class="od-row"><span>Subtotal</span><span id="odSubtotal"></span></div>
-                <div class="od-row"><span>VAT (2%)</span><span id="odVat"></span></div>
-                <div class="od-row"><span>Discount</span><span id="odDiscount2"></span></div>
                 <div class="od-row" id="odCouponRow" style="display:none; color:#10b981;"><span>Coupon Discount</span><span id="odCoupon"></span></div>
                 <div class="od-row"><span>Shipping Fee</span><span id="odShipping"></span></div>
                 <div class="od-row"><span>COD Handling Fee</span><span id="odCOD"></span></div>
                 <div class="od-total od-row"><span style="color:#333;">Total</span><span id="odTotal"></span></div>
             </div>
             <div class="od-section" style="border-bottom: 8px solid #f5f5f5;">
-                <h4 style="margin-bottom: 10px; font-size: 1rem;">Payment Info</h4>
-                <div class="od-row"><span>Paid by</span><span id="odPaidMethodName">Cash on Delivery</span></div>
-                <div class="od-row" id="odPaymentMobileRow" style="display: none;"><span>Gateway Number</span><span id="odPaymentMobile"></span></div>
-                <div class="od-row" id="odTrxIdRow" style="display: none;"><span>TrxID</span><span id="odTrxId"></span></div>
-                <div class="od-row"><span>Amount</span><span id="odPaidAmount"></span></div>
+                <h4 style="margin-bottom: 10px; font-size: 1rem;">Paid by</h4>
+                <div class="od-row"><span id="odPaidMethodName">Cash on Delivery</span><span id="odPaidAmount"></span></div>
             </div>
             <div class="od-section od-meta-section">
                 <div class="od-row"><span>Order No.</span><span><span id="odOrderNo" style="color:#333;font-weight:600;"></span> <a href="#" id="odCopy" style="color:var(--primary);text-decoration:none;margin-left:5px;font-weight:600;">Copy</a></span></div>
@@ -1652,10 +1645,7 @@
             </div>
             <div class="od-actions">
                 <button class="btn btn-primary" id="odContinueShopping" style="width: 100%; margin-bottom: 10px;">Continue Shopping</button>
-                <div style="display: flex; gap: 10px;" id="odPrintDownloadGroup">
-                    <button class="btn btn-outline" id="odPrintBtn" style="flex: 1;"><i class="fas fa-print"></i> Print</button>
-                    <button class="btn btn-outline" id="odDownloadBtn" style="flex: 1;"><i class="fas fa-file-pdf"></i> Download PDF</button>
-                </div>
+                <button class="btn btn-outline" id="odPrintBtn" style="width: 100%; display: none;"><i class="fas fa-print"></i> Print / Download PDF</button>
             </div>
         </div>
     </div>
@@ -1810,14 +1800,6 @@
                     <path d="M 35 60 Q 50 75 65 60" fill="none" stroke="#166534" stroke-width="6" stroke-linecap="round"/>
                 </svg>
             `;
-            
-            // Image Format Helper Function
-            function formatImg(url) {
-                if (!url || url === 'N/A') return 'https://via.placeholder.com/200';
-                if (typeof url !== 'string') return 'https://via.placeholder.com/200';
-                if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('/')) return url;
-                return 'https://' + url;
-            }
 
             let products = [];
             let heroSlidesData = [];
@@ -1865,6 +1847,7 @@
             const checkoutForm = document.getElementById('checkoutForm');
             const menuToggle = document.getElementById('menuToggle');
             const mobileMenu = document.getElementById('mobileMenu');
+            const shopNowBtn = document.querySelector('.btn-shop');
             const heroBg = document.getElementById('heroBg');
 
             const detailMainImg = document.getElementById('detailMainImg');
@@ -1911,58 +1894,6 @@
                     }
                 }
             }
-            
-            // --- Auto Stock & Sales Update System ---
-            async function reduceStockForOrder(order) {
-                try {
-                    await db.collection('orders').doc(order.id).update({ stockReduced: true });
-                    for (let item of order.cartItems) {
-                        let pid = item.id || item.pid;
-                        let prodRef = db.collection('products').doc(pid);
-                        let prodDoc = await prodRef.get();
-                        if(prodDoc.exists) {
-                            let prodData = prodDoc.data();
-                            let newStock = Math.max(0, (prodData.stock || 0) - item.qty);
-                            let updates = { stock: newStock };
-                            
-                            if (item.color && item.color !== 'N/A' && prodData.variants && prodData.variants.length > 0) {
-                                let updatedVariants = prodData.variants.map(v => {
-                                    if (v.color === item.color) {
-                                        if (item.size && item.size !== 'N/A' && v.sizes) {
-                                            v.sizes = v.sizes.map(s => {
-                                                if(s.size === item.size) s.stock = Math.max(0, s.stock - item.qty);
-                                                return s;
-                                            });
-                                            v.stock = v.sizes.reduce((sum, s) => sum + s.stock, 0);
-                                        } else {
-                                            v.stock = Math.max(0, v.stock - item.qty);
-                                        }
-                                    }
-                                    return v;
-                                });
-                                updates.variants = updatedVariants;
-                            }
-                            await prodRef.update(updates);
-                        }
-                    }
-                } catch(e) { console.error("Stock reduction error:", e); }
-            }
-
-            async function addSalesForOrder(order) {
-                try {
-                    await db.collection('orders').doc(order.id).update({ salesAdded: true });
-                    for (let item of order.cartItems) {
-                        let pid = item.id || item.pid;
-                        let prodRef = db.collection('products').doc(pid);
-                        let prodDoc = await prodRef.get();
-                        if(prodDoc.exists) {
-                            let prodData = prodDoc.data();
-                            let newSales = (prodData.sales || 0) + item.qty;
-                            await prodRef.update({ sales: newSales });
-                        }
-                    }
-                } catch(e) { console.error("Sales addition error:", e); }
-            }
 
             // --- INVOICE/PDF GENERATOR FUNCTION ---
             window.printOrderInvoice = function(orderIdOrObj) {
@@ -1972,22 +1903,17 @@
                 const shopName = document.getElementById('pageTitle').textContent || 'Online Shop';
                 const domain = appDomainName;
                 
-                let subtotal = 0;
                 let itemsHtml = '';
                 order.cartItems.forEach(item => {
-                    let itemTotal = item.price * item.qty;
-                    subtotal += itemTotal;
                     itemsHtml += `
                         <tr>
                             <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.name} ${item.color && item.color !== 'N/A' ? '('+item.color+')' : ''}</td>
                             <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align:center;">${item.qty}</td>
                             <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align:right;">৳${item.price.toFixed(2)}</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align:right;">৳${itemTotal.toFixed(2)}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align:right;">৳${(item.price * item.qty).toFixed(2)}</td>
                         </tr>
                     `;
                 });
-                let vat = subtotal * 0.02;
-                let discount = vat;
 
                 let printWin = window.open('', '', 'width=800,height=600');
                 printWin.document.write(`
@@ -2024,8 +1950,8 @@
                                     <strong>Order ID:</strong> ${order.id}<br>
                                     <strong>Date:</strong> ${order.date}<br>
                                     <strong>Payment Method:</strong> ${order.payment}<br>
-                                    ${order.paymentMobile ? `<strong>Gateway Number:</strong> ${order.paymentMobile}<br>` : ''}
                                     ${order.trxId ? `<strong>TrxID:</strong> ${order.trxId}<br>` : ''}
+                                    ${order.paymentMobile ? `<strong>Sender Mobile:</strong> ${order.paymentMobile}<br>` : ''}
                                     <strong>Status:</strong> ${order.status}
                                 </div>
                             </div>
@@ -2043,9 +1969,6 @@
                                 </tbody>
                             </table>
                             <div class="totals">
-                                <p><strong>Subtotal:</strong> ৳${subtotal.toFixed(2)}</p>
-                                <p><strong>VAT (2%):</strong> +৳${vat.toFixed(2)}</p>
-                                <p><strong>Discount:</strong> -৳${discount.toFixed(2)}</p>
                                 <p><strong>Total Amount:</strong> ৳${Number(order.amount).toFixed(2)}</p>
                             </div>
                             <div class="barcode">
@@ -2062,91 +1985,6 @@
                     </html>
                 `);
                 printWin.document.close();
-            }
-
-            window.downloadOrderInvoicePDF = function(orderIdOrObj) {
-                let order = typeof orderIdOrObj === 'object' ? orderIdOrObj : (window.userOrders ? window.userOrders.find(o => o.id === orderIdOrObj) : null);
-                if(!order) return;
-                
-                let subtotal = 0;
-                let itemsHtml = '';
-                order.cartItems.forEach(item => {
-                    let itemTotal = item.price * item.qty;
-                    subtotal += itemTotal;
-                    itemsHtml += `
-                        <tr>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.name} ${item.color && item.color !== 'N/A' ? '('+item.color+')' : ''}</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align:center;">${item.qty}</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align:right;">৳${item.price.toFixed(2)}</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align:right;">৳${itemTotal.toFixed(2)}</td>
-                        </tr>
-                    `;
-                });
-                let vat = subtotal * 0.02;
-                let discount = vat;
-
-                const printContent = document.createElement('div');
-                printContent.innerHTML = `
-                    <div style="font-family: 'Poppins', sans-serif; color: #333; padding: 20px; background: white; width: 800px;">
-                        <div style="text-align: center; margin-bottom: 30px;">
-                            <h1 style="margin: 0; color: #166534;">${document.getElementById('pageTitle').textContent || 'Online Shop'}</h1>
-                            <p style="margin: 5px 0; color: #666;">${appDomainName}</p>
-                            <h2>INVOICE</h2>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 30px; line-height: 1.5;">
-                            <div>
-                                <strong>Bill To:</strong><br>
-                                ${order.customer}<br>${order.phone}<br>${order.address}
-                            </div>
-                            <div style="text-align: right;">
-                                <strong>Order ID:</strong> ${order.id}<br>
-                                <strong>Date:</strong> ${order.date}<br>
-                                <strong>Payment Method:</strong> ${order.payment}<br>
-                                ${order.paymentMobile ? `<strong>Gateway Number:</strong> ${order.paymentMobile}<br>` : ''}
-                                ${order.trxId ? `<strong>TrxID:</strong> ${order.trxId}<br>` : ''}
-                                <strong>Status:</strong> ${order.status}
-                            </div>
-                        </div>
-                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
-                            <thead>
-                                <tr>
-                                    <th style="background: #f5f5f5; padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Item</th>
-                                    <th style="background: #f5f5f5; padding: 10px; text-align: center; border-bottom: 2px solid #ddd;">Qty</th>
-                                    <th style="background: #f5f5f5; padding: 10px; text-align: right; border-bottom: 2px solid #ddd;">Price</th>
-                                    <th style="background: #f5f5f5; padding: 10px; text-align: right; border-bottom: 2px solid #ddd;">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>${itemsHtml}</tbody>
-                        </table>
-                        <div style="text-align: right; font-size: 1.1rem;">
-                            <p style="margin: 5px 0;"><strong>Subtotal:</strong> ৳${subtotal.toFixed(2)}</p>
-                            <p style="margin: 5px 0;"><strong>VAT (2%):</strong> +৳${vat.toFixed(2)}</p>
-                            <p style="margin: 5px 0;"><strong>Discount:</strong> -৳${discount.toFixed(2)}</p>
-                            <p style="margin: 5px 0;"><strong>Total Amount:</strong> ৳${Number(order.amount).toFixed(2)}</p>
-                        </div>
-                        <div style="text-align: center; margin-top: 40px;">
-                            <svg id="pdfBarcode_${order.id}"></svg>
-                        </div>
-                    </div>
-                `;
-                
-                printContent.style.position = 'absolute';
-                printContent.style.left = '-9999px';
-                document.body.appendChild(printContent);
-                JsBarcode(`#pdfBarcode_${order.id}`, order.id, { format: "CODE128", width: 2, height: 50, displayValue: true });
-                
-                showLoader();
-                html2pdf().set({
-                    margin: 10,
-                    filename: `Invoice_${order.id}.pdf`,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2 },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                }).from(printContent).save().then(() => {
-                    document.body.removeChild(printContent);
-                    hideLoader();
-                    showNotification('PDF downloaded successfully.');
-                });
             }
 
             function showLoader() { document.getElementById('actionLoader').classList.add('active'); }
@@ -2227,6 +2065,7 @@
                 });
             }
 
+            // Observe dynamic image insertions
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
                     mutation.addedNodes.forEach((node) => {
@@ -2250,12 +2089,13 @@
                         document.getElementById('pageTitle').textContent = data.siteName || 'Online Shop';
                         document.getElementById('ogTitle').content = data.siteName || 'Online Shop';
                         
-                        document.getElementById('headerLogo').src = formatImg(data.logoUrl);
-                        document.getElementById('footerLogo').src = formatImg(data.logoUrl);
-                        if(data.logoUrl) document.getElementById('ogImage').content = formatImg(data.logoUrl);
+                        document.getElementById('headerLogo').src = data.logoUrl || '';
+                        document.getElementById('footerLogo').src = data.logoUrl || '';
+                        if(data.logoUrl) document.getElementById('ogImage').content = data.logoUrl;
                         
                         document.getElementById('heroTitle').classList.remove('skeleton');
                         document.getElementById('heroDesc').classList.remove('skeleton');
+                        document.querySelector('.btn-shop').style.opacity = '1';
                         
                         document.getElementById('heroTitle').textContent = data.heroTitle || '';
                         document.getElementById('heroDesc').textContent = data.heroDesc || '';
@@ -2284,7 +2124,7 @@
 
                     if(openingPopup && !sessionStorage.getItem('popupShown')) {
                         const welcomeLogo = document.getElementById('welcomeLogo');
-                        welcomeLogo.src = formatImg(openingPopup.bannerLogo);
+                        welcomeLogo.src = openingPopup.bannerLogo || '';
                         
                         if(openingPopup.actionButton) {
                             const actionBtn = document.getElementById('welcomeActionBtn');
@@ -2306,7 +2146,7 @@
                         const cat = doc.data();
                         let iconHtml = '';
                         if (cat.mediaType === 'image' && cat.imageUrl) {
-                             iconHtml = `<img src="${formatImg(cat.imageUrl)}" alt="${cat.name}">`;
+                             iconHtml = `<img src="${cat.imageUrl}" alt="${cat.name}">`;
                         } else {
                              iconHtml = `<div class="category-icon"><i class="${cat.iconClass || 'fas fa-box'}"></i></div>`;
                         }
@@ -2462,6 +2302,7 @@
                             savedAddresses = [];
                         }
 
+                        // Sync Database Cart items
                         if (userDoc.exists) {
                             let dbCart = userDoc.data().cart || [];
                             if (dbCart.length > 0) {
@@ -2476,7 +2317,7 @@
 
                         let profilePicHtml = defaultProfileSvgStr;
                         if (user.photoURL) {
-                            profilePicHtml = `<img src="${formatImg(user.photoURL)}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" alt="Profile Picture">`;
+                            profilePicHtml = `<img src="${user.photoURL}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" alt="Profile Picture">`;
                         }
                         const menuPic = document.querySelector('#menuProfileSection .profile-picture');
                         const dashboardPic = document.querySelector('#dashboardProfilePic');
@@ -2605,7 +2446,7 @@
                     
                     container.innerHTML += `
                         <div class="summary-item">
-                            <img src="${formatImg(item.image)}" alt="">
+                            <img src="${item.image}" alt="">
                             <div class="summary-item-info">
                                 <div class="summary-item-title">${item.name}</div>
                                 ${variantText ? `<div class="summary-item-meta">${variantText}</div>` : ''}
@@ -2680,6 +2521,20 @@
 
                 const displayPageAndData = () => {
                     let finalPageId = path.split('?')[0];
+                    
+                    // Custom URL Mapping
+                    if (finalPageId.startsWith('profile/to-pay')) finalPageId = 'profile-topay';
+                    else if (finalPageId.startsWith('profile/to-ship')) finalPageId = 'profile-toship';
+                    else if (finalPageId.startsWith('profile/to-receive')) finalPageId = 'profile-toreceive';
+                    else if (finalPageId.startsWith('profile/to-review')) finalPageId = 'profile-toreview';
+                    else if (finalPageId.startsWith('profile/returns')) finalPageId = 'profile-returns';
+                    else if (finalPageId.startsWith('profile/')) finalPageId = 'profile'; 
+                    else if (finalPageId.startsWith('order/summary') || finalPageId.startsWith('order/Summery')) finalPageId = 'order-summary';
+                    else if (finalPageId.startsWith('order/check-out')) finalPageId = 'checkout';
+                    else if (finalPageId.startsWith('order/payment/mobile-banking')) finalPageId = 'payment';
+                    else if (finalPageId.startsWith('order/text-conformation/mobile-banking') || finalPageId.startsWith('order/trx-confirmation/mobile-banking')) finalPageId = 'trx-confirmation';
+                    else if (finalPageId.startsWith('search-result')) finalPageId = 'search-results';
+
                     const profilePages = ['profile', 'profile-location', 'profile-tracking', 'profile-setup', 'profile-topay', 'profile-toship', 'profile-toreceive', 'profile-toreview', 'profile-returns'];
                     
                     if (!isLoggedIn && (profilePages.includes(finalPageId) || finalPageId === 'checkout' || finalPageId === 'order-summary' || finalPageId === 'write-review' || finalPageId === 'payment' || finalPageId === 'trx-confirmation')) {
@@ -2744,14 +2599,44 @@
             
             function navigateTo(path) {
                 path = path.replace(/^\//, '');
+                
+                // Construct Display Path for Custom URLs
+                let displayPath = path;
+                const tempOrdId = sessionStorage.getItem('tempOrderId') || Date.now();
+                
+                if (path === 'profile') {
+                    let uName = currentUser && currentUser.name ? encodeURIComponent(currentUser.name.replace(/\s+/g, '-').toLowerCase()) : 'user';
+                    displayPath = `profile/${uName}`;
+                } else if (path === 'profile-topay') { displayPath = 'profile/to-pay';
+                } else if (path === 'profile-toship') { displayPath = 'profile/to-ship';
+                } else if (path === 'profile-toreceive') { displayPath = 'profile/to-receive';
+                } else if (path === 'profile-toreview') { displayPath = 'profile/to-review';
+                } else if (path === 'profile-returns') { displayPath = 'profile/returns';
+                } else if (path === 'order-summary') {
+                    sessionStorage.setItem('tempOrderId', tempOrdId); 
+                    displayPath = `order/summary/${tempOrdId}`;
+                } else if (path === 'checkout') {
+                    displayPath = `order/check-out/${tempOrdId}`;
+                } else if (path === 'payment') {
+                    let gwNameElement = document.getElementById('paymentGwName');
+                    let gwName = gwNameElement ? gwNameElement.innerText.replace(' Payment', '').replace(/\s+/g, '-').toLowerCase() : 'gw';
+                    displayPath = `order/payment/mobile-banking/${gwName}/${tempOrdId}`;
+                } else if (path === 'trx-confirmation') {
+                    let gwNameElement = document.getElementById('paymentGwName');
+                    let gwName = gwNameElement ? gwNameElement.innerText.replace(' Payment', '').replace(/\s+/g, '-').toLowerCase() : 'gw';
+                    displayPath = `order/text-conformation/mobile-banking/${gwName}/${tempOrdId}`;
+                } else if (path === 'search-results') {
+                    displayPath = `search-result/${encodeURIComponent(lastSearchTerm || 'query')}`;
+                }
+
                 let currentPath = window.location.pathname.substring(1);
                 let currentFull = currentPath + window.location.search;
                 if(currentPath === '' || currentPath === 'user.html') currentFull = 'home';
                 
-                if (currentFull === path) {
+                if (currentFull === displayPath) {
                      handleRouteChange(); return;
                 }
-                history.pushState(null, '', '/' + path);
+                history.pushState(null, '', '/' + displayPath);
                 handleRouteChange();
             }
 
@@ -2891,7 +2776,7 @@
                     grid.innerHTML += `
                         <div class="rv-card" onclick="navigateToProduct('${p.id}')">
                             ${discountHtml}
-                            <img src="${formatImg(p.images ? p.images[0] : '')}">
+                            <img src="${p.images ? p.images[0] : ''}">
                             <div class="rv-price">৳${price}<br>${oldPriceHtml}</div>
                         </div>
                     `;
@@ -2928,14 +2813,6 @@
                     let recentUpdates = [];
 
                     window.userOrders.forEach(order => {
-                        // Stock & Sales Management
-                        if (order.status === 'Received' && !order.stockReduced) {
-                            reduceStockForOrder(order);
-                        }
-                        if (order.status === 'Delivered' && !order.salesAdded) {
-                            addSalesForOrder(order);
-                        }
-
                         let isToPay = order.status === 'Pending Payment' && order.payment !== 'Cash on Delivery';
                         let isToShip = ['Pending', 'Received', 'Packing', 'Handed Over', 'Handover', 'Processing'].includes(order.status);
                         let isToReceive = ['Shipped', 'Delivered'].includes(order.status);
@@ -3017,7 +2894,7 @@
 
                                 itemsHtml += `
                                     <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:12px;">
-                                        <img src="${formatImg(item.image)}" style="width:65px; height:65px; object-fit:cover; border-radius:6px; cursor:pointer; border: 1px solid #ddd;" onclick="navigateToProduct('${navId}')">
+                                        <img src="${item.image}" style="width:65px; height:65px; object-fit:cover; border-radius:6px; cursor:pointer; border: 1px solid #ddd;" onclick="navigateToProduct('${navId}')">
                                         <div style="flex:1;">
                                             <div style="font-weight:600; font-size:0.95rem; cursor:pointer; color: var(--dark); line-height:1.2;" onclick="navigateToProduct('${navId}')" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--dark)'">${item.name}${vStr}</div>
                                             <div style="font-size:0.85rem; color:var(--gray); margin-top:4px;">Qty: ${item.qty} | ৳${item.price}</div>
@@ -3081,7 +2958,7 @@
                         if (order.cartItems.length > 0 && ['Pending', 'Pending Payment', 'Processing', 'Handed Over', 'Shipped', 'Delivered'].includes(order.status)) {
                             let snippetText = order.status === 'Delivered' ? 'Package delivered!' : 'Your package is on the way.';
                             recentUpdates.push({
-                                image: formatImg(order.cartItems[0].image),
+                                image: order.cartItems[0].image,
                                 status: order.status,
                                 text: snippetText,
                                 date: order.date.split(' ')[0]
@@ -3214,6 +3091,7 @@
                 updateCartCount();
                 renderCartItems();
                 window.currentOrderSubtotal = order.amount;
+                sessionStorage.setItem('tempOrderId', orderId); // Use actual order ID in URL for resumptions
                 navigateTo('checkout');
             };
 
@@ -3221,14 +3099,12 @@
                 const order = window.userOrders.find(o => o.id === orderId);
                 if(!order) return;
                 
-                let subtotal = 0;
                 let itemsHtml = '';
                 order.cartItems.forEach(item => {
-                    subtotal += item.price * item.qty;
                     const variantText = (item.color && item.color !== 'N/A' ? item.color : '') + (item.size && item.size !== 'N/A' ? `, ${item.size}` : '');
                     itemsHtml += `
                         <div class="od-item">
-                            <img src="${formatImg(item.image)}" alt="">
+                            <img src="${item.image}" alt="">
                             <div class="od-item-info">
                                 <h4>${item.name}</h4>
                                 ${variantText ? `<div class="od-item-variant">${variantText}</div>` : ''}
@@ -3241,56 +3117,25 @@
                     `;
                 });
                 
-                let vat = subtotal * 0.02;
-                let discount = vat;
-                
                 document.querySelector('.od-actions').style.display = 'block'; 
                 
                 document.getElementById('odBody').innerHTML = itemsHtml;
-                document.getElementById('odSubtotal').parentNode.style.display = 'flex';
-                document.getElementById('odSubtotal').textContent = `৳ ${subtotal.toFixed(2)}`;
-                
-                document.getElementById('odVat').parentNode.style.display = 'flex';
-                document.getElementById('odVat').textContent = `+৳ ${vat.toFixed(2)}`;
-                
-                document.getElementById('odDiscount2').parentNode.style.display = 'flex';
-                document.getElementById('odDiscount2').textContent = `-৳ ${discount.toFixed(2)}`;
-
-                document.getElementById('odShipping').parentNode.style.display = 'flex';
-                document.getElementById('odShipping').textContent = (order.amount - subtotal) > 0 ? `৳ ${(order.amount - subtotal).toFixed(0)}` : '৳ 0';
-                
+                document.getElementById('odSubtotal').parentNode.style.display = 'none';
+                document.getElementById('odShipping').parentNode.style.display = 'none';
                 document.getElementById('odCOD').parentNode.style.display = 'none';
                 if(document.getElementById('odCoupon')) document.getElementById('odCoupon').parentNode.style.display = 'none';
                 
                 document.getElementById('odTotal').textContent = `৳ ${order.amount}`;
                 document.getElementById('odPaidAmount').textContent = `৳ ${order.amount}`;
                 document.getElementById('odPaidMethodName').textContent = order.payment || 'N/A';
-                
-                if (order.paymentMobile) {
-                    document.getElementById('odPaymentMobileRow').style.display = 'flex';
-                    document.getElementById('odPaymentMobile').textContent = order.paymentMobile;
-                } else {
-                    document.getElementById('odPaymentMobileRow').style.display = 'none';
-                }
-                
-                if (order.trxId) {
-                    document.getElementById('odTrxIdRow').style.display = 'flex';
-                    document.getElementById('odTrxId').textContent = order.trxId;
-                } else {
-                    document.getElementById('odTrxIdRow').style.display = 'none';
-                }
-
                 document.getElementById('odOrderNo').textContent = order.id;
                 document.getElementById('odDate').textContent = order.date;
                 document.getElementById('odPaymentMethod').textContent = order.payment || 'N/A';
                 
-                JsBarcode("#odBarcode", order.id, { format: "CODE128", width: 2, height: 40, displayValue: true });
-
                 const printBtn = document.getElementById('odPrintBtn');
-                const downloadBtn = document.getElementById('odDownloadBtn');
-                if(printBtn && downloadBtn) {
+                if(printBtn) {
+                    printBtn.style.display = 'block';
                     printBtn.onclick = () => printOrderInvoice(orderId);
-                    downloadBtn.onclick = () => downloadOrderInvoicePDF(orderId);
                 }
 
                 document.getElementById('orderDetailsOverlay').classList.add('active');
@@ -3312,7 +3157,7 @@
                     const variantText = (item.color && item.color !== 'N/A' ? item.color : '') + (item.size && item.size !== 'N/A' ? `, ${item.size}` : '');
                     itemsHtml += `
                         <div style="display:flex; gap:12px; margin-bottom:10px;">
-                            <img src="${formatImg(item.image)}" style="width:60px; height:60px; object-fit:cover; border-radius:6px; border:1px solid #eee;">
+                            <img src="${item.image}" style="width:60px; height:60px; object-fit:cover; border-radius:6px; border:1px solid #eee;">
                             <div style="flex:1;">
                                 <h4 style="font-size:0.9rem; margin:0 0 4px 0; color:#333; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${item.name}</h4>
                                 ${variantText ? `<div style="font-size:0.75rem; color:#666; background:#f5f5f5; display:inline-block; padding:2px 6px; border-radius:4px; margin-bottom:4px;">${variantText}</div>` : ''}
@@ -3431,7 +3276,7 @@
                     slideEl.className = `hero-slide ${index === 0 ? 'active' : ''}`;
                     if (slide.type === 'image') {
                         const img = document.createElement('img');
-                        img.src = formatImg(slide.src);
+                        img.src = slide.src;
                         slideEl.appendChild(img);
                     } else if (slide.type === 'iframe') {
                         const iframe = document.createElement('iframe');
@@ -3476,7 +3321,7 @@
                     
                     const discountBadge = discountPercentage > 0 ? `<div class="off-badge">-${discountPercentage}%</div>` : '';
                     const watermark = isOutOfStock ? `<div class="out-of-stock-banner">OUT OF STOCK</div>` : '';
-                    const displayImg = (product.images && product.images.length > 0) ? formatImg(product.images[0]) : 'https://via.placeholder.com/200';
+                    const displayImg = (product.images && product.images.length > 0) ? product.images[0] : 'https://via.placeholder.com/200';
 
                     const salesCount = product.sales || 0;
                     const formattedSalesCount = formatNumberKM(salesCount);
@@ -3551,7 +3396,7 @@
                     
                     const discountBadge = discountPercentage > 0 ? `<div class="off-badge">-${discountPercentage}%</div>` : '';
                     const watermark = isOutOfStock ? `<div class="out-of-stock-banner">OUT OF STOCK</div>` : '';
-                    const displayImg = (product.images && product.images.length > 0) ? formatImg(product.images[0]) : 'https://via.placeholder.com/200';
+                    const displayImg = (product.images && product.images.length > 0) ? product.images[0] : 'https://via.placeholder.com/200';
 
                     const salesCount = product.sales || 0;
                     const formattedSalesCount = formatNumberKM(salesCount);
@@ -3623,7 +3468,7 @@
                 document.getElementById('ogTitle').content = currentProduct.name;
                 document.getElementById('ogDesc').content = currentProduct.name; 
                 if(currentProduct.images && currentProduct.images.length > 0) {
-                    document.getElementById('ogImage').content = formatImg(currentProduct.images[0]);
+                    document.getElementById('ogImage').content = currentProduct.images[0];
                 }
                 document.getElementById('ogUrl').content = window.location.href;
                 
@@ -3649,6 +3494,7 @@
                 detailOldPrice.textContent = currentProduct.originalPrice > price ? `৳${currentProduct.originalPrice.toFixed(2)}` : '';
                 document.getElementById('detailSoldCount').textContent = `${formatNumberKM(currentProduct.sales || 0)} sold`;
                 
+                // Set Estimated Delivery Date properly based on today's date
                 const minDays = currentProduct.deliveryMinDays ? parseInt(currentProduct.deliveryMinDays) : 1;
                 const maxDays = currentProduct.deliveryMaxDays ? parseInt(currentProduct.deliveryMaxDays) : 3;
                 
@@ -3717,23 +3563,23 @@
                         } else {
                             const gw = paymentGateways.find(g => g.id === gwId);
                             if (gw && gw.logo) {
-                                gatewayHtml += `<img src="${formatImg(gw.logo)}" alt="${gw.name}" title="${gw.name}" style="height: 28px; width: auto; object-fit: contain; border: 1px solid #ddd; border-radius: 4px; padding: 2px; background: white;">`;
+                                gatewayHtml += `<img src="${gw.logo}" alt="${gw.name}" title="${gw.name}" style="height: 28px; width: auto; object-fit: contain; border: 1px solid #ddd; border-radius: 4px; padding: 2px; background: white;">`;
                             }
                         }
                     });
                     gatewaysContainer.innerHTML = gatewayHtml;
                 }
                 
-                detailMainImg.src = formatImg(currentProduct.images[0]);
+                detailMainImg.src = currentProduct.images[0];
                 detailThumbnails.innerHTML = '';
                 
                 currentProduct.images.forEach((imgSrc, index) => {
                     const thumb = document.createElement('img');
-                    thumb.src = formatImg(imgSrc);
+                    thumb.src = imgSrc;
                     thumb.className = `thumbnail ${index === 0 ? 'active' : ''}`;
                     thumb.onclick = () => {
                         if (imageSliderInterval) clearInterval(imageSliderInterval);
-                        detailMainImg.src = formatImg(imgSrc);
+                        detailMainImg.src = imgSrc;
                         document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
                         thumb.classList.add('active');
                     };
@@ -3751,7 +3597,7 @@
                 if(currentProduct.images.length > 1) {
                     imageSliderInterval = setInterval(() => {
                         currentImageIndex = (currentImageIndex + 1) % currentProduct.images.length;
-                        detailMainImg.src = formatImg(currentProduct.images[currentImageIndex]);
+                        detailMainImg.src = currentProduct.images[currentImageIndex];
                         thumbnails.forEach(t => t.classList.remove('active'));
                         if(thumbnails[currentImageIndex]) thumbnails[currentImageIndex].classList.add('active');
                     }, 3000);
@@ -3826,7 +3672,7 @@
                 }
 
                 const initial = review.userName ? review.userName.charAt(0).toUpperCase() : 'U';
-                const imgHtml = review.userImage ? `<img src="${formatImg(review.userImage)}" class="review-user-img">` : `<div class="review-user-img">${initial}</div>`;
+                const imgHtml = review.userImage ? `<img src="${review.userImage}" class="review-user-img">` : `<div class="review-user-img">${initial}</div>`;
 
                 div.innerHTML = `
                     <div class="review-header">
@@ -3901,7 +3747,7 @@
                 currentReviewRating = 5;
 
                 document.getElementById('wrProductName').textContent = prod.name;
-                document.getElementById('wrProductImg').src = prod.images && prod.images.length > 0 ? formatImg(prod.images[0]) : '';
+                document.getElementById('wrProductImg').src = prod.images && prod.images.length > 0 ? prod.images[0] : '';
                 
                 const stars = document.querySelectorAll('#reviewStarInput i');
                 stars.forEach(s => s.classList.remove('active'));
@@ -3995,7 +3841,7 @@
                 let previewHTML = '<div style="margin-bottom:15px;"><span style="font-weight:600; font-size:0.9rem;">Available Colors:</span><div style="display:flex; gap:8px; margin-top:5px; flex-wrap:wrap;">';
                 product.variants.forEach(v => {
                     if(v.image) {
-                        previewHTML += `<img src="${formatImg(v.image)}" style="width:40px; height:40px; border-radius:4px; object-fit:cover; border:1px solid #ddd;" title="${v.color}">`;
+                        previewHTML += `<img src="${v.image}" style="width:40px; height:40px; border-radius:4px; object-fit:cover; border:1px solid #ddd;" title="${v.color}">`;
                     } else {
                         previewHTML += `<div style="padding:5px 10px; background:#f3f4f6; border-radius:4px; font-size:0.8rem; border:1px solid #ddd;">${v.color}</div>`;
                     }
@@ -4010,7 +3856,7 @@
                 document.getElementById('vlProductName').textContent = currentProduct.name;
                 const defaultPrice = currentProduct.variants && currentProduct.variants.length > 0 ? currentProduct.variants[0].price : currentProduct.price;
                 document.getElementById('vlProductPrice').textContent = `৳${defaultPrice.toFixed(2)}`;
-                document.getElementById('vlProductImg').src = formatImg(currentProduct.images[0]);
+                document.getElementById('vlProductImg').src = currentProduct.images[0];
                 document.getElementById('vlQty').value = 1;
 
                 const container = document.getElementById('vlVariantSelectors');
@@ -4035,7 +3881,7 @@
                 let colorHTML = '<div class="variant-selector" id="vlColorSelectorBlock"><h4>Choose Color:</h4><div class="variant-options">';
                 product.variants.forEach((v, index) => {
                     const isOutOfStock = v.stock <= 0;
-                    const imgHTML = v.image ? `<img src="${formatImg(v.image)}" class="variant-img" alt="${v.color}">` : '';
+                    const imgHTML = v.image ? `<img src="${v.image}" class="variant-img" alt="${v.color}">` : '';
                     colorHTML += `
                         <div class="variant-option color-option ${isOutOfStock ? 'out-of-stock' : ''}" data-index="${index}">
                             ${imgHTML}
@@ -4063,7 +3909,7 @@
                         
                         document.getElementById('vlProductPrice').textContent = `৳${selectedVar.price.toFixed(2)}`;
                         if (selectedVar.image) {
-                            document.getElementById('vlProductImg').src = formatImg(selectedVar.image);
+                            document.getElementById('vlProductImg').src = selectedVar.image;
                         }
                         
                         const sizeBlock = container.querySelector('#vlSizeSelectorBlock');
@@ -4149,7 +3995,7 @@
                         cartId: cartId,
                         name: itemName, 
                         price: itemPrice, 
-                        image: formatImg((variant && variant.image) ? variant.image : product.images[0]), 
+                        image: (variant && variant.image) ? variant.image : product.images[0], 
                         quantity: quantity,
                         variant: variant,
                         selected: true,
@@ -4221,7 +4067,7 @@
                             <input type="checkbox" class="cart-item-checkbox" ${item.selected ? 'checked' : ''} style="width:18px; height:18px; accent-color:var(--primary); cursor:pointer;">
                         </div>
                         <div class="cart-item-img">
-                            <img src="${formatImg(item.image)}" alt="${item.name}">
+                            <img src="${item.image}" alt="${item.name}">
                         </div>
                         <div class="cart-item-info">
                             <h4 class="cart-item-title-link">${item.name}</h4>
@@ -4609,7 +4455,7 @@
                     const gwDiv = document.createElement('div');
                     gwDiv.className = 'payment-method';
                     gwDiv.dataset.method = gw.name;
-                    gwDiv.innerHTML = `<img src="${formatImg(gw.logo)}" alt="${gw.name}"><p>${gw.name}</p>`;
+                    gwDiv.innerHTML = `<img src="${gw.logo}" alt="${gw.name}"><p>${gw.name}</p>`;
                     gwDiv.onclick = () => selectPaymentMethod(gwDiv);
                     container.appendChild(gwDiv);
                 });
@@ -4654,7 +4500,7 @@
                 }
 
                 if (unreviewedProduct) {
-                     document.getElementById('promoPopupImg').src = formatImg(unreviewedProduct.image);
+                     document.getElementById('promoPopupImg').src = unreviewedProduct.image;
                      document.getElementById('promoPopupName').textContent = "Please review your recent purchase: " + unreviewedProduct.name;
                      document.getElementById('promoPopupPrice').style.display = 'none';
                      document.getElementById('promoPopupDiscount').style.display = 'none';
@@ -4675,7 +4521,7 @@
                     const prod = products.find(p => p.id === popupData.productId);
                     if (prod) {
                         const price = prod.variants && prod.variants.length > 0 ? prod.variants[0].price : (prod.price || 0);
-                        document.getElementById('promoPopupImg').src = formatImg(popupData.bannerLogo || prod.images[0]);
+                        document.getElementById('promoPopupImg').src = popupData.bannerLogo || prod.images[0];
                         document.getElementById('promoPopupName').textContent = prod.name.length > 20 ? prod.name.substring(0,20)+'...' : prod.name;
                         document.getElementById('promoPopupPrice').textContent = `${price.toFixed(0)} ৳`;
                         
@@ -4698,7 +4544,7 @@
                         };
                     }
                 } else {
-                    document.getElementById('promoPopupImg').src = formatImg(popupData.bannerLogo) || '';
+                    document.getElementById('promoPopupImg').src = popupData.bannerLogo || '';
                     document.getElementById('promoPopupName').textContent = popupData.name || '';
                     
                     if (popupData.price && popupData.price > 0) {
@@ -4750,6 +4596,24 @@
                 
                 const total = subtotal - couponDiscount + shippingFee + codFee;
                 
+                let itemsHtml = '';
+                selectedItems.forEach(item => {
+                    const variantText = (item.color!=='N/A' ? item.color : '') + (item.size!=='N/A' ? `, ${item.size}` : '');
+                    itemsHtml += `
+                        <div class="od-item">
+                            <img src="${item.image}" alt="">
+                            <div class="od-item-info">
+                                <h4>${item.name}</h4>
+                                ${variantText ? `<div class="od-item-variant">${variantText}</div>` : ''}
+                                <div class="od-item-price-row">
+                                    <span class="od-item-price">৳ ${item.price.toFixed(0)}</span>
+                                    <span class="od-item-qty">Qty: ${item.quantity}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
                 let targetUserId = isLoggedIn && auth.currentUser ? auth.currentUser.uid : 'guest';
                 
                 if(isLoggedIn && currentUser) {
@@ -4764,8 +4628,6 @@
                          payment: paymentMethodText,
                          trxId: trxId || '',
                          paymentMobile: paymentMobile || '',
-                         stockReduced: false,
-                         salesAdded: false,
                          cartItems: selectedItems.map(i => ({
                              id: i.id,
                              pid: i.pid || i.id,
@@ -4774,28 +4636,61 @@
                              qty: i.quantity,
                              color: i.color,
                              size: i.size,
-                             image: formatImg(i.image)
+                             image: i.image
                          })),
                          userId: targetUserId
                      };
                      db.collection('orders').doc(orderNo.toString()).set(orderData).then(() => {
                          hideLoader();
-                         
-                         window.userOrders = window.userOrders || [];
-                         window.userOrders.unshift(orderData);
-                         
-                         showOrderSummary(orderNo.toString());
-                         cart = cart.filter(item => !item.selected);
-                         syncCart();
-                         updateCartCount();
-                         renderCartItems();
+                         showOrderSuccessModal(orderData);
                      }).catch(err => {
                          hideLoader();
                          showCustomAlert('Error', 'Failed to place order.');
                      });
                 } else {
                     hideLoader();
-                    showCustomAlert('Error', 'You must be logged in to place an order.');
+                    showOrderSuccessModal();
+                }
+
+                function showOrderSuccessModal(orderDataObj = null) {
+                    document.querySelector('.od-actions').style.display = 'block'; 
+                    
+                    document.getElementById('odBody').innerHTML = itemsHtml;
+                    document.getElementById('odSubtotal').parentNode.style.display = 'flex';
+                    document.getElementById('odShipping').parentNode.style.display = 'flex';
+                    document.getElementById('odCOD').parentNode.style.display = 'flex';
+                    
+                    if (couponDiscount > 0) {
+                        document.getElementById('odCouponRow').style.display = 'flex';
+                        document.getElementById('odCoupon').textContent = `-৳ ${couponDiscount.toFixed(0)}`;
+                    } else {
+                        document.getElementById('odCouponRow').style.display = 'none';
+                    }
+                    
+                    document.getElementById('odSubtotal').textContent = `৳ ${subtotal.toFixed(0)}`;
+                    document.getElementById('odShipping').textContent = `৳ ${shippingFee}`;
+                    document.getElementById('odCOD').textContent = codFee === 0 ? 'Free' : `৳ ${codFee}`;
+                    document.getElementById('odTotal').textContent = `৳ ${total.toFixed(0)}`;
+                    document.getElementById('odPaidAmount').textContent = `৳ ${total.toFixed(0)}`;
+                    document.getElementById('odPaidMethodName').textContent = paymentMethodText;
+                    document.getElementById('odOrderNo').textContent = orderNo;
+                    document.getElementById('odDate').textContent = date;
+                    document.getElementById('odPaymentMethod').textContent = paymentMethodText;
+                    
+                    const printBtn = document.getElementById('odPrintBtn');
+                    if (printBtn && orderDataObj) {
+                        printBtn.style.display = 'block';
+                        printBtn.onclick = () => printOrderInvoice(orderDataObj);
+                    } else if (printBtn) {
+                        printBtn.style.display = 'none';
+                    }
+
+                    document.getElementById('orderDetailsOverlay').classList.add('active');
+                    
+                    cart = cart.filter(item => !item.selected);
+                    syncCart();
+                    updateCartCount();
+                    renderCartItems();
                 }
             }
 
@@ -4945,6 +4840,7 @@
                     document.getElementById('payment-loading-overlay').style.display = 'none';
                     showNotification("পেমেন্ট সফল হয়েছে।");
 
+                    // Set global pending TRX ID and navigate to the internal confirmation page
                     window.pendingTrxId = trxID;
                     navigateTo('trx-confirmation');
 
@@ -5160,6 +5056,7 @@
                         pendingOrderParams = { orderAddress, selectedItems, paymentMethodText, subtotal, shippingFee, codFee, couponDiscount: window.appliedCouponDiscount };
                         document.getElementById('codConfirmOverlay').classList.add('active');
                     } else {
+                        // NATIVE MOBILE BANKING PAYMENT REDIRECT TO INTERNAL PAGE
                         const gatewayObj = paymentGateways.find(g => g.name === paymentMethodText);
                         if (gatewayObj) {
                             const total = finalSubtotal + shippingFee;
@@ -5177,6 +5074,7 @@
                             };
                             sessionStorage.setItem('pendingOrderParams', JSON.stringify(orderParams));
                             
+                            // SET PAYMENT PAGE DATA
                             let themeColor = colorMap[gatewayObj.color] || colorMap['Pink'];
                             document.documentElement.style.setProperty('--payment-theme-color', themeColor);
                             
@@ -5186,6 +5084,7 @@
                             document.getElementById('paymentInstructionAmount').innerText = total.toFixed(0);
                             document.getElementById('paymentAdminNumber').innerText = gatewayObj.mobileNo || 'No Number Provided';
                             
+                            // Dynamic USSD / App Instructions
                             let gwNameLower = gatewayObj.name.toLowerCase();
                             let step1Text = "আপনার মোবাইল ব্যাংকিং অ্যাপে প্রবেশ করুন।";
                             if (gwNameLower.includes('bkash')) {
@@ -5203,9 +5102,9 @@
                             document.getElementById('payInstructionGwName2').innerText = gatewayObj.name;
 
                             if (gatewayObj.banner) {
-                                document.getElementById('paymentGwBanner').src = formatImg(gatewayObj.banner);
+                                document.getElementById('paymentGwBanner').src = gatewayObj.banner;
                                 document.getElementById('paymentGwBanner').style.display = 'inline-block';
-                                document.getElementById('paymentWalletIconImg').src = formatImg(gatewayObj.banner);
+                                document.getElementById('paymentWalletIconImg').src = gatewayObj.banner;
                                 document.getElementById('paymentWalletIconImg').style.display = 'block';
                                 document.getElementById('paymentWalletIconFallback').style.display = 'none';
                             } else {
@@ -5214,6 +5113,7 @@
                                 document.getElementById('paymentWalletIconFallback').style.display = 'block';
                             }
 
+                            // Reset inputs and buttons
                             document.getElementById('paymentTrxID').value = '';
                             const btn = document.getElementById('paymentVerifyBtn');
                             btn.disabled = false;
@@ -5242,6 +5142,7 @@
                     }
                 });
 
+                // Handle Submitting the User Payment Mobile Number after successful payment validation in trx-confirmation page
                 document.getElementById('submitPaymentMobile').addEventListener('click', () => {
                     const userMobile = document.getElementById('userPaymentMobile').value.trim();
                     if(!userMobile) {
@@ -5464,6 +5365,7 @@
                 });
 
                 menuToggle.addEventListener('click', () => { menuToggle.classList.toggle('active'); mobileMenu.classList.toggle('active'); });
+                shopNowBtn.addEventListener('click', () => { document.getElementById('shop').scrollIntoView({ behavior: 'smooth' }); });
 
                 document.addEventListener('click', (e) => {
                     if (mobileMenu.classList.contains('active') && !mobileMenu.contains(e.target) && !menuToggle.contains(e.target)) {
@@ -5569,14 +5471,36 @@
                 });
             }
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            showInitialSkeletons();
-            await loadInitialData();
-            init();
-            
-            // Initial Watermark pass for any pre-loaded images
-            document.querySelectorAll('img').forEach(applyWatermarkToElement);
-        });
+            function startOfferTimer() {
+                const endDate = new Date();
+                endDate.setDate(endDate.getDate() + 3);
+                const timerInterval = setInterval(updateTimer, 1000);
+                function updateTimer() {
+                    const distance = endDate - new Date().getTime();
+                    if (distance < 0) { clearInterval(timerInterval); return; };
+                    const d = Math.floor(distance / (1000*60*60*24)).toString().padStart(2,'0');
+                    const h = Math.floor((distance % (1000*60*60*24))/(1000*60*60)).toString().padStart(2,'0');
+                    const m = Math.floor((distance % (1000*60*60))/(1000*60)).toString().padStart(2,'0');
+                    const s = Math.floor((distance % (1000*60))/1000).toString().padStart(2,'0');
+                    if(document.getElementById('days')) {
+                        document.getElementById('days').textContent = d;
+                        document.getElementById('hours').textContent = h;
+                        document.getElementById('minutes').textContent = m;
+                        document.getElementById('seconds').textContent = s;
+                    }
+                }
+                updateTimer();
+            }
+
+            document.addEventListener('DOMContentLoaded', async () => {
+                showInitialSkeletons();
+                await loadInitialData();
+                init();
+                startOfferTimer();
+                
+                // Initial Watermark pass for any pre-loaded images
+                document.querySelectorAll('img').forEach(applyWatermarkToElement);
+            });
     </script>
 </body>
 </html>
