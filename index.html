@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -112,7 +113,7 @@
         .hero::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); z-index: 1; }
         .hero-content { max-width: 600px; position: relative; z-index: 2; padding: 20px; }
         .hero h1 { font-size: 2.8rem; margin-bottom: 20px; line-height: 1.2; }
-        .hero p { font-size: 1.2rem; margin-bottom: 30px; opacity: 0.9; white-space: pre-wrap; }
+        .hero p { font-size: 1.2rem; margin-bottom: 30px; opacity: 0.9; white-space: pre-wrap; } /* Updated */
         .section-title { text-align: center; font-size: 2rem; margin-bottom: 40px; color: var(--dark); }
         
         .suggested-title { font-size: 1.3rem; font-weight: 400; color: var(--dark); margin-bottom: 25px; text-align: left; padding-bottom: 10px; border-bottom: 1px solid #e5e7eb; }
@@ -389,7 +390,7 @@
         .orders-header span { font-size: 0.85rem; color: var(--gray); cursor: pointer; }
         .orders-status-grid { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
         .order-status-item { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 0.75rem; color: #333; cursor: pointer; position: relative; width: 18%; text-align: center; }
-        .order-status-item i { font-size: 22px; color: var(--primary); margin-bottom: 5px; }
+        .order-status-item i { font-size: 22px; color: var(--primary); margin-bottom: 5px; } /* Updated */
         .order-badge-count { position: absolute; top: -8px; right: 0px; background: #ef4444; color: white; font-size: 0.65rem; font-weight: bold; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1.5px solid white; }
         
         .horizontal-nav { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
@@ -793,7 +794,7 @@
                 <div class="container">
                     <div class="hero-content">
                         <h1 id="heroTitle" class="skeleton skeleton-text" style="height:45px; width: 80%;"></h1>
-                        <p id="heroDesc" class="skeleton skeleton-text short" style="height:20px; white-space: pre-wrap;"></p>
+                        <p id="heroDesc" class="skeleton skeleton-text short" style="height:20px;"></p>
                         <button class="btn btn-secondary btn-shop" style="opacity:0; transition:0.3s;">Start Shoping</button>
                     </div>
                 </div>
@@ -2520,19 +2521,20 @@
 
                 const displayPageAndData = () => {
                     let finalPageId = path.split('?')[0];
-
-                    // URL REVERSE MAPPING FOR CUSTOMIZED URLS
+                    
+                    // Custom URL Mapping
                     if (finalPageId.startsWith('profile/to-pay')) finalPageId = 'profile-topay';
                     else if (finalPageId.startsWith('profile/to-ship')) finalPageId = 'profile-toship';
                     else if (finalPageId.startsWith('profile/to-receive')) finalPageId = 'profile-toreceive';
                     else if (finalPageId.startsWith('profile/to-review')) finalPageId = 'profile-toreview';
                     else if (finalPageId.startsWith('profile/returns')) finalPageId = 'profile-returns';
-                    else if (finalPageId.startsWith('profile/')) finalPageId = 'profile';
-                    else if (finalPageId.match(/^order\/(summary|Summery)\//i)) finalPageId = 'order-summary';
-                    else if (finalPageId.startsWith('order/check-out/')) finalPageId = 'checkout';
-                    else if (finalPageId.startsWith('order/payment/mobile-banking/')) finalPageId = 'payment';
-                    else if (finalPageId.startsWith('order/trx-confirmation/mobile-banking/') || finalPageId.startsWith('order/text-conformation/mobile-banking/')) finalPageId = 'trx-confirmation';
-                    
+                    else if (finalPageId.startsWith('profile/')) finalPageId = 'profile'; 
+                    else if (finalPageId.startsWith('order/summary') || finalPageId.startsWith('order/Summery')) finalPageId = 'order-summary';
+                    else if (finalPageId.startsWith('order/check-out')) finalPageId = 'checkout';
+                    else if (finalPageId.startsWith('order/payment/mobile-banking')) finalPageId = 'payment';
+                    else if (finalPageId.startsWith('order/text-conformation/mobile-banking') || finalPageId.startsWith('order/trx-confirmation/mobile-banking')) finalPageId = 'trx-confirmation';
+                    else if (finalPageId.startsWith('search-result')) finalPageId = 'search-results';
+
                     const profilePages = ['profile', 'profile-location', 'profile-tracking', 'profile-setup', 'profile-topay', 'profile-toship', 'profile-toreceive', 'profile-toreview', 'profile-returns'];
                     
                     if (!isLoggedIn && (profilePages.includes(finalPageId) || finalPageId === 'checkout' || finalPageId === 'order-summary' || finalPageId === 'write-review' || finalPageId === 'payment' || finalPageId === 'trx-confirmation')) {
@@ -2597,41 +2599,40 @@
             
             function navigateTo(path) {
                 path = path.replace(/^\//, '');
+                
+                // Construct Display Path for Custom URLs
+                let displayPath = path;
+                const tempOrdId = sessionStorage.getItem('tempOrderId') || Date.now();
+                
+                if (path === 'profile') {
+                    let uName = currentUser && currentUser.name ? encodeURIComponent(currentUser.name.replace(/\s+/g, '-').toLowerCase()) : 'user';
+                    displayPath = `profile/${uName}`;
+                } else if (path === 'profile-topay') { displayPath = 'profile/to-pay';
+                } else if (path === 'profile-toship') { displayPath = 'profile/to-ship';
+                } else if (path === 'profile-toreceive') { displayPath = 'profile/to-receive';
+                } else if (path === 'profile-toreview') { displayPath = 'profile/to-review';
+                } else if (path === 'profile-returns') { displayPath = 'profile/returns';
+                } else if (path === 'order-summary') {
+                    sessionStorage.setItem('tempOrderId', tempOrdId); 
+                    displayPath = `order/summary/${tempOrdId}`;
+                } else if (path === 'checkout') {
+                    displayPath = `order/check-out/${tempOrdId}`;
+                } else if (path === 'payment') {
+                    let gwNameElement = document.getElementById('paymentGwName');
+                    let gwName = gwNameElement ? gwNameElement.innerText.replace(' Payment', '').replace(/\s+/g, '-').toLowerCase() : 'gw';
+                    displayPath = `order/payment/mobile-banking/${gwName}/${tempOrdId}`;
+                } else if (path === 'trx-confirmation') {
+                    let gwNameElement = document.getElementById('paymentGwName');
+                    let gwName = gwNameElement ? gwNameElement.innerText.replace(' Payment', '').replace(/\s+/g, '-').toLowerCase() : 'gw';
+                    displayPath = `order/text-conformation/mobile-banking/${gwName}/${tempOrdId}`;
+                } else if (path === 'search-results') {
+                    displayPath = `search-result/${encodeURIComponent(lastSearchTerm || 'query')}`;
+                }
+
                 let currentPath = window.location.pathname.substring(1);
                 let currentFull = currentPath + window.location.search;
                 if(currentPath === '' || currentPath === 'user.html') currentFull = 'home';
-
-                let displayPath = path;
-
-                // Generate or retrieve Order ID for URL
-                let currentOrderId = sessionStorage.getItem('currentURLOrderId');
-                if (!currentOrderId || path === 'order-summary') {
-                    currentOrderId = Math.floor(Math.random() * 1000000000000) + 1000000000000;
-                    sessionStorage.setItem('currentURLOrderId', currentOrderId);
-                }
-
-                if (path.startsWith('profile-')) {
-                    const sub = path.split('-')[1];
-                    if (sub === 'topay') displayPath = 'profile/to-pay';
-                    else if (sub === 'toship') displayPath = 'profile/to-ship';
-                    else if (sub === 'toreceive') displayPath = 'profile/to-receive';
-                    else if (sub === 'toreview') displayPath = 'profile/to-review';
-                    else if (sub === 'returns') displayPath = 'profile/returns';
-                } else if (path === 'profile') {
-                    const uName = (currentUser && currentUser.name) ? encodeURIComponent(currentUser.name.replace(/\s+/g, '-').toLowerCase()) : 'user';
-                    displayPath = 'profile/' + uName;
-                } else if (path === 'order-summary') {
-                    displayPath = 'order/summary/' + currentOrderId;
-                } else if (path === 'checkout') {
-                    displayPath = 'order/check-out/' + currentOrderId;
-                } else if (path === 'payment') {
-                    const gwName = document.getElementById('paymentGwName')?.innerText?.split(' ')[0]?.toLowerCase() || 'gateway';
-                    displayPath = 'order/payment/mobile-banking/' + gwName + '/' + currentOrderId;
-                } else if (path === 'trx-confirmation') {
-                    const gwName = document.getElementById('paymentGwName')?.innerText?.split(' ')[0]?.toLowerCase() || 'gateway';
-                    displayPath = 'order/text-conformation/mobile-banking/' + gwName + '/' + currentOrderId; 
-                }
-
+                
                 if (currentFull === displayPath) {
                      handleRouteChange(); return;
                 }
@@ -3056,7 +3057,6 @@
                 } else {
                     showCustomAlert('Unavailable', 'Products in this order are currently out of stock or unavailable.');
                 }
-                }
             };
 
             window.cancelOrder = async function(orderId) {
@@ -3091,6 +3091,7 @@
                 updateCartCount();
                 renderCartItems();
                 window.currentOrderSubtotal = order.amount;
+                sessionStorage.setItem('tempOrderId', orderId); // Use actual order ID in URL for resumptions
                 navigateTo('checkout');
             };
 
@@ -5491,15 +5492,15 @@
                 updateTimer();
             }
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            showInitialSkeletons();
-            await loadInitialData();
-            init();
-            startOfferTimer();
-            
-            // Initial Watermark pass for any pre-loaded images
-            document.querySelectorAll('img').forEach(applyWatermarkToElement);
-        });
+            document.addEventListener('DOMContentLoaded', async () => {
+                showInitialSkeletons();
+                await loadInitialData();
+                init();
+                startOfferTimer();
+                
+                // Initial Watermark pass for any pre-loaded images
+                document.querySelectorAll('img').forEach(applyWatermarkToElement);
+            });
     </script>
 </body>
 </html>
