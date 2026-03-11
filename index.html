@@ -142,17 +142,8 @@
         .price-group { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
         .new-price { font-size: 1.3rem; font-weight: 800; color: #16a34a; line-height: 1; }
         .old-price { font-size: 0.9rem; color: #9ca3af; text-decoration: line-through; font-weight: 500; }
-        .rating-section { display: flex; align-items: center; gap: 8px; margin-bottom: 15px; }
-        .star-set { display: flex; align-items: center; gap: 1px; }
-        .star-set i { color: #f59e0b; font-size: 0.85rem; }
-        .star-set i.far { color: #e5e7eb; }
-        
-        .rater-count { background: #dcfce7; color: #16a34a; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 12px; border: none; }
-        .btn-view { background: #16a34a; border: none; color: white; width: 100%; padding: 10px; font-size: 0.9rem; font-weight: 600; border-radius: 25px; cursor: pointer; transition: 0.2s; text-align: center; margin-top: auto; }
-        .btn-view:hover { background: #15803d; }
 
         .filter-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; position: sticky; top: 70px; z-index: 95; background: #f3f4f6; padding: 15px 0; }
-        .filter-controls .section-title { margin-bottom: 0; text-align: left; }
         .filter-dropdown-container { position: relative; }
         .filter-toggle-btn { display: flex; align-items: center; gap: 8px; font-weight: 600; background: white; padding: 8px 20px; border-radius: 8px; border: 1px solid #ddd; cursor: pointer; color: var(--dark); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .filter-toggle-btn:hover { background: #f9fafb; border-color: var(--primary); color: var(--primary); }
@@ -342,7 +333,11 @@
         .suggestion-item:hover { background-color: #f3f4f6; color: var(--primary); }
         
         .search-results-container { padding: 40px 0; min-height: 80vh; background: #f3f4f6; }
-        
+
+        #searchResultsGrid {
+            display: grid;
+        }
+
         .lightbox { display: none; position: fixed; z-index: 1002; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
         .lightbox-content { margin: auto; display: block; max-width: 90vw; max-height: 90vh; object-fit: contain; transition: transform 0.3s ease; cursor: zoom-in; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; }
         .lightbox-content.zoomed { transform: scale(1.5); cursor: zoom-out; }
@@ -658,16 +653,21 @@
         .payment-ring-2 { stroke-dasharray: 140; stroke-dashoffset: 60; animation: spin 1.2s linear infinite reverse; }
         .payment-ring-3 { stroke-dasharray: 80; stroke-dashoffset: 40; animation: spin 1s linear infinite; }
 
-        @media (max-width: 992px) { .details-wrapper { grid-template-columns: 1fr; } .form-row { flex-direction: column; gap: 0; } }
+        @media (max-width: 992px) { 
+            .details-wrapper { grid-template-columns: 1fr; } 
+            .form-row { flex-direction: column; gap: 0; } 
+        }
         @media (max-width: 768px) { 
             .header-actions .auth-buttons, .search-container { display: none; } 
             .body.user-logged-in .header-actions .auth-buttons { display: none; } 
             .header-actions { gap: 15px; } 
             .hero { aspect-ratio: 3 / 2; } 
             .hero h1 { font-size: 2.2rem; } 
-            .filter-controls { flex-direction: column; align-items: stretch; } 
-            .filter-dropdown-container { align-self: flex-start; }
-            .filter-options-dropdown { left: 0; right: auto; width: 200px; }
+            
+            #searchResultsGrid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 12px;
+            }
         }
         @media (max-width: 576px) { 
             .product-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } 
@@ -804,8 +804,8 @@
 
             <section class="products" id="shop">
                 <div class="container">
-                    <div class="filter-controls">
-                        <h2 class="section-title" id="shopTitle">Featured Products</h2>
+                    <h2 class="section-title" id="shopTitle" style="text-align: left; margin-bottom: 5px; font-size: 1.5rem;">Featured Products</h2>
+                    <div class="filter-controls" style="justify-content: flex-end; padding-top: 10px;">
                         <div class="filter-dropdown-container">
                             <button class="filter-toggle-btn" onclick="toggleFilterDropdown('homeFilterOptions')">
                                 <i class="fas fa-filter"></i> Filter
@@ -945,8 +945,8 @@
                 <div class="back-btn" onclick="goBack()">
                     <i class="fas fa-arrow-left"></i> Back to Search
                 </div>
-                <div class="filter-controls">
-                    <h2 class="section-title" id="searchResultsTitle" style="font-size: 1.5rem;">Search Results</h2>
+                <h2 class="section-title" id="searchResultsTitle" style="font-size: 1.5rem; text-align: left; margin-bottom: 5px;">Search Results</h2>
+                <div class="filter-controls" style="justify-content: flex-end; padding-top: 10px;">
                     <div class="filter-dropdown-container">
                         <button class="filter-toggle-btn" onclick="toggleFilterDropdown('searchFilterOptions')">
                             <i class="fas fa-filter"></i> Filter
@@ -2766,7 +2766,7 @@
 
                     window.userOrders.forEach(order => {
                         let isToPay = order.status === 'Pending Payment' && order.payment !== 'Cash on Delivery';
-                        let isToShip = ['Pending', 'Processing', 'Handed Over'].includes(order.status);
+                        let isToShip = ['Pending', 'Received', 'Packing', 'Handed Over', 'Handover', 'Processing'].includes(order.status);
                         let isToReceive = ['Shipped', 'Delivered'].includes(order.status);
                         let isReturns = ['Cancelled', 'Returned'].includes(order.status);
                         let isToReview = false;
@@ -3268,9 +3268,8 @@
                     const watermark = isOutOfStock ? `<div class="out-of-stock-banner">OUT OF STOCK</div>` : '';
                     const displayImg = (product.images && product.images.length > 0) ? product.images[0] : 'https://via.placeholder.com/200';
 
-                    const rating = product.rating || 0;
-                    const reviewCount = product.reviewCount || 0;
-                    const formattedReviewCount = formatNumberKM(reviewCount);
+                    const salesCount = product.sales || 0;
+                    const formattedSalesCount = formatNumberKM(salesCount);
 
                     productCard.innerHTML = `
                         <div class="img-frame">
@@ -3284,13 +3283,9 @@
                                 <span class="new-price">৳${price.toFixed(0)}</span>
                                 ${originalPrice > price ? `<span class="old-price">৳${originalPrice.toFixed(0)}</span>` : ''}
                             </div>
-                            <div class="rating-section">
-                                <div class="star-set">
-                                    ${getStarRatingHTML(rating)}
-                                </div>
-                                <span class="rater-count">(${formattedReviewCount})</span>
+                            <div class="sales-section" style="font-size: 0.85rem; color: #6b7280; font-weight: 500; margin-top: auto; padding-top: 5px;">
+                                ${formattedSalesCount} sold
                             </div>
-                            <button class="btn-view">View more &rarr;</button>
                         </div>`;
                     
                     productCard.addEventListener('click', () => {
@@ -3348,9 +3343,8 @@
                     const watermark = isOutOfStock ? `<div class="out-of-stock-banner">OUT OF STOCK</div>` : '';
                     const displayImg = (product.images && product.images.length > 0) ? product.images[0] : 'https://via.placeholder.com/200';
 
-                    const rating = product.rating || 0;
-                    const reviewCount = product.reviewCount || 0;
-                    const formattedReviewCount = formatNumberKM(reviewCount);
+                    const salesCount = product.sales || 0;
+                    const formattedSalesCount = formatNumberKM(salesCount);
 
                     card.innerHTML = `
                         <div class="img-frame">
@@ -3364,13 +3358,9 @@
                                 <span class="new-price">৳${price.toFixed(0)}</span>
                                 ${originalPrice > price ? `<span class="old-price">৳${originalPrice.toFixed(0)}</span>` : ''}
                             </div>
-                            <div class="rating-section">
-                                <div class="star-set">
-                                    ${getStarRatingHTML(rating)}
-                                </div>
-                                <span class="rater-count">(${formattedReviewCount})</span>
+                            <div class="sales-section" style="font-size: 0.85rem; color: #6b7280; font-weight: 500; margin-top: auto; padding-top: 5px;">
+                                ${formattedSalesCount} sold
                             </div>
-                            <button class="btn-view">View more &rarr;</button>
                         </div>`;
 
                     card.addEventListener('click', () => {
