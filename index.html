@@ -611,31 +611,36 @@
             font-size: 16px; color: var(--payment-theme-color); background: #f9f9f9; overflow: hidden;
         }
         .payment-wallet-icon img { width: 100%; height: 100%; object-fit: cover;}
+        
+        /* Updated Payment Theme Card styles */
         .payment-theme-card {
             background-color: var(--payment-theme-color); color: white; padding: 25px 20px;
-            border-radius: 8px 8px 0 0; margin-top: 15px; position: relative; transition: background-color 0.3s;
+            border-radius: 8px; margin-top: 15px; position: relative; transition: background-color 0.3s;
         }
         .payment-section-title { text-align: center; margin-bottom: 20px; font-size: 16px; font-weight: 600; letter-spacing: 0.5px;}
         .payment-input-group { margin-bottom: 25px; }
         .payment-input-group input {
             width: 100%; padding: 14px; border-radius: 6px; border: none;
             font-size: 15px; outline: none; text-align: center; font-weight: 600; letter-spacing: 1px;
-            text-transform: uppercase; font-family: 'Poppins', sans-serif;
+            font-family: 'Poppins', sans-serif; color: #333;
         }
-        .payment-input-group input::placeholder { color: #aaa; text-transform: none; letter-spacing: normal; font-weight: 400;}
-        .payment-instructions { list-style: none; font-size: 13.5px; line-height: 1.7; font-family: 'Noto Sans Bengali', 'Poppins', sans-serif; }
-        .payment-instructions li { position: relative; padding-left: 18px; margin-bottom: 12px; }
-        .payment-instructions li::before { content: "\f105"; font-family: "Font Awesome 6 Free"; font-weight: 900; position: absolute; left: 0; font-size: 12px; top: 2px;}
-        .payment-highlight-yellow { color: #ffe600; font-weight: 700; font-size: 15px;}
+        .payment-input-group input::placeholder { color: #aaa; font-weight: 400; letter-spacing: normal;}
+        
+        .payment-instructions { list-style-type: disc; padding-left: 20px; font-size: 13.5px; line-height: 1.7; font-family: 'Noto Sans Bengali', 'Poppins', sans-serif; color: white; margin-bottom: 0;}
+        .payment-instructions li { position: relative; margin-bottom: 12px; }
+        .payment-instructions li::before { display: none; }
+        .payment-highlight-yellow { color: #ffe600; font-weight: 700; font-size: 14px;}
+        
         .payment-copy-btn {
-            background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);
-            color: white; padding: 3px 10px; border-radius: 4px; font-size: 12px;
+            background: transparent; border: 1px solid rgba(255,255,255,0.6);
+            color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;
             cursor: pointer; margin-left: 8px; display: inline-flex; align-items: center; transition: 0.2s;
         }
-        .payment-copy-btn:hover { background: white; color: var(--payment-theme-color); }
+        .payment-copy-btn:hover { background: rgba(255,255,255,0.2); border-color: white; }
+        
         .payment-verify-btn {
             width: 100%; background-color: var(--payment-theme-color); color: white; border: none;
-            padding: 16px; font-size: 16px; font-weight: bold; border-radius: 0 0 8px 8px;
+            padding: 16px; font-size: 16px; font-weight: bold; border-radius: 8px; margin-top: 15px;
             cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             transition: background-color 0.3s, filter 0.3s; font-family: 'Noto Sans Bengali', 'Poppins', sans-serif;
         }
@@ -1084,24 +1089,24 @@
                     <div class="payment-section-title">ট্রানজেকশন আইডি দিন</div>
 
                     <div class="payment-input-group">
-                        <input type="text" id="paymentTrxID" placeholder="Transaction ID (TrxID)">
+                        <input type="text" id="paymentTrxID" placeholder="ট্রানজেকশন আইডি দিন">
                     </div>
 
                     <ul class="payment-instructions">
-                        <li>আপনার মোবাইল ব্যাংকিং অ্যাপে প্রবেশ করুন।</li>
-                        <li>"<span class="payment-highlight-yellow">Send Money</span>" অপশনটি সিলেক্ট করুন।</li>
+                        <li id="payInstructionStep1">আপনার মোবাইল ব্যাংকিং অ্যাপে প্রবেশ করুন।</li>
+                        <li>"<span class="payment-highlight-yellow">Send Money</span>" -এ ক্লিক করুন।</li>
                         <li>
-                            প্রাপক নম্বর হিসেবে এই নম্বরটি লিখুনঃ <br>
-                            <span class="payment-highlight-yellow" id="paymentAdminNumber" style="font-size: 18px; letter-spacing: 1px;">...</span>
-                            <button type="button" class="payment-copy-btn" onclick="copyPaymentNumber()"><i class="fas fa-copy" style="margin-right: 4px;"></i> Copy</button>
+                            প্রাপক নম্বর হিসেবে এই নম্বরটি লিখুন: <span class="payment-highlight-yellow" id="paymentAdminNumber">...</span>
+                            <button type="button" class="payment-copy-btn" onclick="copyPaymentNumber()">Copy</button>
                         </li>
-                        <li>টাকার পরিমাণঃ <span class="payment-highlight-yellow">৳ <span id="paymentInstructionAmount">0.00</span></span></li>
-                        <li>পেমেন্ট সফল হলে প্রাপ্ত মেসেজ বা অ্যাপ থেকে <span class="payment-highlight-yellow">Transaction ID</span> টি কপি করুন।</li>
-                        <li>উপরের বক্সে কপি করা ট্রানজেকশন আইডিটি দিন এবং নিচের <span class="payment-highlight-yellow">VERIFY</span> বাটনে ক্লিক করুন।</li>
+                        <li>টাকার পরিমাণ: <span class="payment-highlight-yellow" id="paymentInstructionAmount">0.00</span></li>
+                        <li>নিশ্চিত করতে এখন আপনার <span id="payInstructionGwName1">Gateway</span> মোবাইল মেনু পিন লিখুন।</li>
+                        <li>সবকিছু ঠিক থাকলে, আপনি <span id="payInstructionGwName2">Gateway</span> থেকে একটি নিশ্চিতকরণ বার্তা পাবেন।</li>
+                        <li>এখন উপরের বক্সে আপনার <span class="payment-highlight-yellow">Transaction ID</span> দিন এবং নিচে <span class="payment-highlight-yellow">VERIFY</span> বাটনে ক্লিক করুন।</li>
                     </ul>
                 </div>
 
-                <button type="button" class="payment-verify-btn" id="paymentVerifyBtn" onclick="initiatePaymentValidation()">VERIFY PAYMENT</button>
+                <button type="button" class="payment-verify-btn" id="paymentVerifyBtn" onclick="initiatePaymentValidation()">VERIFY</button>
             </div>
         </div>
 
@@ -3102,6 +3107,7 @@
 
                 let itemsHtml = '';
                 let maxDelDays = 0;
+                let minDelDays = 999;
 
                 order.cartItems.forEach(item => {
                     const variantText = (item.color && item.color !== 'N/A' ? item.color : '') + (item.size && item.size !== 'N/A' ? `, ${item.size}` : '');
@@ -3119,17 +3125,22 @@
                         </div>
                     `;
                     let prod = products.find(p => p.id === item.id || p.pid === item.pid);
-                    if (prod && prod.deliveryMaxDays) {
-                        if (parseInt(prod.deliveryMaxDays) > maxDelDays) maxDelDays = parseInt(prod.deliveryMaxDays);
+                    if (prod) {
+                        if (prod.deliveryMaxDays && parseInt(prod.deliveryMaxDays) > maxDelDays) maxDelDays = parseInt(prod.deliveryMaxDays);
+                        if (prod.deliveryMinDays && parseInt(prod.deliveryMinDays) < minDelDays) minDelDays = parseInt(prod.deliveryMinDays);
                     }
                 });
 
+                if (minDelDays === 999) minDelDays = 1;
+                if (maxDelDays === 0) maxDelDays = 3;
+
                 let orderDate = new Date(order.date);
                 let approxDateText = "Processing...";
-                if (!isNaN(orderDate.getTime()) && maxDelDays > 0) {
-                    let approxDate = new Date(orderDate);
-                    approxDate.setDate(approxDate.getDate() + maxDelDays);
-                    approxDateText = approxDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                if (!isNaN(orderDate.getTime())) {
+                    let minDate = new Date(orderDate); minDate.setDate(minDate.getDate() + minDelDays);
+                    let maxDate = new Date(orderDate); maxDate.setDate(maxDate.getDate() + maxDelDays);
+                    const formatOpts = { day: 'numeric', month: 'short' };
+                    approxDateText = `${minDate.toLocaleDateString('en-GB', formatOpts)} - ${maxDate.toLocaleDateString('en-GB', formatOpts)}`;
                 }
 
                 let infoHtml = `
@@ -3439,10 +3450,17 @@
                 detailOldPrice.textContent = currentProduct.originalPrice > price ? `৳${currentProduct.originalPrice.toFixed(2)}` : '';
                 document.getElementById('detailSoldCount').textContent = `${formatNumberKM(currentProduct.sales || 0)} sold`;
                 
-                // Set Estimated Delivery Date info from Admin data
-                const minDays = currentProduct.deliveryMinDays || 1;
-                const maxDays = currentProduct.deliveryMaxDays || 3;
-                document.getElementById('estDelDays').textContent = `${minDays} - ${maxDays} Days`;
+                // Set Estimated Delivery Date properly based on today's date
+                const minDays = currentProduct.deliveryMinDays ? parseInt(currentProduct.deliveryMinDays) : 1;
+                const maxDays = currentProduct.deliveryMaxDays ? parseInt(currentProduct.deliveryMaxDays) : 3;
+                
+                let today = new Date();
+                let minDate = new Date(today); minDate.setDate(today.getDate() + minDays);
+                let maxDate = new Date(today); maxDate.setDate(today.getDate() + maxDays);
+                const formatOpts = { day: 'numeric', month: 'short' };
+                const estDateStr = `${minDate.toLocaleDateString('en-GB', formatOpts)} - ${maxDate.toLocaleDateString('en-GB', formatOpts)}`;
+                
+                document.getElementById('estDelDays').textContent = estDateStr;
 
                 detailDesc.innerHTML = currentProduct.description || '';
                 detailDesc.querySelectorAll('a').forEach(a => a.setAttribute('target', '_blank'));
@@ -5017,11 +5035,28 @@
                             document.documentElement.style.setProperty('--payment-theme-color', themeColor);
                             
                             document.getElementById('paymentHeaderTitle').innerText = `${gatewayObj.name} Checkout`;
-                            document.getElementById('paymentGwName').innerText = `Pay via ${gatewayObj.name}`;
+                            document.getElementById('paymentGwName').innerText = `${gatewayObj.name} Payment`;
                             document.getElementById('paymentAmountDisplay').innerText = total.toFixed(0);
                             document.getElementById('paymentInstructionAmount').innerText = total.toFixed(0);
                             document.getElementById('paymentAdminNumber').innerText = gatewayObj.mobileNo || 'No Number Provided';
                             
+                            // Dynamic USSD / App Instructions
+                            let gwNameLower = gatewayObj.name.toLowerCase();
+                            let step1Text = "আপনার মোবাইল ব্যাংকিং অ্যাপে প্রবেশ করুন।";
+                            if (gwNameLower.includes('bkash')) {
+                                step1Text = "*247# ডায়াল করে আপনার bKash মোবাইল মেনুতে যান অথবা bKash অ্যাপে যান।";
+                            } else if (gwNameLower.includes('nagad')) {
+                                step1Text = "*167# ডায়াল করে আপনার Nagad মোবাইল মেনুতে যান অথবা Nagad অ্যাপে যান।";
+                            } else if (gwNameLower.includes('rocket')) {
+                                step1Text = "*322# ডায়াল করে আপনার Rocket মোবাইল মেনুতে যান অথবা Rocket অ্যাপে যান।";
+                            } else if (gwNameLower.includes('upay')) {
+                                step1Text = "*268# ডায়াল করে আপনার Upay মোবাইল মেনুতে যান অথবা Upay অ্যাপে যান।";
+                            }
+                            
+                            document.getElementById('payInstructionStep1').innerText = step1Text;
+                            document.getElementById('payInstructionGwName1').innerText = gatewayObj.name;
+                            document.getElementById('payInstructionGwName2').innerText = gatewayObj.name;
+
                             if (gatewayObj.banner) {
                                 document.getElementById('paymentGwBanner').src = gatewayObj.banner;
                                 document.getElementById('paymentGwBanner').style.display = 'inline-block';
@@ -5038,7 +5073,7 @@
                             document.getElementById('paymentTrxID').value = '';
                             const btn = document.getElementById('paymentVerifyBtn');
                             btn.disabled = false;
-                            btn.innerText = "VERIFY PAYMENT";
+                            btn.innerText = "VERIFY";
 
                             navigateTo('payment');
                         } else {
@@ -5402,27 +5437,26 @@
                     const d = Math.floor(distance / (1000*60*60*24)).toString().padStart(2,'0');
                     const h = Math.floor((distance % (1000*60*60*24))/(1000*60*60)).toString().padStart(2,'0');
                     const m = Math.floor((distance % (1000*60*60))/(1000*60)).toString().padStart(2,'0');
-                    const s = Math.floor((distance % (1000*60))/1000).toString().padStart(2,'0');
-                    
+const s = Math.floor((distance % (1000*60))/1000).toString().padStart(2,'0');
                     if(document.getElementById('days')) {
-                        document.getElementById('days').textContent = d;
-                        document.getElementById('hours').textContent = h;
-                        document.getElementById('minutes').textContent = m;
-                        document.getElementById('seconds').textContent = s;
-                    }
+                    document.getElementById('days').textContent = d;
+                    document.getElementById('hours').textContent = h;
+                    document.getElementById('minutes').textContent = m;
+                    document.getElementById('seconds').textContent = s;
                 }
-                updateTimer();
             }
+            updateTimer();
+        }
 
-            document.addEventListener('DOMContentLoaded', async () => {
-                showInitialSkeletons();
-                await loadInitialData();
-                init();
-                startOfferTimer();
-                
-                // Initial Watermark pass for any pre-loaded images
-                document.querySelectorAll('img').forEach(applyWatermarkToElement);
-            });
+        document.addEventListener('DOMContentLoaded', async () => {
+            showInitialSkeletons();
+            await loadInitialData();
+            init();
+            startOfferTimer();
+            
+            // Initial Watermark pass for any pre-loaded images
+            document.querySelectorAll('img').forEach(applyWatermarkToElement);
+        });
     </script>
 </body>
 </html>
