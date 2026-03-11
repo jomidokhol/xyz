@@ -14,7 +14,9 @@
     <meta name="twitter:card" content="summary_large_image">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Added Noto Sans Bengali for Payment Page -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Material icons for Product Card -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,1,0" />
     
     <!-- Firebase SDK Compat Version -->
@@ -24,8 +26,6 @@
     
     <!-- JsBarcode Library for Barcode Generation -->
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-    <!-- HTML2Canvas for JPG Download (Added for Change #4) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <!-- Media Caching Service Worker -->
     <script>
@@ -60,6 +60,7 @@
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* Theme Color Updated to Dark Green */
         :root { --primary: #166534; --secondary: #f97316; --dark: #1f2937; --gray: #6b7280; --light: #f9fafb; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --transition: all 0.3s ease; --payment-theme-color: #d12053; }
         body { font-family: 'Poppins', sans-serif; color: var(--dark); background-color: var(--light); line-height: 1.6; overflow-x: hidden; }
         .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
@@ -128,6 +129,7 @@
         .products { padding: 40px 0; background-color: #f3f4f6; }
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; justify-items: center; }
         
+        /* Updated Shadows and Colors for Dark Green Theme & Product Card UI */
         .product-card { width: 100%; max-width: 240px; background: white; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.2s ease-in-out; border: 1px solid rgba(22, 101, 52, 0.1); overflow: hidden; display: flex; flex-direction: column; cursor: pointer; padding: 10px; }
         .product-card:hover { transform: translateY(-5px); box-shadow: 0 24px 40px -12px #16653455; }
         .img-frame { position: relative; aspect-ratio: 6 / 8; background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 8px; }
@@ -199,6 +201,7 @@
         .variant-option .var-stock { font-size: 0.7rem; color: var(--gray); font-weight: 500; }
         .variant-option .var-discount { position: absolute; top: 0; right: 0; background: #ef4444; color: white; font-size: 0.65rem; font-weight: bold; padding: 2px 6px; border-bottom-left-radius: 8px; z-index: 2; box-shadow: -2px 2px 4px rgba(0,0,0,0.1);}
         
+        /* Updated overlay colors */
         .options-panel-overlay, .custom-alert-overlay, .welcome-overlay, .order-details-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.25); z-index: 1002; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .welcome-overlay { z-index: 3000; display: none; align-items: center; justify-content: center; }
         .order-details-overlay { z-index: 2500; display: none; align-items: flex-end; justify-content: center; }
@@ -555,6 +558,7 @@
         .wait-text::after { content: ''; animation: dots 1.5s steps(4, end) infinite; }
         @keyframes dots { 0%, 20% { content: ''; } 40% { content: '..'; } 60% { content: '..'; } 80%, 100% { content: '...'; } }
 
+        /* Order Tracking Overlay CSS */
         .tracking-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.25); z-index: 2550; opacity: 0; pointer-events: none; transition: 0.3s ease; }
         .tracking-overlay.active { opacity: 1; pointer-events: auto; }
         
@@ -572,6 +576,7 @@
         .track-desc { font-size: 0.8rem; color: #9ca3af; line-height: 1.3; }
         .track-time { text-align: right; font-size: 0.75rem; color: #6b7280; width: 65px; line-height: 1.2; font-weight: 500; }
 
+        /* --- New Mobile Banking Payment Page Styles --- */
         .payment-page-bg {
             background-color: #f4f6f9;
             background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
@@ -607,6 +612,7 @@
         }
         .payment-wallet-icon img { width: 100%; height: 100%; object-fit: cover;}
         
+        /* Updated Payment Theme Card styles */
         .payment-theme-card {
             background-color: var(--payment-theme-color); color: white; padding: 25px 20px;
             border-radius: 8px; margin-top: 15px; position: relative; transition: background-color 0.3s;
@@ -787,7 +793,8 @@
                 <div class="container">
                     <div class="hero-content">
                         <h1 id="heroTitle" class="skeleton skeleton-text" style="height:45px; width: 80%;"></h1>
-                        <p id="heroDesc" class="skeleton skeleton-text short" style="height:20px;"></p>
+                        <p id="heroDesc" class="skeleton skeleton-text short" style="height:20px; white-space: pre-wrap;"></p>
+                        <button class="btn btn-secondary btn-shop" style="opacity:0; transition:0.3s;">Start Shoping</button>
                     </div>
                 </div>
             </section>
@@ -990,10 +997,6 @@
                             <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #555;">
                                 <span>Merchandise Subtotal:</span>
                                 <span id="osSubtotal">৳0.00</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #555;">
-                                <span>VAT (2%):</span>
-                                <span id="osVat">৳0.00</span>
                             </div>
                             <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #10b981;">
                                 <span>Discount:</span>
@@ -1625,8 +1628,7 @@
             <div class="od-section" style="border-bottom: 8px solid #f5f5f5;">
                 <h4 style="margin-bottom: 15px; font-size: 1rem;">Order Summary</h4>
                 <div class="od-row"><span>Subtotal</span><span id="odSubtotal"></span></div>
-                <div class="od-row"><span>VAT (2%)</span><span id="odVat"></span></div>
-                <div class="od-row" id="odCouponRow" style="color:#10b981;"><span>Discount</span><span id="odSummaryDiscount"></span></div>
+                <div class="od-row" id="odCouponRow" style="display:none; color:#10b981;"><span>Coupon Discount</span><span id="odCoupon"></span></div>
                 <div class="od-row"><span>Shipping Fee</span><span id="odShipping"></span></div>
                 <div class="od-row"><span>COD Handling Fee</span><span id="odCOD"></span></div>
                 <div class="od-total od-row"><span style="color:#333;">Total</span><span id="odTotal"></span></div>
@@ -1636,15 +1638,13 @@
                 <div class="od-row"><span id="odPaidMethodName">Cash on Delivery</span><span id="odPaidAmount"></span></div>
             </div>
             <div class="od-section od-meta-section">
-                <!-- Meta data will be injected dynamically -->
+                <div class="od-row"><span>Order No.</span><span><span id="odOrderNo" style="color:#333;font-weight:600;"></span> <a href="#" id="odCopy" style="color:var(--primary);text-decoration:none;margin-left:5px;font-weight:600;">Copy</a></span></div>
+                <div class="od-row"><span>Placed on</span><span id="odDate" style="color:#333;"></span></div>
+                <div class="od-row"><span>Paid by</span><span id="odPaymentMethod" style="color:#333;"></span></div>
             </div>
-            <div style="text-align: center; margin: 20px 0;">
-                <svg id="odBarcode"></svg>
-            </div>
-            <div class="od-actions" style="display:flex; gap:10px;">
-                <button class="btn btn-primary" id="odContinueShopping" style="flex:1;">Continue Shopping</button>
-                <button class="btn btn-outline" id="odPrintBtn" style="flex:1; display: none;"><i class="fas fa-print"></i> Print</button>
-                <button class="btn btn-outline" id="odDownloadJpgBtn" style="flex:1; display: none;"><i class="fas fa-download"></i> Download JPG</button>
+            <div class="od-actions">
+                <button class="btn btn-primary" id="odContinueShopping" style="width: 100%; margin-bottom: 10px;">Continue Shopping</button>
+                <button class="btn btn-outline" id="odPrintBtn" style="width: 100%; display: none;"><i class="fas fa-print"></i> Print / Download PDF</button>
             </div>
         </div>
     </div>
@@ -1846,6 +1846,7 @@
             const checkoutForm = document.getElementById('checkoutForm');
             const menuToggle = document.getElementById('menuToggle');
             const mobileMenu = document.getElementById('mobileMenu');
+            const shopNowBtn = document.querySelector('.btn-shop');
             const heroBg = document.getElementById('heroBg');
 
             const detailMainImg = document.getElementById('detailMainImg');
@@ -2093,6 +2094,7 @@
                         
                         document.getElementById('heroTitle').classList.remove('skeleton');
                         document.getElementById('heroDesc').classList.remove('skeleton');
+                        document.querySelector('.btn-shop').style.opacity = '1';
                         
                         document.getElementById('heroTitle').textContent = data.heroTitle || '';
                         document.getElementById('heroDesc').textContent = data.heroDesc || '';
@@ -2383,6 +2385,7 @@
             function renderOrderSummary() {
                 window.appliedCouponDiscount = 0;
                 document.getElementById('couponCode').value = '';
+                document.getElementById('osDiscount').textContent = `-৳0.00`;
                 
                 const addrDetails = document.getElementById('osAddressDetails');
                 const addrBadge = document.getElementById('osAddressBadge');
@@ -2442,7 +2445,7 @@
                     
                     container.innerHTML += `
                         <div class="summary-item">
-                            <img src="${item.image || 'https://via.placeholder.com/80'}" alt="">
+                            <img src="${item.image}" alt="">
                             <div class="summary-item-info">
                                 <div class="summary-item-title">${item.name}</div>
                                 ${variantText ? `<div class="summary-item-meta">${variantText}</div>` : ''}
@@ -2456,18 +2459,11 @@
                     `;
                 });
                 
-                let vatAmount = subtotal * 0.02;
-                window.appliedCouponDiscount = vatAmount; // Discount is equal to VAT
-                
-                document.getElementById('osSubtotal').textContent = `৳${subtotal.toFixed(2)}`;
-                document.getElementById('osVat').textContent = `+৳${vatAmount.toFixed(2)}`;
-                document.getElementById('osDiscount').textContent = `-৳${window.appliedCouponDiscount.toFixed(2)}`;
+                document.getElementById('osSubtotal').textContent = `৳${subtotal.toFixed(0)}`;
                 document.getElementById('osShippingFee').textContent = `৳${shippingFee.toFixed(0)}`;
-                
                 window.currentOrderSubtotal = subtotal;
                 
-                // Final calculation: Subtotal + VAT - Discount + Shipping. Since VAT = Discount, it equals Subtotal + Shipping.
-                const finalTotal = subtotal + vatAmount - window.appliedCouponDiscount + shippingFee; 
+                const finalTotal = subtotal + shippingFee; 
                 document.getElementById('osTotal').textContent = `৳${finalTotal.toFixed(0)}`;
                 
                 document.getElementById('osProceedBtn').onclick = () => {
@@ -2487,13 +2483,18 @@
                 }
                 const shippingFee = addr.region === 'Outside Dhaka' ? appDeliveryOutside : appDeliveryInside;
                 const subtotal = window.currentOrderSubtotal || 0;
-                
-                let vatAmount = subtotal * 0.02;
-                const discount = vatAmount; 
-                
-                const total = subtotal + vatAmount - discount + shippingFee;
+                const discount = window.appliedCouponDiscount || 0;
+                const total = subtotal - discount + shippingFee;
                 
                 document.getElementById('paymentSubtotal').textContent = `৳${subtotal.toFixed(0)}`;
+                if(discount > 0) {
+                    if(!document.getElementById('paymentDiscount')) {
+                        const discountHTML = `<div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #10b981;"><span>Discount</span><span id="paymentDiscount">-৳${discount.toFixed(0)}</span></div>`;
+                        document.getElementById('paymentSubtotal').parentElement.insertAdjacentHTML('afterend', discountHTML);
+                    } else {
+                        document.getElementById('paymentDiscount').textContent = `-৳${discount.toFixed(0)}`;
+                    }
+                }
                 
                 if(!document.getElementById('paymentShipping')) {
                     const shippingHTML = `<div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #555;"><span>Shipping Fee Total</span><span id="paymentShipping">৳${shippingFee.toFixed(0)}</span></div>`;
@@ -2519,20 +2520,19 @@
 
                 const displayPageAndData = () => {
                     let finalPageId = path.split('?')[0];
-                    
-                    // Custom URL Mapping
+
+                    // URL REVERSE MAPPING FOR CUSTOMIZED URLS
                     if (finalPageId.startsWith('profile/to-pay')) finalPageId = 'profile-topay';
                     else if (finalPageId.startsWith('profile/to-ship')) finalPageId = 'profile-toship';
                     else if (finalPageId.startsWith('profile/to-receive')) finalPageId = 'profile-toreceive';
                     else if (finalPageId.startsWith('profile/to-review')) finalPageId = 'profile-toreview';
                     else if (finalPageId.startsWith('profile/returns')) finalPageId = 'profile-returns';
-                    else if (finalPageId.startsWith('profile/')) finalPageId = 'profile'; 
-                    else if (finalPageId.startsWith('order/summary') || finalPageId.startsWith('order/Summery')) finalPageId = 'order-summary';
-                    else if (finalPageId.startsWith('order/check-out')) finalPageId = 'checkout';
-                    else if (finalPageId.startsWith('order/payment/mobile-banking')) finalPageId = 'payment';
-                    else if (finalPageId.startsWith('order/text-conformation/mobile-banking') || finalPageId.startsWith('order/trx-confirmation/mobile-banking')) finalPageId = 'trx-confirmation';
-                    else if (finalPageId.startsWith('search-result')) finalPageId = 'search-results';
-
+                    else if (finalPageId.startsWith('profile/')) finalPageId = 'profile';
+                    else if (finalPageId.match(/^order\/(summary|Summery)\//i)) finalPageId = 'order-summary';
+                    else if (finalPageId.startsWith('order/check-out/')) finalPageId = 'checkout';
+                    else if (finalPageId.startsWith('order/payment/mobile-banking/')) finalPageId = 'payment';
+                    else if (finalPageId.startsWith('order/trx-confirmation/mobile-banking/') || finalPageId.startsWith('order/text-conformation/mobile-banking/')) finalPageId = 'trx-confirmation';
+                    
                     const profilePages = ['profile', 'profile-location', 'profile-tracking', 'profile-setup', 'profile-topay', 'profile-toship', 'profile-toreceive', 'profile-toreview', 'profile-returns'];
                     
                     if (!isLoggedIn && (profilePages.includes(finalPageId) || finalPageId === 'checkout' || finalPageId === 'order-summary' || finalPageId === 'write-review' || finalPageId === 'payment' || finalPageId === 'trx-confirmation')) {
@@ -2597,40 +2597,41 @@
             
             function navigateTo(path) {
                 path = path.replace(/^\//, '');
-                
-                // Construct Display Path for Custom URLs
-                let displayPath = path;
-                const tempOrdId = sessionStorage.getItem('tempOrderId') || Date.now();
-                
-                if (path === 'profile') {
-                    let uName = currentUser && currentUser.name ? encodeURIComponent(currentUser.name.replace(/\s+/g, '-').toLowerCase()) : 'user';
-                    displayPath = `profile/${uName}`;
-                } else if (path === 'profile-topay') { displayPath = 'profile/to-pay';
-                } else if (path === 'profile-toship') { displayPath = 'profile/to-ship';
-                } else if (path === 'profile-toreceive') { displayPath = 'profile/to-receive';
-                } else if (path === 'profile-toreview') { displayPath = 'profile/to-review';
-                } else if (path === 'profile-returns') { displayPath = 'profile/returns';
-                } else if (path === 'order-summary') {
-                    sessionStorage.setItem('tempOrderId', tempOrdId); 
-                    displayPath = `order/summary/${tempOrdId}`;
-                } else if (path === 'checkout') {
-                    displayPath = `order/check-out/${tempOrdId}`;
-                } else if (path === 'payment') {
-                    let gwNameElement = document.getElementById('paymentGwName');
-                    let gwName = gwNameElement ? gwNameElement.innerText.replace(' Payment', '').replace(/\s+/g, '-').toLowerCase() : 'gw';
-                    displayPath = `order/payment/mobile-banking/${gwName}/${tempOrdId}`;
-                } else if (path === 'trx-confirmation') {
-                    let gwNameElement = document.getElementById('paymentGwName');
-                    let gwName = gwNameElement ? gwNameElement.innerText.replace(' Payment', '').replace(/\s+/g, '-').toLowerCase() : 'gw';
-                    displayPath = `order/text-conformation/mobile-banking/${gwName}/${tempOrdId}`;
-                } else if (path === 'search-results') {
-                    displayPath = `search-result/${encodeURIComponent(lastSearchTerm || 'query')}`;
-                }
-
                 let currentPath = window.location.pathname.substring(1);
                 let currentFull = currentPath + window.location.search;
                 if(currentPath === '' || currentPath === 'user.html') currentFull = 'home';
-                
+
+                let displayPath = path;
+
+                // Generate or retrieve Order ID for URL
+                let currentOrderId = sessionStorage.getItem('currentURLOrderId');
+                if (!currentOrderId || path === 'order-summary') {
+                    currentOrderId = Math.floor(Math.random() * 1000000000000) + 1000000000000;
+                    sessionStorage.setItem('currentURLOrderId', currentOrderId);
+                }
+
+                if (path.startsWith('profile-')) {
+                    const sub = path.split('-')[1];
+                    if (sub === 'topay') displayPath = 'profile/to-pay';
+                    else if (sub === 'toship') displayPath = 'profile/to-ship';
+                    else if (sub === 'toreceive') displayPath = 'profile/to-receive';
+                    else if (sub === 'toreview') displayPath = 'profile/to-review';
+                    else if (sub === 'returns') displayPath = 'profile/returns';
+                } else if (path === 'profile') {
+                    const uName = (currentUser && currentUser.name) ? encodeURIComponent(currentUser.name.replace(/\s+/g, '-').toLowerCase()) : 'user';
+                    displayPath = 'profile/' + uName;
+                } else if (path === 'order-summary') {
+                    displayPath = 'order/summary/' + currentOrderId;
+                } else if (path === 'checkout') {
+                    displayPath = 'order/check-out/' + currentOrderId;
+                } else if (path === 'payment') {
+                    const gwName = document.getElementById('paymentGwName')?.innerText?.split(' ')[0]?.toLowerCase() || 'gateway';
+                    displayPath = 'order/payment/mobile-banking/' + gwName + '/' + currentOrderId;
+                } else if (path === 'trx-confirmation') {
+                    const gwName = document.getElementById('paymentGwName')?.innerText?.split(' ')[0]?.toLowerCase() || 'gateway';
+                    displayPath = 'order/text-conformation/mobile-banking/' + gwName + '/' + currentOrderId; 
+                }
+
                 if (currentFull === displayPath) {
                      handleRouteChange(); return;
                 }
@@ -2770,73 +2771,16 @@
                     const discount = oldPrice > price ? Math.round(((oldPrice-price)/oldPrice)*100) : 0;
                     const discountHtml = discount > 0 ? `<div class="rv-discount"><i class="fas fa-arrow-down" style="font-size:0.6rem;"></i> ${discount}%</div>` : '';
                     const oldPriceHtml = oldPrice > price ? `<span class="rv-old-price">৳${oldPrice}</span>` : '';
-                    const displayImg = (p.images && p.images.length > 0) ? p.images[0] : 'https://via.placeholder.com/150';
                     
                     grid.innerHTML += `
                         <div class="rv-card" onclick="navigateToProduct('${p.id}')">
                             ${discountHtml}
-                            <img src="${displayImg}">
+                            <img src="${p.images ? p.images[0] : ''}">
                             <div class="rv-price">৳${price}<br>${oldPriceHtml}</div>
                         </div>
                     `;
                 });
             }
-
-            const processOrderUpdates = async (order) => {
-                if (order.status === 'Received' && !order.stockUpdated) {
-                    try {
-                        const orderRef = db.collection('orders').doc(order.id);
-                        await db.runTransaction(async (transaction) => {
-                            const orderDoc = await transaction.get(orderRef);
-                            if(orderDoc.exists && orderDoc.data().stockUpdated) return;
-
-                            for(let item of order.cartItems) {
-                                const prodRef = db.collection('products').doc(item.id || item.pid);
-                                const pDoc = await transaction.get(prodRef);
-                                if(pDoc.exists) {
-                                    let pData = pDoc.data();
-                                    let newTotalStock = Math.max(0, (pData.stock || 0) - item.qty);
-                                    let updates = { stock: newTotalStock };
-
-                                    if(pData.variants && pData.variants.length > 0) {
-                                        let updatedVariants = pData.variants.map(v => {
-                                            if(v.color === item.color && (item.size === 'N/A' || !item.size || v.sizes === undefined)) {
-                                                return {...v, stock: Math.max(0, v.stock - item.qty)};
-                                            } else if (v.color === item.color && item.size && v.sizes) {
-                                                let updatedSizes = v.sizes.map(s => s.size === item.size ? {...s, stock: Math.max(0, s.stock - item.qty)} : s);
-                                                let vStock = updatedSizes.reduce((sum, s) => sum + s.stock, 0);
-                                                return {...v, sizes: updatedSizes, stock: vStock};
-                                            }
-                                            return v;
-                                        });
-                                        updates.variants = updatedVariants;
-                                    }
-                                    transaction.update(prodRef, updates);
-                                }
-                            }
-                            transaction.update(orderRef, { stockUpdated: true });
-                        });
-                        order.stockUpdated = true;
-                    } catch(err) { console.log("Stock Update Failed:", err); }
-                }
-
-                if (order.status === 'Delivered' && !order.salesUpdated) {
-                    try {
-                        const orderRef = db.collection('orders').doc(order.id);
-                        await db.runTransaction(async (transaction) => {
-                            const orderDoc = await transaction.get(orderRef);
-                            if(orderDoc.exists && orderDoc.data().salesUpdated) return;
-
-                            for(let item of order.cartItems) {
-                                const prodRef = db.collection('products').doc(item.id || item.pid);
-                                transaction.update(prodRef, { sales: firebase.firestore.FieldValue.increment(item.qty) });
-                            }
-                            transaction.update(orderRef, { salesUpdated: true });
-                        });
-                        order.salesUpdated = true;
-                    } catch(err) { console.log("Sales Update Failed:", err); }
-                }
-            };
             
             async function fetchUserOrders() {
                 if (!isLoggedIn || !currentUser) return;
@@ -2868,9 +2812,6 @@
                     let recentUpdates = [];
 
                     window.userOrders.forEach(order => {
-                        // Check and Process DB Updates for Stock and Sales
-                        processOrderUpdates(order);
-
                         let isToPay = order.status === 'Pending Payment' && order.payment !== 'Cash on Delivery';
                         let isToShip = ['Pending', 'Received', 'Packing', 'Handed Over', 'Handover', 'Processing'].includes(order.status);
                         let isToReceive = ['Shipped', 'Delivered'].includes(order.status);
@@ -2952,7 +2893,7 @@
 
                                 itemsHtml += `
                                     <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:12px;">
-                                        <img src="${item.image || 'https://via.placeholder.com/65'}" style="width:65px; height:65px; object-fit:cover; border-radius:6px; cursor:pointer; border: 1px solid #ddd;" onclick="navigateToProduct('${navId}')">
+                                        <img src="${item.image}" style="width:65px; height:65px; object-fit:cover; border-radius:6px; cursor:pointer; border: 1px solid #ddd;" onclick="navigateToProduct('${navId}')">
                                         <div style="flex:1;">
                                             <div style="font-weight:600; font-size:0.95rem; cursor:pointer; color: var(--dark); line-height:1.2;" onclick="navigateToProduct('${navId}')" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--dark)'">${item.name}${vStr}</div>
                                             <div style="font-size:0.85rem; color:var(--gray); margin-top:4px;">Qty: ${item.qty} | ৳${item.price}</div>
@@ -3016,7 +2957,7 @@
                         if (order.cartItems.length > 0 && ['Pending', 'Pending Payment', 'Processing', 'Handed Over', 'Shipped', 'Delivered'].includes(order.status)) {
                             let snippetText = order.status === 'Delivered' ? 'Package delivered!' : 'Your package is on the way.';
                             recentUpdates.push({
-                                image: order.cartItems[0].image || 'https://via.placeholder.com/40',
+                                image: order.cartItems[0].image,
                                 status: order.status,
                                 text: snippetText,
                                 date: order.date.split(' ')[0]
@@ -3115,6 +3056,7 @@
                 } else {
                     showCustomAlert('Unavailable', 'Products in this order are currently out of stock or unavailable.');
                 }
+                }
             };
 
             window.cancelOrder = async function(orderId) {
@@ -3149,7 +3091,6 @@
                 updateCartCount();
                 renderCartItems();
                 window.currentOrderSubtotal = order.amount;
-                sessionStorage.setItem('tempOrderId', orderId); // Use actual order ID in URL for resumptions
                 navigateTo('checkout');
             };
 
@@ -3158,13 +3099,11 @@
                 if(!order) return;
                 
                 let itemsHtml = '';
-                let calcSubtotal = 0;
                 order.cartItems.forEach(item => {
-                    calcSubtotal += (item.price * item.qty);
                     const variantText = (item.color && item.color !== 'N/A' ? item.color : '') + (item.size && item.size !== 'N/A' ? `, ${item.size}` : '');
                     itemsHtml += `
                         <div class="od-item">
-                            <img src="${item.image || 'https://via.placeholder.com/80'}" alt="">
+                            <img src="${item.image}" alt="">
                             <div class="od-item-info">
                                 <h4>${item.name}</h4>
                                 ${variantText ? `<div class="od-item-variant">${variantText}</div>` : ''}
@@ -3177,63 +3116,25 @@
                     `;
                 });
                 
-                let vatAmount = calcSubtotal * 0.02;
-                let discountAmount = vatAmount;
-                
-                document.querySelector('.od-actions').style.display = 'flex'; 
+                document.querySelector('.od-actions').style.display = 'block'; 
                 
                 document.getElementById('odBody').innerHTML = itemsHtml;
-                
-                document.getElementById('odSubtotal').textContent = `৳ ${calcSubtotal.toFixed(2)}`;
-                document.getElementById('odVat').textContent = `+৳ ${vatAmount.toFixed(2)}`;
-                document.getElementById('odSummaryDiscount').textContent = `-৳ ${discountAmount.toFixed(2)}`;
-                
-                // Keep Shipping & COD logic intact visually if they were in the original flow
+                document.getElementById('odSubtotal').parentNode.style.display = 'none';
                 document.getElementById('odShipping').parentNode.style.display = 'none';
                 document.getElementById('odCOD').parentNode.style.display = 'none';
+                if(document.getElementById('odCoupon')) document.getElementById('odCoupon').parentNode.style.display = 'none';
                 
                 document.getElementById('odTotal').textContent = `৳ ${order.amount}`;
                 document.getElementById('odPaidAmount').textContent = `৳ ${order.amount}`;
                 document.getElementById('odPaidMethodName').textContent = order.payment || 'N/A';
-                
-                let metaHtml = `
-                    <div class="od-row"><span>Order No.</span><span><span id="odOrderNo" style="color:#333;font-weight:600;">${order.id}</span> <a href="#" id="odCopy" style="color:var(--primary);text-decoration:none;margin-left:5px;font-weight:600;">Copy</a></span></div>
-                    <div class="od-row"><span>Placed on</span><span id="odDate" style="color:#333;">${order.date}</span></div>
-                    <div class="od-row"><span>Payment Method</span><span id="odPaymentMethod" style="color:#333;">${order.payment || 'N/A'}</span></div>
-                `;
-                if (order.paymentMobile) metaHtml += `<div class="od-row"><span>Gateway Number</span><span style="color:#333;">${order.paymentMobile}</span></div>`;
-                if (order.trxId) metaHtml += `<div class="od-row"><span>TrxID</span><span style="color:#333;">${order.trxId}</span></div>`;
-                
-                document.querySelector('.od-meta-section').innerHTML = metaHtml;
-                
-                // Initialize Barcode
-                try {
-                    JsBarcode("#odBarcode", order.id, { format: "CODE128", width: 1.5, height: 40, displayValue: true });
-                } catch(e) {}
+                document.getElementById('odOrderNo').textContent = order.id;
+                document.getElementById('odDate').textContent = order.date;
+                document.getElementById('odPaymentMethod').textContent = order.payment || 'N/A';
                 
                 const printBtn = document.getElementById('odPrintBtn');
-                const downloadJpgBtn = document.getElementById('odDownloadJpgBtn');
-                if(printBtn && downloadJpgBtn) {
+                if(printBtn) {
                     printBtn.style.display = 'block';
-                    downloadJpgBtn.style.display = 'block';
-                    
                     printBtn.onclick = () => printOrderInvoice(orderId);
-                    
-                    downloadJpgBtn.onclick = () => {
-                        const modalBody = document.querySelector('#orderDetailsOverlay .order-details-modal');
-                        const actionsDiv = modalBody.querySelector('.od-actions');
-                        actionsDiv.style.display = 'none';
-                        document.getElementById('closeOrderDetails').style.display = 'none';
-                        
-                        html2canvas(modalBody, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
-                            actionsDiv.style.display = 'flex';
-                            document.getElementById('closeOrderDetails').style.display = 'block';
-                            const link = document.createElement('a');
-                            link.download = `Invoice_${order.id}.jpg`;
-                            link.href = canvas.toDataURL('image/jpeg', 0.9);
-                            link.click();
-                        });
-                    };
                 }
 
                 document.getElementById('orderDetailsOverlay').classList.add('active');
@@ -3255,7 +3156,7 @@
                     const variantText = (item.color && item.color !== 'N/A' ? item.color : '') + (item.size && item.size !== 'N/A' ? `, ${item.size}` : '');
                     itemsHtml += `
                         <div style="display:flex; gap:12px; margin-bottom:10px;">
-                            <img src="${item.image || 'https://via.placeholder.com/60'}" style="width:60px; height:60px; object-fit:cover; border-radius:6px; border:1px solid #eee;">
+                            <img src="${item.image}" style="width:60px; height:60px; object-fit:cover; border-radius:6px; border:1px solid #eee;">
                             <div style="flex:1;">
                                 <h4 style="font-size:0.9rem; margin:0 0 4px 0; color:#333; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${item.name}</h4>
                                 ${variantText ? `<div style="font-size:0.75rem; color:#666; background:#f5f5f5; display:inline-block; padding:2px 6px; border-radius:4px; margin-bottom:4px;">${variantText}</div>` : ''}
@@ -3668,12 +3569,12 @@
                     gatewaysContainer.innerHTML = gatewayHtml;
                 }
                 
-                detailMainImg.src = currentProduct.images[0] || 'https://via.placeholder.com/400';
+                detailMainImg.src = currentProduct.images[0];
                 detailThumbnails.innerHTML = '';
                 
                 currentProduct.images.forEach((imgSrc, index) => {
                     const thumb = document.createElement('img');
-                    thumb.src = imgSrc || 'https://via.placeholder.com/80';
+                    thumb.src = imgSrc;
                     thumb.className = `thumbnail ${index === 0 ? 'active' : ''}`;
                     thumb.onclick = () => {
                         if (imageSliderInterval) clearInterval(imageSliderInterval);
@@ -3845,7 +3746,7 @@
                 currentReviewRating = 5;
 
                 document.getElementById('wrProductName').textContent = prod.name;
-                document.getElementById('wrProductImg').src = prod.images && prod.images.length > 0 ? prod.images[0] : 'https://via.placeholder.com/60';
+                document.getElementById('wrProductImg').src = prod.images && prod.images.length > 0 ? prod.images[0] : '';
                 
                 const stars = document.querySelectorAll('#reviewStarInput i');
                 stars.forEach(s => s.classList.remove('active'));
@@ -3954,7 +3855,7 @@
                 document.getElementById('vlProductName').textContent = currentProduct.name;
                 const defaultPrice = currentProduct.variants && currentProduct.variants.length > 0 ? currentProduct.variants[0].price : currentProduct.price;
                 document.getElementById('vlProductPrice').textContent = `৳${defaultPrice.toFixed(2)}`;
-                document.getElementById('vlProductImg').src = currentProduct.images[0] || 'https://via.placeholder.com/60';
+                document.getElementById('vlProductImg').src = currentProduct.images[0];
                 document.getElementById('vlQty').value = 1;
 
                 const container = document.getElementById('vlVariantSelectors');
@@ -4093,7 +3994,7 @@
                         cartId: cartId,
                         name: itemName, 
                         price: itemPrice, 
-                        image: (variant && variant.image) ? variant.image : (product.images[0] || 'https://via.placeholder.com/90'), 
+                        image: (variant && variant.image) ? variant.image : product.images[0], 
                         quantity: quantity,
                         variant: variant,
                         selected: true,
@@ -4165,7 +4066,7 @@
                             <input type="checkbox" class="cart-item-checkbox" ${item.selected ? 'checked' : ''} style="width:18px; height:18px; accent-color:var(--primary); cursor:pointer;">
                         </div>
                         <div class="cart-item-img">
-                            <img src="${item.image || 'https://via.placeholder.com/90'}" alt="${item.name}">
+                            <img src="${item.image}" alt="${item.name}">
                         </div>
                         <div class="cart-item-info">
                             <h4 class="cart-item-title-link">${item.name}</h4>
@@ -4598,7 +4499,7 @@
                 }
 
                 if (unreviewedProduct) {
-                     document.getElementById('promoPopupImg').src = unreviewedProduct.image || 'https://via.placeholder.com/130';
+                     document.getElementById('promoPopupImg').src = unreviewedProduct.image;
                      document.getElementById('promoPopupName').textContent = "Please review your recent purchase: " + unreviewedProduct.name;
                      document.getElementById('promoPopupPrice').style.display = 'none';
                      document.getElementById('promoPopupDiscount').style.display = 'none';
@@ -4619,7 +4520,7 @@
                     const prod = products.find(p => p.id === popupData.productId);
                     if (prod) {
                         const price = prod.variants && prod.variants.length > 0 ? prod.variants[0].price : (prod.price || 0);
-                        document.getElementById('promoPopupImg').src = popupData.bannerLogo || (prod.images && prod.images.length > 0 ? prod.images[0] : 'https://via.placeholder.com/130');
+                        document.getElementById('promoPopupImg').src = popupData.bannerLogo || prod.images[0];
                         document.getElementById('promoPopupName').textContent = prod.name.length > 20 ? prod.name.substring(0,20)+'...' : prod.name;
                         document.getElementById('promoPopupPrice').textContent = `${price.toFixed(0)} ৳`;
                         
@@ -4642,7 +4543,7 @@
                         };
                     }
                 } else {
-                    document.getElementById('promoPopupImg').src = popupData.bannerLogo || 'https://via.placeholder.com/130';
+                    document.getElementById('promoPopupImg').src = popupData.bannerLogo || '';
                     document.getElementById('promoPopupName').textContent = popupData.name || '';
                     
                     if (popupData.price && popupData.price > 0) {
@@ -4692,17 +4593,14 @@
                 const dateObj = new Date();
                 const date = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + dateObj.toLocaleTimeString('en-GB', { hour12: false });
                 
-                let vatAmount = subtotal * 0.02;
-                let actualDiscount = vatAmount; 
-                
-                const total = subtotal + vatAmount - actualDiscount + shippingFee + codFee;
+                const total = subtotal - couponDiscount + shippingFee + codFee;
                 
                 let itemsHtml = '';
                 selectedItems.forEach(item => {
                     const variantText = (item.color!=='N/A' ? item.color : '') + (item.size!=='N/A' ? `, ${item.size}` : '');
                     itemsHtml += `
                         <div class="od-item">
-                            <img src="${item.image || 'https://via.placeholder.com/80'}" alt="">
+                            <img src="${item.image}" alt="">
                             <div class="od-item-info">
                                 <h4>${item.name}</h4>
                                 ${variantText ? `<div class="od-item-variant">${variantText}</div>` : ''}
@@ -4717,33 +4615,30 @@
                 
                 let targetUserId = isLoggedIn && auth.currentUser ? auth.currentUser.uid : 'guest';
                 
-                const orderData = {
-                    id: orderNo.toString(),
-                    customer: orderAddress.name,
-                    phone: orderAddress.phone,
-                    address: `${orderAddress.address}, ${orderAddress.region} - ${orderAddress.postcode}`,
-                    amount: total,
-                    date: date,
-                    status: 'Pending', 
-                    payment: paymentMethodText,
-                    trxId: trxId || '',
-                    paymentMobile: paymentMobile || '',
-                    cartItems: selectedItems.map(i => ({
-                        id: i.id,
-                        pid: i.pid || i.id,
-                        name: i.name,
-                        price: i.price,
-                        qty: i.quantity,
-                        color: i.color,
-                        size: i.size,
-                        image: i.image
-                    })),
-                    userId: targetUserId,
-                    stockUpdated: false,
-                    salesUpdated: false
-                };
-
                 if(isLoggedIn && currentUser) {
+                     const orderData = {
+                         id: orderNo.toString(),
+                         customer: orderAddress.name,
+                         phone: orderAddress.phone,
+                         address: `${orderAddress.address}, ${orderAddress.region} - ${orderAddress.postcode}`,
+                         amount: total,
+                         date: date,
+                         status: 'Pending', 
+                         payment: paymentMethodText,
+                         trxId: trxId || '',
+                         paymentMobile: paymentMobile || '',
+                         cartItems: selectedItems.map(i => ({
+                             id: i.id,
+                             pid: i.pid || i.id,
+                             name: i.name,
+                             price: i.price,
+                             qty: i.quantity,
+                             color: i.color,
+                             size: i.size,
+                             image: i.image
+                         })),
+                         userId: targetUserId
+                     };
                      db.collection('orders').doc(orderNo.toString()).set(orderData).then(() => {
                          hideLoader();
                          showOrderSuccessModal(orderData);
@@ -4753,68 +4648,40 @@
                      });
                 } else {
                     hideLoader();
-                    showOrderSuccessModal(orderData);
+                    showOrderSuccessModal();
                 }
 
-                function showOrderSuccessModal(orderDataObj) {
-                    document.querySelector('.od-actions').style.display = 'flex'; 
+                function showOrderSuccessModal(orderDataObj = null) {
+                    document.querySelector('.od-actions').style.display = 'block'; 
                     
                     document.getElementById('odBody').innerHTML = itemsHtml;
-                    
-                    document.getElementById('odSubtotal').textContent = `৳ ${subtotal.toFixed(2)}`;
-                    document.getElementById('odVat').textContent = `+৳ ${vatAmount.toFixed(2)}`;
-                    document.getElementById('odSummaryDiscount').textContent = `-৳ ${actualDiscount.toFixed(2)}`;
-                    
-                    // Display Shipping Fee correctly in modal
+                    document.getElementById('odSubtotal').parentNode.style.display = 'flex';
                     document.getElementById('odShipping').parentNode.style.display = 'flex';
-                    document.getElementById('odShipping').textContent = `৳ ${shippingFee}`;
-                    
-                    // Display COD Fee if any
                     document.getElementById('odCOD').parentNode.style.display = 'flex';
-                    document.getElementById('odCOD').textContent = codFee === 0 ? 'Free' : `৳ ${codFee}`;
                     
+                    if (couponDiscount > 0) {
+                        document.getElementById('odCouponRow').style.display = 'flex';
+                        document.getElementById('odCoupon').textContent = `-৳ ${couponDiscount.toFixed(0)}`;
+                    } else {
+                        document.getElementById('odCouponRow').style.display = 'none';
+                    }
+                    
+                    document.getElementById('odSubtotal').textContent = `৳ ${subtotal.toFixed(0)}`;
+                    document.getElementById('odShipping').textContent = `৳ ${shippingFee}`;
+                    document.getElementById('odCOD').textContent = codFee === 0 ? 'Free' : `৳ ${codFee}`;
                     document.getElementById('odTotal').textContent = `৳ ${total.toFixed(0)}`;
                     document.getElementById('odPaidAmount').textContent = `৳ ${total.toFixed(0)}`;
                     document.getElementById('odPaidMethodName').textContent = paymentMethodText;
-                    
-                    let metaHtml = `
-                        <div class="od-row"><span>Order No.</span><span><span id="odOrderNo" style="color:#333;font-weight:600;">${orderNo}</span> <a href="#" id="odCopy" style="color:var(--primary);text-decoration:none;margin-left:5px;font-weight:600;">Copy</a></span></div>
-                        <div class="od-row"><span>Placed on</span><span id="odDate" style="color:#333;">${date}</span></div>
-                        <div class="od-row"><span>Payment Method</span><span id="odPaymentMethod" style="color:#333;">${paymentMethodText}</span></div>
-                    `;
-                    if (paymentMobile) metaHtml += `<div class="od-row"><span>Gateway Number</span><span style="color:#333;">${paymentMobile}</span></div>`;
-                    if (trxId) metaHtml += `<div class="od-row"><span>TrxID</span><span style="color:#333;">${trxId}</span></div>`;
-                    
-                    document.querySelector('.od-meta-section').innerHTML = metaHtml;
-                    
-                    // Initialize Barcode
-                    try {
-                        JsBarcode("#odBarcode", orderNo.toString(), { format: "CODE128", width: 1.5, height: 40, displayValue: true });
-                    } catch(e) {}
+                    document.getElementById('odOrderNo').textContent = orderNo;
+                    document.getElementById('odDate').textContent = date;
+                    document.getElementById('odPaymentMethod').textContent = paymentMethodText;
                     
                     const printBtn = document.getElementById('odPrintBtn');
-                    const downloadJpgBtn = document.getElementById('odDownloadJpgBtn');
-                    if(printBtn && downloadJpgBtn) {
+                    if (printBtn && orderDataObj) {
                         printBtn.style.display = 'block';
-                        downloadJpgBtn.style.display = 'block';
-                        
                         printBtn.onclick = () => printOrderInvoice(orderDataObj);
-                        
-                        downloadJpgBtn.onclick = () => {
-                            const modalBody = document.querySelector('#orderDetailsOverlay .order-details-modal');
-                            const actionsDiv = modalBody.querySelector('.od-actions');
-                            actionsDiv.style.display = 'none';
-                            document.getElementById('closeOrderDetails').style.display = 'none';
-                            
-                            html2canvas(modalBody, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
-                                actionsDiv.style.display = 'flex';
-                                document.getElementById('closeOrderDetails').style.display = 'block';
-                                const link = document.createElement('a');
-                                link.download = `Invoice_${orderNo}.jpg`;
-                                link.href = canvas.toDataURL('image/jpeg', 0.9);
-                                link.click();
-                            });
-                        };
+                    } else if (printBtn) {
+                        printBtn.style.display = 'none';
                     }
 
                     document.getElementById('orderDetailsOverlay').classList.add('active');
@@ -5132,9 +4999,23 @@
                 });
                 
                 document.getElementById('applyCouponBtn')?.addEventListener('click', () => {
-                    // Overriding actual coupon logic since the requirement is to use Coupon for negating VAT only visually if needed.
-                    // Based on requirements, discount always matches VAT.
-                    showCustomAlert('Information', 'Coupons are currently disabled. Automatic discount applied matching the VAT amount.');
+                    const code = document.getElementById('couponCode').value.trim().toUpperCase();
+                    if(code === 'DISCOUNT10') {
+                        window.appliedCouponDiscount = window.currentOrderSubtotal * 0.1;
+                        showNotification('Coupon applied! 10% off.');
+                    } else if(code === 'DISCOUNT50') {
+                        window.appliedCouponDiscount = 50;
+                        showNotification('Coupon applied! ৳50 off.');
+                    } else {
+                        window.appliedCouponDiscount = 0;
+                        showCustomAlert('Invalid Coupon', 'The coupon code is invalid or expired.');
+                    }
+                    document.getElementById('osDiscount').textContent = `-৳${window.appliedCouponDiscount.toFixed(2)}`;
+                    
+                    let defaultAddr = window.osSelectedAddress;
+                    let shippingFee = defaultAddr ? (defaultAddr.region === 'Outside Dhaka' ? appDeliveryOutside : appDeliveryInside) : 0;
+                    const newTotal = window.currentOrderSubtotal - window.appliedCouponDiscount + shippingFee;
+                    document.getElementById('osTotal').textContent = `৳${Math.max(0, newTotal).toFixed(0)}`;
                 });
 
                 checkoutForm.addEventListener('submit', async function(e) {
@@ -5158,12 +5039,7 @@
                     
                     let subtotal = 0;
                     selectedItems.forEach(item => subtotal += item.price * item.quantity);
-                    
-                    let vatAmount = subtotal * 0.02;
-                    let actualDiscount = vatAmount; 
-                    
-                    // Net changes zero each other out, preserving original logic
-                    const finalSubtotal = Math.max(0, subtotal + vatAmount - actualDiscount); 
+                    const finalSubtotal = Math.max(0, subtotal - (window.appliedCouponDiscount || 0));
                     
                     const shippingFee = (orderAddress.region === 'Outside Dhaka') ? appDeliveryOutside : appDeliveryInside; 
                     
@@ -5302,7 +5178,7 @@
                     document.getElementById('orderDetailsOverlay').classList.remove('active');
                     navigateTo('home');
                 });
-                document.getElementById('odCopy')?.addEventListener('click', (e) => {
+                document.getElementById('odCopy').addEventListener('click', (e) => {
                     e.preventDefault();
                     navigator.clipboard.writeText(document.getElementById('odOrderNo').textContent);
                     const orig = e.target.textContent;
@@ -5488,9 +5364,7 @@
                 });
 
                 menuToggle.addEventListener('click', () => { menuToggle.classList.toggle('active'); mobileMenu.classList.toggle('active'); });
-                if(shopNowBtn) {
-                    shopNowBtn.addEventListener('click', () => { document.getElementById('shop').scrollIntoView({ behavior: 'smooth' }); });
-                }
+                shopNowBtn.addEventListener('click', () => { document.getElementById('shop').scrollIntoView({ behavior: 'smooth' }); });
 
                 document.addEventListener('click', (e) => {
                     if (mobileMenu.classList.contains('active') && !mobileMenu.contains(e.target) && !menuToggle.contains(e.target)) {
