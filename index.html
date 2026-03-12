@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,6 +27,9 @@
     
     <!-- JsBarcode Library for Barcode Generation -->
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    
+    <!-- HTML2Canvas for JPG Download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <!-- Media Caching Service Worker -->
     <script>
@@ -795,7 +799,6 @@
                     <div class="hero-content">
                         <h1 id="heroTitle" class="skeleton skeleton-text" style="height:45px; width: 80%;"></h1>
                         <p id="heroDesc" class="skeleton skeleton-text short" style="height:20px;"></p>
-                        <button class="btn btn-secondary btn-shop" style="opacity:0; transition:0.3s;">Start Shoping</button>
                     </div>
                 </div>
             </section>
@@ -1621,7 +1624,7 @@
     </div>
 
     <div class="order-details-overlay" id="orderDetailsOverlay">
-        <div class="order-details-modal">
+        <div class="order-details-modal" style="background: white;">
             <div class="od-header">
                 <h3>Order Details</h3>
                 <button id="closeOrderDetails">&times;</button>
@@ -1630,9 +1633,10 @@
             <div class="od-section" style="border-bottom: 8px solid #f5f5f5;">
                 <h4 style="margin-bottom: 15px; font-size: 1rem;">Order Summary</h4>
                 <div class="od-row"><span>Subtotal</span><span id="odSubtotal"></span></div>
-                <div class="od-row" id="odCouponRow" style="display:none; color:#10b981;"><span>Coupon Discount</span><span id="odCoupon"></span></div>
+                <div class="od-row"><span>VAT (2%)</span><span id="odVat"></span></div>
+                <div class="od-row" id="odCouponRow" style="color:#10b981;"><span>Discount</span><span id="odCoupon"></span></div>
                 <div class="od-row"><span>Shipping Fee</span><span id="odShipping"></span></div>
-                <div class="od-row"><span>COD Handling Fee</span><span id="odCOD"></span></div>
+                <div class="od-row" id="odCodFeeRow"><span>COD Handling Fee</span><span id="odCOD"></span></div>
                 <div class="od-total od-row"><span style="color:#333;">Total</span><span id="odTotal"></span></div>
             </div>
             <div class="od-section" style="border-bottom: 8px solid #f5f5f5;">
@@ -1640,13 +1644,21 @@
                 <div class="od-row"><span id="odPaidMethodName">Cash on Delivery</span><span id="odPaidAmount"></span></div>
             </div>
             <div class="od-section od-meta-section">
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <svg id="summaryBarcode"></svg>
+                </div>
                 <div class="od-row"><span>Order No.</span><span><span id="odOrderNo" style="color:#333;font-weight:600;"></span> <a href="#" id="odCopy" style="color:var(--primary);text-decoration:none;margin-left:5px;font-weight:600;">Copy</a></span></div>
                 <div class="od-row"><span>Placed on</span><span id="odDate" style="color:#333;"></span></div>
                 <div class="od-row"><span>Paid by</span><span id="odPaymentMethod" style="color:#333;"></span></div>
+                <div class="od-row" id="odGatewayNoRow" style="display:none;"><span>Gateway No.</span><span id="odGatewayNo" style="color:#333;"></span></div>
+                <div class="od-row" id="odTrxIdRow" style="display:none;"><span>TrxID</span><span id="odTrxId" style="color:#333;"></span></div>
             </div>
-            <div class="od-actions">
+            <div class="od-actions" style="background: white;">
                 <button class="btn btn-primary" id="odContinueShopping" style="width: 100%; margin-bottom: 10px;">Continue Shopping</button>
-                <button class="btn btn-outline" id="odPrintBtn" style="width: 100%; display: none;"><i class="fas fa-print"></i> Print / Download PDF</button>
+                <div style="display: flex; gap: 10px;" id="odPrintDownloadGroup">
+                    <button class="btn btn-outline" id="odPrintBtn" style="flex: 1; display: none;"><i class="fas fa-print"></i> Print</button>
+                    <button class="btn btn-outline" id="odDownloadBtn" style="flex: 1; display: none;"><i class="fas fa-download"></i> JPG</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1848,7 +1860,6 @@
             const checkoutForm = document.getElementById('checkoutForm');
             const menuToggle = document.getElementById('menuToggle');
             const mobileMenu = document.getElementById('mobileMenu');
-            const shopNowBtn = document.querySelector('.btn-shop');
             const heroBg = document.getElementById('heroBg');
 
             const detailMainImg = document.getElementById('detailMainImg');
@@ -1896,6 +1907,32 @@
                 }
             }
 
+            // --- DOWNLOAD JPG FUNCTION ---
+            window.downloadOrderJPG = function(orderIdOrObj) {
+                const modal = document.querySelector('#orderDetailsOverlay .order-details-modal');
+                const actions = modal.querySelector('.od-actions');
+                const closeBtn = modal.querySelector('#closeOrderDetails');
+                
+                // Temporarily hide actions & close button
+                actions.style.display = 'none';
+                closeBtn.style.display = 'none';
+                
+                html2canvas(modal, { scale: 2, useCORS: true }).then(canvas => {
+                    actions.style.display = 'block';
+                    closeBtn.style.display = 'block';
+                    
+                    const link = document.createElement('a');
+                    let oId = typeof orderIdOrObj === 'object' ? orderIdOrObj.id : orderIdOrObj;
+                    link.download = `Invoice_${oId}.jpg`;
+                    link.href = canvas.toDataURL('image/jpeg', 0.9);
+                    link.click();
+                }).catch(err => {
+                    console.error("Error generating JPG", err);
+                    actions.style.display = 'block';
+                    closeBtn.style.display = 'block';
+                });
+            };
+
             // --- INVOICE/PDF GENERATOR FUNCTION ---
             window.printOrderInvoice = function(orderIdOrObj) {
                 let order = typeof orderIdOrObj === 'object' ? orderIdOrObj : (window.userOrders ? window.userOrders.find(o => o.id === orderIdOrObj) : null);
@@ -1903,7 +1940,10 @@
                 
                 const shopName = document.getElementById('pageTitle').textContent || 'Online Shop';
                 const domain = appDomainName;
-                
+                const vatAmount = order.vat || (order.amount * 0.02);
+                const discountAmount = order.discount || vatAmount;
+                const subTotal = order.amount - (order.codFee || 0) - (order.shippingFee || 0);
+
                 let itemsHtml = '';
                 order.cartItems.forEach(item => {
                     itemsHtml += `
@@ -1951,8 +1991,8 @@
                                     <strong>Order ID:</strong> ${order.id}<br>
                                     <strong>Date:</strong> ${order.date}<br>
                                     <strong>Payment Method:</strong> ${order.payment}<br>
+                                    ${order.paymentMobile ? `<strong>Gateway No:</strong> ${order.paymentMobile}<br>` : ''}
                                     ${order.trxId ? `<strong>TrxID:</strong> ${order.trxId}<br>` : ''}
-                                    ${order.paymentMobile ? `<strong>Sender Mobile:</strong> ${order.paymentMobile}<br>` : ''}
                                     <strong>Status:</strong> ${order.status}
                                 </div>
                             </div>
@@ -1970,6 +2010,9 @@
                                 </tbody>
                             </table>
                             <div class="totals">
+                                <p><strong>Subtotal:</strong> ৳${subTotal.toFixed(2)}</p>
+                                <p><strong>VAT (2%):</strong> +৳${vatAmount.toFixed(2)}</p>
+                                <p><strong>Discount:</strong> -৳${discountAmount.toFixed(2)}</p>
                                 <p><strong>Total Amount:</strong> ৳${Number(order.amount).toFixed(2)}</p>
                             </div>
                             <div class="barcode">
@@ -2096,7 +2139,6 @@
                         
                         document.getElementById('heroTitle').classList.remove('skeleton');
                         document.getElementById('heroDesc').classList.remove('skeleton');
-                        document.querySelector('.btn-shop').style.opacity = '1';
                         
                         document.getElementById('heroTitle').textContent = data.heroTitle || '';
                         document.getElementById('heroDesc').textContent = data.heroDesc || '';
@@ -2765,6 +2807,41 @@
                     window.userOrders = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
                     window.userOrders.sort((a,b) => new Date(b.date) - new Date(a.date));
 
+                    // --- NEW CODE: Check and update stock/sales based on status ---
+                    window.userOrders.forEach(async order => {
+                        let updates = {};
+                        if (order.status === 'Received' && !order.stockDeducted) {
+                            updates.stockDeducted = true;
+                            for (let item of order.cartItems) {
+                                let prodRef = db.collection('products').doc(item.id || item.pid);
+                                let prodDoc = await prodRef.get();
+                                if (prodDoc.exists) {
+                                    let pData = prodDoc.data();
+                                    if (pData.variants && pData.variants.length > 0) {
+                                        let vIndex = pData.variants.findIndex(v => v.color === item.color && (v.size === item.size || item.size === 'N/A' || !item.size));
+                                        if (vIndex !== -1) {
+                                            pData.variants[vIndex].stock = Math.max(0, pData.variants[vIndex].stock - item.qty);
+                                        }
+                                    } else {
+                                        pData.stock = Math.max(0, (pData.stock || 0) - item.qty);
+                                    }
+                                    await prodRef.update({ variants: pData.variants, stock: pData.stock });
+                                }
+                            }
+                        }
+                        if (order.status === 'Delivered' && !order.salesAdded) {
+                            updates.salesAdded = true;
+                            for (let item of order.cartItems) {
+                                let prodRef = db.collection('products').doc(item.id || item.pid);
+                                await prodRef.update({ sales: firebase.firestore.FieldValue.increment(item.qty) });
+                            }
+                        }
+                        if (Object.keys(updates).length > 0) {
+                            db.collection('orders').doc(order.id).update(updates);
+                        }
+                    });
+                    // --- END NEW CODE ---
+
                     let toPay = 0, toShip = 0, toReceive = 0, toReview = 0;
                     let htmlAll = '', htmlToPay = '', htmlToShip = '', htmlToReceive = '', htmlToReview = '', htmlReturns = '';
                     let recentUpdates = [];
@@ -3074,12 +3151,18 @@
                 });
                 
                 document.querySelector('.od-actions').style.display = 'block'; 
-                
                 document.getElementById('odBody').innerHTML = itemsHtml;
-                document.getElementById('odSubtotal').parentNode.style.display = 'none';
-                document.getElementById('odShipping').parentNode.style.display = 'none';
-                document.getElementById('odCOD').parentNode.style.display = 'none';
-                if(document.getElementById('odCoupon')) document.getElementById('odCoupon').parentNode.style.display = 'none';
+                
+                // Calculate Data for Display
+                const vatAmount = order.vat || (order.amount * 0.02);
+                const discountAmount = order.discount || vatAmount;
+                const subTotal = order.amount - (order.codFee || 0) - (order.shippingFee || 0);
+
+                document.getElementById('odSubtotal').textContent = `৳ ${subTotal.toFixed(2)}`;
+                document.getElementById('odVat').textContent = `+৳ ${vatAmount.toFixed(2)}`;
+                document.getElementById('odCoupon').textContent = `-৳ ${discountAmount.toFixed(2)}`;
+                document.getElementById('odShipping').textContent = `৳ ${order.shippingFee || 0}`;
+                document.getElementById('odCOD').textContent = order.codFee === 0 ? 'Free' : `৳ ${order.codFee}`;
                 
                 document.getElementById('odTotal').textContent = `৳ ${order.amount}`;
                 document.getElementById('odPaidAmount').textContent = `৳ ${order.amount}`;
@@ -3087,11 +3170,31 @@
                 document.getElementById('odOrderNo').textContent = order.id;
                 document.getElementById('odDate').textContent = order.date;
                 document.getElementById('odPaymentMethod').textContent = order.payment || 'N/A';
+
+                if (order.paymentMobile) {
+                    document.getElementById('odGatewayNoRow').style.display = 'flex';
+                    document.getElementById('odGatewayNo').textContent = order.paymentMobile;
+                } else {
+                    document.getElementById('odGatewayNoRow').style.display = 'none';
+                }
+
+                if (order.trxId) {
+                    document.getElementById('odTrxIdRow').style.display = 'flex';
+                    document.getElementById('odTrxId').textContent = order.trxId;
+                } else {
+                    document.getElementById('odTrxIdRow').style.display = 'none';
+                }
+
+                // Generate Barcode
+                JsBarcode("#summaryBarcode", order.id, { format: "CODE128", width: 1.5, height: 40, displayValue: true, fontSize: 14 });
                 
                 const printBtn = document.getElementById('odPrintBtn');
-                if(printBtn) {
+                const downloadBtn = document.getElementById('odDownloadBtn');
+                if(printBtn && downloadBtn) {
                     printBtn.style.display = 'block';
+                    downloadBtn.style.display = 'block';
                     printBtn.onclick = () => printOrderInvoice(orderId);
+                    downloadBtn.onclick = () => downloadOrderJPG(orderId);
                 }
 
                 document.getElementById('orderDetailsOverlay').classList.add('active');
@@ -4550,7 +4653,11 @@
                 const dateObj = new Date();
                 const date = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + dateObj.toLocaleTimeString('en-GB', { hour12: false });
                 
-                const total = subtotal - couponDiscount + shippingFee + codFee;
+                // Calculate VAT & Discount dynamically
+                const vatAmount = subtotal * 0.02;
+                const finalDiscount = vatAmount; // matching discount to neutralize VAT
+                
+                const total = subtotal + vatAmount - finalDiscount + shippingFee + codFee;
                 
                 let itemsHtml = '';
                 selectedItems.forEach(item => {
@@ -4572,30 +4679,35 @@
                 
                 let targetUserId = isLoggedIn && auth.currentUser ? auth.currentUser.uid : 'guest';
                 
+                const orderData = {
+                    id: orderNo.toString(),
+                    customer: orderAddress.name,
+                    phone: orderAddress.phone,
+                    address: `${orderAddress.address}, ${orderAddress.region} - ${orderAddress.postcode}`,
+                    amount: total,
+                    vat: vatAmount,
+                    discount: finalDiscount,
+                    shippingFee: shippingFee,
+                    codFee: codFee,
+                    date: date,
+                    status: 'Pending', 
+                    payment: paymentMethodText,
+                    trxId: trxId || '',
+                    paymentMobile: paymentMobile || '',
+                    cartItems: selectedItems.map(i => ({
+                        id: i.id,
+                        pid: i.pid || i.id,
+                        name: i.name,
+                        price: i.price,
+                        qty: i.quantity,
+                        color: i.color,
+                        size: i.size,
+                        image: i.image
+                    })),
+                    userId: targetUserId
+                };
+
                 if(isLoggedIn && currentUser) {
-                     const orderData = {
-                         id: orderNo.toString(),
-                         customer: orderAddress.name,
-                         phone: orderAddress.phone,
-                         address: `${orderAddress.address}, ${orderAddress.region} - ${orderAddress.postcode}`,
-                         amount: total,
-                         date: date,
-                         status: 'Pending', 
-                         payment: paymentMethodText,
-                         trxId: trxId || '',
-                         paymentMobile: paymentMobile || '',
-                         cartItems: selectedItems.map(i => ({
-                             id: i.id,
-                             pid: i.pid || i.id,
-                             name: i.name,
-                             price: i.price,
-                             qty: i.quantity,
-                             color: i.color,
-                             size: i.size,
-                             image: i.image
-                         })),
-                         userId: targetUserId
-                     };
                      db.collection('orders').doc(orderNo.toString()).set(orderData).then(() => {
                          hideLoader();
                          showOrderSuccessModal(orderData);
@@ -4605,10 +4717,10 @@
                      });
                 } else {
                     hideLoader();
-                    showOrderSuccessModal();
+                    showOrderSuccessModal(orderData);
                 }
 
-                function showOrderSuccessModal(orderDataObj = null) {
+                function showOrderSuccessModal(orderDataObj) {
                     document.querySelector('.od-actions').style.display = 'block'; 
                     
                     document.getElementById('odBody').innerHTML = itemsHtml;
@@ -4616,16 +4728,12 @@
                     document.getElementById('odShipping').parentNode.style.display = 'flex';
                     document.getElementById('odCOD').parentNode.style.display = 'flex';
                     
-                    if (couponDiscount > 0) {
-                        document.getElementById('odCouponRow').style.display = 'flex';
-                        document.getElementById('odCoupon').textContent = `-৳ ${couponDiscount.toFixed(0)}`;
-                    } else {
-                        document.getElementById('odCouponRow').style.display = 'none';
-                    }
-                    
-                    document.getElementById('odSubtotal').textContent = `৳ ${subtotal.toFixed(0)}`;
+                    document.getElementById('odSubtotal').textContent = `৳ ${subtotal.toFixed(2)}`;
+                    document.getElementById('odVat').textContent = `+৳ ${vatAmount.toFixed(2)}`;
+                    document.getElementById('odCoupon').textContent = `-৳ ${finalDiscount.toFixed(2)}`;
                     document.getElementById('odShipping').textContent = `৳ ${shippingFee}`;
                     document.getElementById('odCOD').textContent = codFee === 0 ? 'Free' : `৳ ${codFee}`;
+                    
                     document.getElementById('odTotal').textContent = `৳ ${total.toFixed(0)}`;
                     document.getElementById('odPaidAmount').textContent = `৳ ${total.toFixed(0)}`;
                     document.getElementById('odPaidMethodName').textContent = paymentMethodText;
@@ -4633,12 +4741,33 @@
                     document.getElementById('odDate').textContent = date;
                     document.getElementById('odPaymentMethod').textContent = paymentMethodText;
                     
+                    if (paymentMobile) {
+                        document.getElementById('odGatewayNoRow').style.display = 'flex';
+                        document.getElementById('odGatewayNo').textContent = paymentMobile;
+                    } else {
+                        document.getElementById('odGatewayNoRow').style.display = 'none';
+                    }
+
+                    if (trxId) {
+                        document.getElementById('odTrxIdRow').style.display = 'flex';
+                        document.getElementById('odTrxId').textContent = trxId;
+                    } else {
+                        document.getElementById('odTrxIdRow').style.display = 'none';
+                    }
+
+                    // Generate Barcode
+                    JsBarcode("#summaryBarcode", orderNo.toString(), { format: "CODE128", width: 1.5, height: 40, displayValue: true, fontSize: 14 });
+                    
                     const printBtn = document.getElementById('odPrintBtn');
-                    if (printBtn && orderDataObj) {
+                    const downloadBtn = document.getElementById('odDownloadBtn');
+                    if (printBtn && downloadBtn && orderDataObj) {
                         printBtn.style.display = 'block';
+                        downloadBtn.style.display = 'block';
                         printBtn.onclick = () => printOrderInvoice(orderDataObj);
-                    } else if (printBtn) {
+                        downloadBtn.onclick = () => downloadOrderJPG(orderDataObj);
+                    } else if (printBtn && downloadBtn) {
                         printBtn.style.display = 'none';
+                        downloadBtn.style.display = 'none';
                     }
 
                     document.getElementById('orderDetailsOverlay').classList.add('active');
@@ -5321,7 +5450,8 @@
                 });
 
                 menuToggle.addEventListener('click', () => { menuToggle.classList.toggle('active'); mobileMenu.classList.toggle('active'); });
-                shopNowBtn.addEventListener('click', () => { document.getElementById('shop').scrollIntoView({ behavior: 'smooth' }); });
+                
+                // Note: The Start Shoping button logic is removed from here as per instructions.
 
                 document.addEventListener('click', (e) => {
                     if (mobileMenu.classList.contains('active') && !mobileMenu.contains(e.target) && !menuToggle.contains(e.target)) {
@@ -5437,26 +5567,26 @@
                     const d = Math.floor(distance / (1000*60*60*24)).toString().padStart(2,'0');
                     const h = Math.floor((distance % (1000*60*60*24))/(1000*60*60)).toString().padStart(2,'0');
                     const m = Math.floor((distance % (1000*60*60))/(1000*60)).toString().padStart(2,'0');
-const s = Math.floor((distance % (1000*60))/1000).toString().padStart(2,'0');
+                    const s = Math.floor((distance % (1000*60))/1000).toString().padStart(2,'0');
                     if(document.getElementById('days')) {
-                    document.getElementById('days').textContent = d;
-                    document.getElementById('hours').textContent = h;
-                    document.getElementById('minutes').textContent = m;
-                    document.getElementById('seconds').textContent = s;
+                        document.getElementById('days').textContent = d;
+                        document.getElementById('hours').textContent = h;
+                        document.getElementById('minutes').textContent = m;
+                        document.getElementById('seconds').textContent = s;
+                    }
                 }
+                updateTimer();
             }
-            updateTimer();
-        }
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            showInitialSkeletons();
-            await loadInitialData();
-            init();
-            startOfferTimer();
-            
-            // Initial Watermark pass for any pre-loaded images
-            document.querySelectorAll('img').forEach(applyWatermarkToElement);
-        });
+            document.addEventListener('DOMContentLoaded', async () => {
+                showInitialSkeletons();
+                await loadInitialData();
+                init();
+                startOfferTimer();
+                
+                // Initial Watermark pass for any pre-loaded images
+                document.querySelectorAll('img').forEach(applyWatermarkToElement);
+            });
     </script>
 </body>
 </html>
