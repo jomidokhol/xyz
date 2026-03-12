@@ -12,7 +12,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
     
-    <!-- JsBarcode & html2pdf (Requirement 4) -->
+    <!-- JsBarcode & html2pdf -->
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
@@ -269,7 +269,7 @@
         .toggle-sidebar.notification-dot::after { top: 0; right: 0; }
         .stat-card.notification-dot::after { top: 20px; right: 20px; width: 12px; height: 12px; }
 
-        /* Loader Striped Progress Bar (Requirement 3) */
+        /* Loader Striped Progress Bar */
         .global-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); backdrop-filter: blur(5px); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; }
         .dark-mode .global-loader { background: rgba(15,23,42,0.8); }
         .loader-bar-container { width: 250px; height: 15px; border: 2px solid var(--dark-color); border-radius: 4px; overflow: hidden; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -278,7 +278,7 @@
         .dark-mode .loader-bar { background: repeating-linear-gradient(45deg, #fff, #fff 10px, transparent 10px, transparent 20px); }
         @keyframes progress { 0% { background-position: 0 0; } 100% { background-position: 28px 0; } }
 
-        /* Invoice Print Area (Requirement 4) */
+        /* Invoice Print Area */
         @media print { 
             body * { visibility: hidden; } 
             #invoicePrintArea, #invoicePrintArea * { visibility: visible; } 
@@ -306,7 +306,7 @@
 </head>
 <body>
 
-    <!-- Global Loader (Requirement 3) -->
+    <!-- Global Loader -->
     <div id="globalLoader" class="global-loader hidden">
         <div class="loader-bar-container"><div class="loader-bar"></div></div>
         <div style="margin-top: 10px; font-weight: 600; font-size: 14px; letter-spacing: 1px; color: var(--dark-color);">PROCESSING...</div>
@@ -348,6 +348,7 @@
                 
                 <li class="menu-header">Business</li>
                 <li><a href="#" class="menu-item" data-page="orders" id="menuOrdersLink"><i class="fas fa-shopping-bag"></i> Orders</a></li>
+                <li><a href="#" class="menu-item" data-page="returns"><i class="fas fa-undo"></i> Return Requests</a></li>
                 <li><a href="#" class="menu-item" data-page="customers"><i class="fas fa-users"></i> Customers</a></li>
                 
                 <li class="menu-header">Promotions</li>
@@ -508,18 +509,47 @@
                     </div>
                 </div>
 
-                <div id="customersPage" class="page-content hidden">
+                <!-- Return Requests Page -->
+                <div id="returnsPage" class="page-content hidden">
                     <div class="table-header">
-                        <h3 class="table-title">Customers Directory</h3>
+                        <h3 class="table-title">Return Requests</h3>
                     </div>
                     <div class="table-container">
                         <table>
                             <thead>
                                 <tr>
+                                    <th>Req ID</th>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Product Info</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="returnsTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Customers Page -->
+                <div id="customersPage" class="page-content hidden">
+                    <div class="table-header">
+                        <h3 class="table-title">Customers Directory</h3>
+                        <div style="display: flex; gap: 15px;">
+                            <input type="text" id="customerSearchById" class="form-control" placeholder="Search by Customer ID..." style="width: 250px;">
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Customer ID</th>
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Phone</th>
                                     <th>Total Spent</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="customersTable"></tbody>
@@ -764,7 +794,6 @@
                     </div>
                 </div>
 
-                <!-- New Ord Cancellation Section -->
                 <div class="form-full">
                     <div style="display: flex; align-items: center; margin-bottom: 20px; background: var(--light-gray); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color);">
                         <label class="switch">
@@ -1038,7 +1067,32 @@
         </div>
     </div>
 
-    <!-- Invoice Modal (Requirement 4) -->
+    <!-- Block User Modal -->
+    <div id="blockUserModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <button class="close-modal-btn" onclick="closeModal('blockUserModal')"><i class="fas fa-times"></i></button>
+            <h3 style="font-size: 20px; margin-bottom: 20px;">Block User</h3>
+            <form id="blockUserForm">
+                <input type="hidden" id="blockUserId">
+                <div class="form-group">
+                    <label>Block Duration</label>
+                    <select id="blockDuration" class="form-control">
+                        <option value="1">1 Day</option>
+                        <option value="2">2 Days</option>
+                        <option value="3">3 Days</option>
+                        <option value="4">4 Days</option>
+                        <option value="5">5 Days</option>
+                        <option value="6">6 Days</option>
+                        <option value="7">7 Days</option>
+                        <option value="permanent">Permanent</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-danger" style="margin-top:15px; width: 100%; padding: 12px; border-radius: 8px;">Block User</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Invoice Modal -->
     <div id="invoiceModal" class="modal">
         <div class="modal-content" style="max-width: 650px; border-radius: 8px;">
             <button class="close-modal-btn print-hide" onclick="closeModal('invoiceModal')"><i class="fas fa-times"></i></button>
@@ -1057,7 +1111,7 @@
     </div>
 
     <script>
-        // Global Loader Functions (Requirement 3)
+        // Global Loader Functions
         function showLoader() { document.getElementById('globalLoader').classList.remove('hidden'); }
         function hideLoader() { document.getElementById('globalLoader').classList.add('hidden'); }
 
@@ -1081,6 +1135,7 @@
         let adminProducts = [];
         let adminCategories = [];
         let adminOrders = [];
+        let adminReturns = [];
         let adminCustomers = [];
         let adminOffers = [];
         let adminPopups = [];
@@ -1414,6 +1469,9 @@
             
             const orderSearchInput = document.getElementById('orderSearchById');
             if (orderSearchInput) orderSearchInput.addEventListener('input', populateOrdersTable);
+            
+            const customerSearchInput = document.getElementById('customerSearchById');
+            if (customerSearchInput) customerSearchInput.addEventListener('input', populateCustomersTable);
 
             // Modals Logic 
             document.getElementById('addProductBtn').addEventListener('click', () => {
@@ -1489,6 +1547,35 @@
                 e.preventDefault();
                 navigateToPage('orders');
             });
+            
+            document.getElementById('blockUserForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                showLoader();
+                const userId = document.getElementById('blockUserId').value;
+                const duration = document.getElementById('blockDuration').value;
+                
+                let blockUntil = null;
+                if (duration === 'permanent') {
+                    blockUntil = 'permanent';
+                } else {
+                    const days = parseInt(duration);
+                    const date = new Date();
+                    date.setDate(date.getDate() + days);
+                    blockUntil = date.toISOString();
+                }
+                
+                try {
+                    await db.collection('users').doc(userId).update({
+                        isBlocked: true,
+                        blockUntil: blockUntil
+                    });
+                    closeModal('blockUserModal');
+                } catch(e) {
+                    alert(e.message);
+                } finally {
+                    hideLoader();
+                }
+            });
 
             seoInput.addEventListener('keydown', handleSeoInput);
 
@@ -1509,6 +1596,7 @@
                 loadCategories();
                 loadProducts();
                 loadOrders();
+                loadReturns();
                 loadCustomers();
                 loadOffers();
                 loadPopups();
@@ -1590,6 +1678,13 @@
                 updateDashboardStats();
             });
         }
+        
+        function loadReturns() {
+            db.collection('returnRequests').onSnapshot(snap => {
+                adminReturns = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                populateReturnsTable();
+            });
+        }
 
         function loadCustomers() {
             db.collection('users').onSnapshot(snap => {
@@ -1641,7 +1736,6 @@
                 if (currentStatus === 'Out of Stock') statusClass = 'status-out';
                 if (currentStatus === 'Inactive') statusClass = 'status-cancelled';
 
-                // Requirement 1: Variant Toggle Button
                 let toggleBtnHtml = (p.variants && p.variants.length > 0) ? `<button class="btn-action" style="background:var(--gray-color);" onclick="toggleVariants('${p.id}')" title="Toggle Variants"><i class="fas fa-chevron-down" id="icon-var-${p.id}"></i></button>` : '';
 
                 const row = document.createElement('tr');
@@ -1721,7 +1815,6 @@
             });
         }
 
-        // Toggle Variants Logic (Requirement 1)
         window.toggleVariants = function(pid) {
             const rows = document.querySelectorAll(`.variant-row-${pid}`);
             const icon = document.getElementById(`icon-var-${pid}`);
@@ -1827,7 +1920,6 @@
                     </div>`;
                 }
 
-                // Requirement 4: Billing Paper Button
                 let invoiceBtnHtml = (o.status === 'Received' || o.status === 'Delivered') ? `<button class="btn-action btn-success" onclick="generateInvoice('${o.id}')" title="Billing Paper"><i class="fas fa-file-invoice"></i></button>` : '';
 
                 const row = document.createElement('tr');
@@ -1858,6 +1950,47 @@
                 ordersTable.appendChild(row);
             });
         }
+        
+        function populateReturnsTable() {
+            const tbody = document.getElementById('returnsTable');
+            tbody.innerHTML = '';
+            adminReturns.forEach(r => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="font-weight: 600;">#${r.id.substring(0,6)}</td>
+                    <td style="color: var(--primary-color); font-weight:600;">#${r.orderId ? r.orderId.substring(0,8) : 'N/A'}</td>
+                    <td>${r.customerName || 'N/A'}<br><small style="color:var(--gray-color)">${r.customerEmail || ''}</small></td>
+                    <td>${r.productName || 'N/A'}<br><small style="color:var(--gray-color)">Qty: ${r.qty || 1}</small></td>
+                    <td style="max-width:200px; white-space:normal; font-size:12px;">${r.reason || 'N/A'}</td>
+                    <td>
+                        <select class="status-select" onchange="updateReturnStatus('${r.id}', this.value)">
+                            <option value="Pending" ${r.status==='Pending'?'selected':''}>Pending</option>
+                            <option value="Approved" ${r.status==='Approved'?'selected':''}>Approved</option>
+                            <option value="Rejected" ${r.status==='Rejected'?'selected':''}>Rejected</option>
+                            <option value="Refunded" ${r.status==='Refunded'?'selected':''}>Refunded</option>
+                        </select>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-action btn-delete" onclick="deleteReturn('${r.id}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        window.updateReturnStatus = function(id, status) {
+            showLoader();
+            db.collection('returnRequests').doc(id).update({status: status}).finally(()=> hideLoader());
+        }
+
+        window.deleteReturn = async function(id) {
+            if(confirm("Delete this return request?")) {
+                showLoader();
+                try { await db.collection('returnRequests').doc(id).delete(); } finally { hideLoader(); }
+            }
+        }
 
         function populateRecentOrdersTable() {
             recentOrdersTable.innerHTML = '';
@@ -1877,16 +2010,38 @@
 
         function populateCustomersTable() {
             customersTable.innerHTML = '';
-            adminCustomers.forEach(c => {
+            const searchInput = document.getElementById('customerSearchById');
+            const searchVal = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+            const filteredCustomers = adminCustomers.filter(c => {
+                if (!searchVal) return true;
+                return (c.id || '').toLowerCase().includes(searchVal);
+            });
+            
+            filteredCustomers.forEach(c => {
+                let statusBadge = c.isBlocked ? `<span class="status status-cancelled">Blocked</span>` : `<span class="status status-active">Active</span>`;
+                
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td style="font-weight: 500;">${c.name}</td>
-                    <td style="color: var(--primary-color);">${c.email}</td>
+                    <td style="font-weight: 600; color: var(--primary-color);">${c.id || 'N/A'}</td>
+                    <td style="font-weight: 500;">${c.name || 'N/A'}</td>
+                    <td style="color: var(--gray-color);">${c.email || 'N/A'}</td>
                     <td>${c.phone || '<span style="color:var(--gray-color)">N/A</span>'}</td>
                     <td style="font-weight: 600;">-</td>
+                    <td>
+                        <div class="action-buttons">
+                            ${statusBadge}
+                            <button class="btn-action btn-delete" onclick="openBlockUserModal('${c.id}')" title="Block User"><i class="fas fa-ban"></i> Block</button>
+                        </div>
+                    </td>
                 `;
                 customersTable.appendChild(row);
             });
+        }
+
+        window.openBlockUserModal = function(userId) {
+            document.getElementById('blockUserId').value = userId;
+            openModal('blockUserModal');
         }
 
         function populateOffersTable() {
@@ -2454,13 +2609,12 @@
             }
         };
 
-        // Requirement 2: Functional Refresh Orders Button
         window.refreshOrders = function() { 
             showLoader();
             setTimeout(() => {
                 populateOrdersTable();
                 hideLoader();
-            }, 600); // UI visual feedback for reloading
+            }, 600);
         }
 
         // Dynamic Field Generators
@@ -2518,14 +2672,12 @@
             </div>`;
             document.querySelector(`#${containerId} .sizes-list`).insertAdjacentHTML('beforeend', html);
             
-            // Hide the base variant stock input when size is added
             document.getElementById(containerId).closest('.variant-block').querySelector('.var-stock').style.display = 'none';
         };
 
         window.removeSizeField = function(btn, containerId) {
             btn.parentElement.remove();
             const container = document.getElementById(containerId);
-            // Show the base variant stock again if all sizes are deleted
             if (container.querySelectorAll('.size-item').length === 0) {
                 container.closest('.variant-block').querySelector('.var-stock').style.display = '';
             }
@@ -2657,7 +2809,6 @@
             openModal('orderDetailsModal');
         };
 
-        // Requirement 4: Billing Paper Generation Logic
         window.generateInvoice = function(id) {
             showLoader();
             setTimeout(() => {
@@ -2695,8 +2846,20 @@
                 }
 
                 let total = parseFloat(o.amount) || 0;
-                let shippingAndDiscounts = total - subTotal; // Calculate the extra costs (shipping - discount)
-                let vat = 0; // Configured manually if needed
+                let deliveryFee = parseFloat(o.deliveryFee) || 0;
+                let discountAmt = parseFloat(o.discount) || 0;
+                
+                // Fallback if structured data is not available
+                if (!o.deliveryFee && !o.discount) {
+                    let diff = total - subTotal;
+                    if (diff >= 0) {
+                        deliveryFee = diff;
+                        discountAmt = 0;
+                    } else {
+                        deliveryFee = 0;
+                        discountAmt = Math.abs(diff);
+                    }
+                }
 
                 document.getElementById('invoicePrintArea').innerHTML = `
                     <div style="text-align: center; margin-bottom: 25px; border-bottom: 2px solid #333; padding-bottom: 20px;">
@@ -2705,17 +2868,17 @@
                     </div>
                     
                     <div style="display: flex; justify-content: space-between; margin-bottom: 30px; line-height: 1.6;">
-                        <div>
+                        <div style="text-align: left;">
                             <strong style="font-size: 16px;">Billed To:</strong><br>
                             <span style="font-weight: 600;">${o.customer || 'N/A'}</span><br>
                             ${o.address || ''}<br>
                             Phone: ${o.phone || 'N/A'}
                         </div>
-                        <div style="text-align: right;">
-                            <strong>Order ID:</strong> #${o.id.substring(0,8)}<br>
-                            <strong>Order Date:</strong> ${o.date || new Date().toLocaleDateString()}<br>
-                            <strong>Status:</strong> ${o.status}<br>
-                            <strong>Payment:</strong> ${o.payment}
+                        <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
+                            <div><strong>Order ID:</strong> #${o.id.substring(0,8)}</div>
+                            <div><strong>Order Date:</strong> ${o.date || new Date().toLocaleDateString()}</div>
+                            <div><strong>Status:</strong> ${o.status}</div>
+                            <div><strong>Payment:</strong> ${o.payment}</div>
                         </div>
                     </div>
 
@@ -2737,12 +2900,12 @@
                                 <td style="text-align: right; padding: 10px 5px; font-weight: bold;">৳${subTotal.toFixed(2)}</td>
                             </tr>
                             <tr>
-                                <td colspan="3" style="text-align: right; padding: 5px 5px; color: #555;">Delivery/Discounts:</td>
-                                <td style="text-align: right; padding: 5px 5px; color: #555;">৳${shippingAndDiscounts.toFixed(2)}</td>
+                                <td colspan="3" style="text-align: right; padding: 5px 5px; color: #555;">Delivery Charge:</td>
+                                <td style="text-align: right; padding: 5px 5px; color: #555;">+ ৳${deliveryFee.toFixed(2)}</td>
                             </tr>
                             <tr>
-                                <td colspan="3" style="text-align: right; padding: 5px 5px; color: #555;">VAT/Tax:</td>
-                                <td style="text-align: right; padding: 5px 5px; color: #555;">৳${vat.toFixed(2)}</td>
+                                <td colspan="3" style="text-align: right; padding: 5px 5px; color: #555;">Discount:</td>
+                                <td style="text-align: right; padding: 5px 5px; color: #555;">- ৳${discountAmt.toFixed(2)}</td>
                             </tr>
                             <tr>
                                 <td colspan="3" style="text-align: right; padding: 15px 5px; font-weight: bold; font-size: 18px; border-top: 2px solid #333;">Grand Total:</td>
@@ -2759,7 +2922,6 @@
 
                 openModal('invoiceModal');
                 
-                // Generating Barcode
                 JsBarcode("#invoiceBarcode", o.id, {
                     format: "CODE128",
                     width: 1.5,
@@ -2780,15 +2942,28 @@
         window.downloadInvoice = function() {
             showLoader();
             const element = document.getElementById('invoicePrintArea');
+            
+            // Clone the element and append to body to ensure visibility during render
+            const clone = element.cloneNode(true);
+            clone.style.position = 'absolute';
+            clone.style.top = '-9999px';
+            clone.style.left = '-9999px';
+            clone.style.width = '800px'; 
+            clone.style.background = 'white';
+            clone.style.color = 'black';
+            clone.style.padding = '20px';
+            document.body.appendChild(clone);
+
             const opt = {
                 margin:       [0.5, 0.5, 0.5, 0.5],
                 filename:     'Invoice_Order.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
+                html2canvas:  { scale: 2, useCORS: true },
                 jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
             };
             
-            html2pdf().set(opt).from(element).save().then(() => {
+            html2pdf().set(opt).from(clone).save().then(() => {
+                document.body.removeChild(clone);
                 hideLoader();
             });
         };
