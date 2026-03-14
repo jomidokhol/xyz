@@ -348,7 +348,8 @@
                 
                 <li class="menu-header">Business</li>
                 <li><a href="#" class="menu-item" data-page="orders" id="menuOrdersLink"><i class="fas fa-shopping-bag"></i> Orders</a></li>
-                <li><a href="#" class="menu-item" data-page="returns"><i class="fas fa-undo"></i> Return Requests</a></li>
+                <li><a href="#" class="menu-item" data-page="returns"><i class="fas fa-undo"></i> Returns & Refunds</a></li>
+                <li><a href="#" class="menu-item" data-page="cancelReasons"><i class="fas fa-ban"></i> Cancel Reasons</a></li>
                 <li><a href="#" class="menu-item" data-page="customers"><i class="fas fa-users"></i> Customers</a></li>
                 
                 <li class="menu-header">Promotions</li>
@@ -509,10 +510,14 @@
                     </div>
                 </div>
 
-                <!-- Return Requests Page -->
+                <!-- Returns & Refunds Page -->
                 <div id="returnsPage" class="page-content hidden">
                     <div class="table-header">
-                        <h3 class="table-title">Return Requests</h3>
+                        <h3 class="table-title">Returns & Refunds</h3>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn-secondary" style="margin-top:0;" onclick="openModal('returnReasonsModal')"><i class="fas fa-list"></i> Manage Reasons</button>
+                            <button class="btn-primary" style="margin-top:0;" onclick="openReturnAnalysis()"><i class="fas fa-chart-pie"></i> Analysis</button>
+                        </div>
                     </div>
                     <div class="table-container">
                         <table>
@@ -523,11 +528,44 @@
                                     <th>Customer</th>
                                     <th>Product Info</th>
                                     <th>Reason</th>
-                                    <th>Status</th>
+                                    <th>Status & Message</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="returnsTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Cancel Reasons Page -->
+                <div id="cancelReasonsPage" class="page-content hidden">
+                    <div class="table-header">
+                        <h3 class="table-title">Cancellation Reasons</h3>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn-primary" style="margin-top:0;" onclick="openCancelAnalysis()"><i class="fas fa-chart-pie"></i> Analysis</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <form id="addCancelReasonForm" style="display:flex; gap:10px; align-items:flex-end; margin-bottom:20px;">
+                            <input type="hidden" id="editCancelReasonId">
+                            <div style="flex:1;">
+                                <label for="cancelReasonInput" style="display:block; margin-bottom:8px; font-weight:500; font-size:14px; color:var(--gray-color);">Add/Edit Cancellation Reason</label>
+                                <input type="text" id="cancelReasonInput" class="form-control" placeholder="Enter reason..." required>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width:auto; height: 43px;"><i class="fas fa-save"></i> Save</button>
+                        </form>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Cancellation Reason</th>
+                                    <th style="width: 150px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cancelReasonsTable"></tbody>
                         </table>
                     </div>
                 </div>
@@ -691,6 +729,70 @@
     </div>
 
     <!-- Modals -->
+    <!-- Return Action Modal (Approve/Disapprove) -->
+    <div id="returnActionModal" class="modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <button class="close-modal-btn" onclick="closeModal('returnActionModal')"><i class="fas fa-times"></i></button>
+            <h3 id="returnActionTitle" style="font-size: 20px; margin-bottom: 20px;">Return Action</h3>
+            <form id="returnActionForm">
+                <input type="hidden" id="returnActionReqId">
+                <input type="hidden" id="returnActionStatus">
+                <div class="form-group">
+                    <label>Custom Message for Customer (Optional)</label>
+                    <textarea id="returnActionMessage" class="form-control" rows="3" placeholder="Explain the reason for approval or disapproval..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" id="returnActionBtn" style="margin-top:10px; width: 100%;">Save Status</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Return Reasons Management Modal -->
+    <div id="returnReasonsModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal-btn" onclick="closeModal('returnReasonsModal')"><i class="fas fa-times"></i></button>
+            <h3 style="font-size: 20px; margin-bottom: 20px;">Manage Return Reasons</h3>
+            <form id="addReturnReasonForm" style="display:flex; gap:10px; margin-bottom:20px;">
+                <input type="hidden" id="editReturnReasonId">
+                <input type="text" id="returnReasonInput" class="form-control" placeholder="Enter new reason..." required>
+                <button type="submit" class="btn btn-primary" style="width:auto; padding: 0 20px;"><i class="fas fa-save"></i></button>
+            </form>
+            <div class="table-container" style="max-height: 50vh;">
+                <table>
+                    <thead><tr><th>Reason</th><th style="width:100px;">Actions</th></tr></thead>
+                    <tbody id="returnReasonsTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Return Reasons Analysis Modal -->
+    <div id="returnAnalysisModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal-btn" onclick="closeModal('returnAnalysisModal')"><i class="fas fa-times"></i></button>
+            <h3 style="font-size: 20px; margin-bottom: 20px;">Return Reasons Analysis</h3>
+            <div class="table-container" style="max-height: 60vh;">
+                <table>
+                    <thead><tr><th>Reason</th><th style="width:80px;">Count</th><th>Percentage</th></tr></thead>
+                    <tbody id="returnAnalysisTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Analysis Modal -->
+    <div id="cancelAnalysisModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal-btn" onclick="closeModal('cancelAnalysisModal')"><i class="fas fa-times"></i></button>
+            <h3 style="font-size: 20px; margin-bottom: 20px;">Cancellation Reasons Analysis</h3>
+            <div class="table-container" style="max-height: 60vh;">
+                <table>
+                    <thead><tr><th>Reason</th><th style="width:80px;">Count</th><th>Percentage</th></tr></thead>
+                    <tbody id="cancelAnalysisTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <div id="productModal" class="modal">
         <div class="modal-content">
             <button class="close-modal-btn" onclick="closeModal('productModal')"><i class="fas fa-times"></i></button>
@@ -1136,6 +1238,8 @@
         let adminCategories = [];
         let adminOrders = [];
         let adminReturns = [];
+        let adminReturnReasons = [];
+        let adminCancelReasons = [];
         let adminCustomers = [];
         let adminOffers = [];
         let adminPopups = [];
@@ -1586,6 +1690,11 @@
             gatewayForm.addEventListener('submit', handleGatewaySubmit);
             generalSettingsForm.addEventListener('submit', saveGeneralSettings);
             appearanceSettingsForm.addEventListener('submit', saveSlidesAndSocials);
+            
+            // New Forms Listeners
+            document.getElementById('returnActionForm').addEventListener('submit', handleReturnActionSubmit);
+            document.getElementById('addReturnReasonForm').addEventListener('submit', handleReturnReasonSubmit);
+            document.getElementById('addCancelReasonForm').addEventListener('submit', handleCancelReasonSubmit);
         });
 
         // Firebase Data Fetching
@@ -1597,6 +1706,8 @@
                 loadProducts();
                 loadOrders();
                 loadReturns();
+                loadReturnReasons();
+                loadCancelReasons();
                 loadCustomers();
                 loadOffers();
                 loadPopups();
@@ -1683,6 +1794,20 @@
             db.collection('returnRequests').onSnapshot(snap => {
                 adminReturns = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
                 populateReturnsTable();
+            });
+        }
+        
+        function loadReturnReasons() {
+            db.collection('returnReasons').onSnapshot(snap => {
+                adminReturnReasons = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                populateReturnReasonsTable();
+            });
+        }
+        
+        function loadCancelReasons() {
+            db.collection('cancelReasons').onSnapshot(snap => {
+                adminCancelReasons = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                populateCancelReasonsTable();
             });
         }
 
@@ -1955,6 +2080,26 @@
             const tbody = document.getElementById('returnsTable');
             tbody.innerHTML = '';
             adminReturns.forEach(r => {
+                let statusBadge = '';
+                let actionsHtml = `<button class="btn-action btn-delete" onclick="deleteReturn('${r.id}')" title="Delete"><i class="fas fa-trash"></i></button>`;
+                
+                if (r.status === 'Pending' || !r.status) {
+                    statusBadge = `<span class="status status-pending">Pending</span>`;
+                    actionsHtml = `
+                        <button class="btn-action btn-success" onclick="openReturnActionModal('${r.id}', 'Approved')" title="Approve"><i class="fas fa-check"></i></button>
+                        <button class="btn-action btn-delete" style="background-color: var(--danger-color);" onclick="openReturnActionModal('${r.id}', 'Disapproved')" title="Disapprove"><i class="fas fa-times"></i></button>
+                        ${actionsHtml}
+                    `;
+                } else if (r.status === 'Approved') {
+                    statusBadge = `<span class="status status-active">Approved</span>`;
+                } else if (r.status === 'Disapproved' || r.status === 'Rejected') {
+                    statusBadge = `<span class="status status-cancelled">${r.status}</span>`;
+                } else if (r.status === 'Refunded') {
+                    statusBadge = `<span class="status status-delivered">Refunded</span>`;
+                } else {
+                    statusBadge = `<span class="status status-pending">${r.status}</span>`;
+                }
+
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td style="font-weight: 600;">#${r.id.substring(0,6)}</td>
@@ -1963,27 +2108,208 @@
                     <td>${r.productName || 'N/A'}<br><small style="color:var(--gray-color)">Qty: ${r.qty || 1}</small></td>
                     <td style="max-width:200px; white-space:normal; font-size:12px;">${r.reason || 'N/A'}</td>
                     <td>
-                        <select class="status-select" onchange="updateReturnStatus('${r.id}', this.value)">
-                            <option value="Pending" ${r.status==='Pending'?'selected':''}>Pending</option>
-                            <option value="Approved" ${r.status==='Approved'?'selected':''}>Approved</option>
-                            <option value="Rejected" ${r.status==='Rejected'?'selected':''}>Rejected</option>
-                            <option value="Refunded" ${r.status==='Refunded'?'selected':''}>Refunded</option>
-                        </select>
+                        ${statusBadge}
+                        ${r.adminMessage ? `<br><small style="color:var(--gray-color); display:block; margin-top:4px;">${r.adminMessage}</small>` : ''}
                     </td>
                     <td>
                         <div class="action-buttons">
-                            <button class="btn-action btn-delete" onclick="deleteReturn('${r.id}')"><i class="fas fa-trash"></i></button>
+                            ${actionsHtml}
                         </div>
                     </td>
                 `;
                 tbody.appendChild(row);
             });
         }
-
-        window.updateReturnStatus = function(id, status) {
-            showLoader();
-            db.collection('returnRequests').doc(id).update({status: status}).finally(()=> hideLoader());
+        
+        function populateReturnReasonsTable() {
+            const tbody = document.getElementById('returnReasonsTable');
+            tbody.innerHTML = '';
+            adminReturnReasons.forEach(r => {
+                const row = `<tr>
+                    <td>${r.reason}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-action btn-edit" onclick="editReturnReason('${r.id}', \`${r.reason.replace(/`/g, '\\`')}\`)"><i class="fas fa-edit"></i></button>
+                            <button class="btn-action btn-delete" onclick="deleteReturnReason('${r.id}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>`;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
         }
+
+        function populateCancelReasonsTable() {
+            const tbody = document.getElementById('cancelReasonsTable');
+            tbody.innerHTML = '';
+            adminCancelReasons.forEach(r => {
+                const row = `<tr>
+                    <td>${r.reason}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-action btn-edit" onclick="editCancelReason('${r.id}', \`${r.reason.replace(/`/g, '\\`')}\`)"><i class="fas fa-edit"></i></button>
+                            <button class="btn-action btn-delete" onclick="deleteCancelReason('${r.id}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>`;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        window.openReturnActionModal = function(id, status) {
+            document.getElementById('returnActionReqId').value = id;
+            document.getElementById('returnActionStatus').value = status;
+            document.getElementById('returnActionTitle').innerText = status === 'Approved' ? 'Approve Return' : 'Disapprove Return';
+            document.getElementById('returnActionMessage').value = '';
+            openModal('returnActionModal');
+        };
+
+        async function handleReturnActionSubmit(e) {
+            e.preventDefault();
+            showLoader();
+            const id = document.getElementById('returnActionReqId').value;
+            const status = document.getElementById('returnActionStatus').value;
+            const message = document.getElementById('returnActionMessage').value;
+            try {
+                await db.collection('returnRequests').doc(id).update({
+                    status: status,
+                    adminMessage: message
+                });
+                closeModal('returnActionModal');
+            } catch(err) {
+                alert(err.message);
+            } finally {
+                hideLoader();
+            }
+        }
+
+        async function handleReturnReasonSubmit(e) {
+            e.preventDefault();
+            showLoader();
+            const id = document.getElementById('editReturnReasonId').value;
+            const reason = document.getElementById('returnReasonInput').value;
+            try {
+                if (id) {
+                    await db.collection('returnReasons').doc(id).update({ reason });
+                } else {
+                    await db.collection('returnReasons').add({ reason });
+                }
+                document.getElementById('editReturnReasonId').value = '';
+                document.getElementById('returnReasonInput').value = '';
+            } catch(err) { alert(err.message); }
+            finally { hideLoader(); }
+        }
+
+        window.editReturnReason = function(id, reason) {
+            document.getElementById('editReturnReasonId').value = id;
+            document.getElementById('returnReasonInput').value = reason;
+        };
+
+        window.deleteReturnReason = async function(id) {
+            if(confirm("Delete this reason?")) {
+                showLoader();
+                try { await db.collection('returnReasons').doc(id).delete(); } 
+                finally { hideLoader(); }
+            }
+        };
+
+        window.openReturnAnalysis = function() {
+            const total = adminReturns.length;
+            const counts = {};
+            adminReturns.forEach(r => {
+                const reason = r.reason || 'Unknown';
+                counts[reason] = (counts[reason] || 0) + 1;
+            });
+            
+            const tbody = document.getElementById('returnAnalysisTable');
+            tbody.innerHTML = '';
+            
+            const allReasons = new Set(adminReturnReasons.map(r => r.reason));
+            Object.keys(counts).forEach(k => allReasons.add(k));
+
+            allReasons.forEach(reason => {
+                const count = counts[reason] || 0;
+                const pct = total === 0 ? 0 : ((count / total) * 100).toFixed(1);
+                const row = `<tr>
+                    <td>${reason}</td>
+                    <td><span style="font-weight:600;">${count}</span></td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="flex:1; background:var(--border-color); height:8px; border-radius:4px; overflow:hidden;">
+                                <div style="width:${pct}%; height:100%; background:var(--primary-color);"></div>
+                            </div>
+                            <span style="font-size:12px; color:var(--gray-color); min-width:40px; text-align:right;">${pct}%</span>
+                        </div>
+                    </td>
+                </tr>`;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+            openModal('returnAnalysisModal');
+        };
+
+        async function handleCancelReasonSubmit(e) {
+            e.preventDefault();
+            showLoader();
+            const id = document.getElementById('editCancelReasonId').value;
+            const reason = document.getElementById('cancelReasonInput').value;
+            try {
+                if (id) {
+                    await db.collection('cancelReasons').doc(id).update({ reason });
+                } else {
+                    await db.collection('cancelReasons').add({ reason });
+                }
+                document.getElementById('editCancelReasonId').value = '';
+                document.getElementById('cancelReasonInput').value = '';
+            } catch(err) { alert(err.message); }
+            finally { hideLoader(); }
+        }
+
+        window.editCancelReason = function(id, reason) {
+            document.getElementById('editCancelReasonId').value = id;
+            document.getElementById('cancelReasonInput').value = reason;
+        };
+
+        window.deleteCancelReason = async function(id) {
+            if(confirm("Delete this reason?")) {
+                showLoader();
+                try { await db.collection('cancelReasons').doc(id).delete(); } 
+                finally { hideLoader(); }
+            }
+        };
+
+        window.openCancelAnalysis = function() {
+            const cancelledOrders = adminOrders.filter(o => o.status === 'Cancelled');
+            const total = cancelledOrders.length;
+            const counts = {};
+            cancelledOrders.forEach(o => {
+                const reason = o.cancelReason || 'Unknown/Not Specified';
+                counts[reason] = (counts[reason] || 0) + 1;
+            });
+            
+            const tbody = document.getElementById('cancelAnalysisTable');
+            tbody.innerHTML = '';
+            
+            const allReasons = new Set(adminCancelReasons.map(r => r.reason));
+            Object.keys(counts).forEach(k => allReasons.add(k));
+
+            allReasons.forEach(reason => {
+                const count = counts[reason] || 0;
+                const pct = total === 0 ? 0 : ((count / total) * 100).toFixed(1);
+                const row = `<tr>
+                    <td>${reason}</td>
+                    <td><span style="font-weight:600;">${count}</span></td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="flex:1; background:var(--border-color); height:8px; border-radius:4px; overflow:hidden;">
+                                <div style="width:${pct}%; height:100%; background:var(--primary-color);"></div>
+                            </div>
+                            <span style="font-size:12px; color:var(--gray-color); min-width:40px; text-align:right;">${pct}%</span>
+                        </div>
+                    </td>
+                </tr>`;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+            openModal('cancelAnalysisModal');
+        };
 
         window.deleteReturn = async function(id) {
             if(confirm("Delete this return request?")) {
