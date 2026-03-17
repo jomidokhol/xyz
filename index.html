@@ -71,8 +71,27 @@
         .page-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideUp { from { transform: translate(-50%, 100px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
-        header { background-color: white; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 100; }
-        .header-content { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; height: 70px; }
+        
+        /* HEADER TRANSITION CSS */
+        header { background-color: white; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 100; transition: background-color 0.4s ease, box-shadow 0.4s ease; }
+        .header-content { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; height: 70px; position: relative; }
+        
+        header.at-top { background-color: transparent !important; box-shadow: none !important; }
+        header.at-top .menu-toggle .menu-bar { background-color: white; box-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+        
+        .header-left, .header-search-icon, .cart-icon, .auth-buttons { transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); }
+        header.at-top .header-left { opacity: 0; pointer-events: none; transform: scale(0.8); }
+        header.at-top .header-search-icon, header.at-top .cart-icon, header.at-top .auth-buttons { opacity: 0; pointer-events: none; transform: scale(0.8); }
+        
+        /* EXPANDED TOP SEARCH CSS */
+        .expanded-search-wrapper { position: absolute; left: 20px; right: 60px; top: 0; bottom: 0; display: flex; align-items: center; opacity: 0; pointer-events: none; transform: translateY(-10px); transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); z-index: 5; }
+        header.at-top .expanded-search-wrapper { opacity: 1; pointer-events: auto; transform: translateY(0); }
+        
+        .expanded-search-container { width: 100%; height: 46px; display: flex; align-items: center; background: white; border: 2px solid var(--primary); border-radius: 25px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+        .expanded-search-container input { flex: 1; border: none; padding: 0 10px; height: 100%; outline: none; font-family: 'Poppins', sans-serif; font-size: 1rem; color: var(--dark); background: transparent; }
+        .expanded-search-container button { background: var(--primary); color: white; border: none; padding: 0 25px; height: 100%; font-weight: 600; cursor: pointer; transition: background 0.3s; font-family: 'Poppins', sans-serif; }
+        .expanded-search-container button:hover { background: #14532d; }
+
         .progress-bar { height: 4px; background-color: var(--primary); width: 0%; position: absolute; bottom: -4px; left: 0; transition: width 0.4s ease-out, opacity 0.3s ease; opacity: 1; }
         .logo { display: flex; align-items: center; height: 100%; max-width: 180px; cursor: pointer; }
         .logo img { max-height: 35px; width: auto; object-fit: contain; }
@@ -106,7 +125,8 @@
         .mobile-nav-links a { text-decoration: none; color: var(--dark); font-weight: 500; display: block; padding: 10px 0; }
         .mobile-auth { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
         
-        .hero { position: relative; color: white; width: 100%; aspect-ratio: 2.5 / 1; max-height: 80vh; margin-bottom: 20px; overflow: hidden; display: flex; align-items: center; }
+        /* Adjusted Hero to overlay behind header smoothly */
+        .hero { position: relative; color: white; width: 100%; aspect-ratio: 2.5 / 1; max-height: 80vh; margin-bottom: 20px; overflow: hidden; display: flex; align-items: center; margin-top: -70px; padding-top: 70px; }
         .hero-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
         .hero-slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1s ease; }
         .hero-slide.active { opacity: 1; }
@@ -299,6 +319,16 @@
 
         .cart-footer { padding: 20px; border-top: 1px solid #e5e7eb; }
         .cart-total { display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: 700; margin-bottom: 20px; color: #111;}
+        
+        /* Checkout Button Shake Animation */
+        @keyframes cartBtnPulseShake {
+            0%, 80%, 100% { transform: translateX(0); }
+            82%, 86%, 90% { transform: translateX(-4px); }
+            84%, 88%, 92% { transform: translateX(4px); }
+        }
+        .checkout-btn-shake {
+            animation: cartBtnPulseShake 4s infinite cubic-bezier(0.36, 0.07, 0.19, 0.97);
+        }
         
         footer { background-color: #14532d; color: white; padding: 60px 0 30px; }
         .footer-content { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; margin-bottom: 40px; }
@@ -670,6 +700,7 @@
             .header-actions { gap: 15px; } 
             .hero { aspect-ratio: 3 / 2; } 
             .hero h1 { font-size: 2.2rem; } 
+            .expanded-search-wrapper { left: 10px; right: 50px; }
         }
         @media (max-width: 576px) { 
             .product-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; padding: 0 5px; } 
@@ -730,12 +761,23 @@
 
     <header>
         <div class="container">
-            <div class="header-content">
-                <a href="javascript:void(0)" class="logo" onclick="navigateTo('home')">
-                    <img id="headerLogo" src="" alt="Logo">
-                </a>
-                
-                <div class="header-actions">
+            <div class="header-content" style="position: relative;">
+                <div class="header-left" style="display: flex; align-items: center;">
+                    <a href="javascript:void(0)" class="logo" onclick="navigateTo('home')">
+                        <img id="headerLogo" src="" alt="Logo">
+                    </a>
+                </div>
+
+                <!-- Expanded Top Search -->
+                <div class="expanded-search-wrapper" id="expandedSearchWrapper">
+                    <div class="expanded-search-container">
+                        <i class="fas fa-search" style="padding: 0 15px; color: var(--primary);"></i>
+                        <input type="text" id="topSearchInput" placeholder="Search for products, categories..." onkeypress="if(event.key==='Enter') triggerTopSearch()">
+                        <button type="button" onclick="triggerTopSearch()">Search</button>
+                    </div>
+                </div>
+
+                <div class="header-actions" id="headerActionsRight">
                     <div class="header-search-icon" onclick="navigateTo('search')">
                         <i class="fas fa-search fa-lg"></i>
                     </div>
@@ -1898,6 +1940,33 @@
             const welcomeOverlay = document.getElementById('welcomeOverlay');
             const promoPopup = document.getElementById('promoPopup');
 
+            // --- HEADER SCROLL EFFECT FUNCTION ---
+            function handleHeaderScroll() {
+                const header = document.querySelector('header');
+                const homePage = document.getElementById('home-page');
+                if (homePage && homePage.classList.contains('active')) {
+                    if (window.scrollY <= 10) {
+                        header.classList.add('at-top');
+                    } else {
+                        header.classList.remove('at-top');
+                    }
+                } else {
+                    header.classList.remove('at-top');
+                }
+            }
+            window.addEventListener('scroll', handleHeaderScroll);
+
+            // --- TRIGGER EXPANDED TOP SEARCH ---
+            window.triggerTopSearch = function() {
+                const input = document.getElementById('topSearchInput');
+                if (input && input.value.trim()) {
+                    const term = input.value.trim();
+                    const sPageInput = document.getElementById('searchPageInput');
+                    if (sPageInput) sPageInput.value = term;
+                    handleSearch(new Event('submit'), term);
+                }
+            };
+
             // --- CART SYNC FUNCTION ---
             async function syncCart() {
                 localStorage.setItem('userCart', JSON.stringify(cart));
@@ -2582,6 +2651,7 @@
                         document.getElementById('home-page').classList.add('active');
                     }
                     window.scrollTo(0, 0);
+                    handleHeaderScroll(); // Update header visibility immediately
 
                     const headerEl = document.querySelector('header');
                     const footerEl = document.querySelector('footer');
@@ -2810,7 +2880,7 @@
                     window.userOrders = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
                     window.userOrders.sort((a,b) => new Date(b.date) - new Date(a.date));
 
-                    // --- NEW CODE: Check and update stock/sales based on status ---
+                    // Check and update stock/sales based on status
                     window.userOrders.forEach(async order => {
                         let updates = {};
                         if (order.status === 'Received' && !order.stockDeducted) {
@@ -2843,7 +2913,6 @@
                             db.collection('orders').doc(order.id).update(updates);
                         }
                     });
-                    // --- END NEW CODE ---
 
                     let toPay = 0, toShip = 0, toReceive = 0, toReview = 0;
                     let htmlAll = '', htmlToPay = '', htmlToShip = '', htmlToReceive = '', htmlToReview = '', htmlReturns = '';
@@ -4099,11 +4168,19 @@
                     cartItems.innerHTML = `<div class="empty-state" style="padding:20px; box-shadow:none; margin-top:50px;"><i class="fas fa-shopping-cart" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 15px;"></i><p>Your cart is empty.</p></div>`;
                     cartTotalPrice.textContent = '৳0.00';
                     checkoutBtn.disabled = true;
+                    checkoutBtn.classList.remove('checkout-btn-shake');
                     return;
                 }
                 
-                checkoutBtn.disabled = false;
                 let total = 0;
+                const hasSelected = cart.some(item => item.selected);
+                checkoutBtn.disabled = !hasSelected;
+                
+                if (hasSelected) {
+                    checkoutBtn.classList.add('checkout-btn-shake');
+                } else {
+                    checkoutBtn.classList.remove('checkout-btn-shake');
+                }
                 
                 const allSelected = cart.length > 0 && cart.every(item => item.selected);
                 cartItems.innerHTML = `
