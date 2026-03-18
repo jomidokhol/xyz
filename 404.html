@@ -73,7 +73,7 @@
         @keyframes slideUp { from { transform: translate(-50%, 100px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
         
         /* HEADER TRANSITION CSS */
-        header { background-color: white; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 100; transition: background-color 0.4s ease, box-shadow 0.4s ease; }
+        header { background-color: white; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 100; transition: background-color 0.4s ease, box-shadow 0.4s ease; --flight-dist: 0px; }
         .header-content { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; height: 70px; position: relative; }
         
         header.at-top { background-color: transparent !important; box-shadow: none !important; }
@@ -81,16 +81,33 @@
         
         .header-left, .header-search-icon, .cart-icon, .auth-buttons { transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); }
         header.at-top .header-left { opacity: 0; pointer-events: none; transform: scale(0.8); }
-        header.at-top .header-search-icon, header.at-top .cart-icon, header.at-top .auth-buttons { opacity: 0; pointer-events: none; transform: scale(0.8); }
+        header.at-top .cart-icon, header.at-top .auth-buttons { opacity: 0; pointer-events: none; transform: scale(0.8); }
+        header.at-top .header-search-icon { opacity: 0; pointer-events: none; }
         
         /* EXPANDED TOP SEARCH CSS */
-        .expanded-search-wrapper { position: absolute; left: 20px; right: 60px; top: 0; bottom: 0; display: flex; align-items: center; opacity: 0; pointer-events: none; transform: translateY(-10px); transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); z-index: 5; }
+        .expanded-search-wrapper { position: absolute; left: 20px; right: 60px; top: 0; bottom: 0; display: flex; align-items: center; opacity: 0; pointer-events: none; transform: translateY(0); transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); z-index: 5; }
         header.at-top .expanded-search-wrapper { opacity: 1; pointer-events: auto; transform: translateY(0); }
         
         .expanded-search-container { width: 100%; height: 46px; display: flex; align-items: center; background: white; border: 2px solid var(--primary); border-radius: 25px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
-        .expanded-search-container input { flex: 1; border: none; padding: 0 10px; height: 100%; outline: none; font-family: 'Poppins', sans-serif; font-size: 1rem; color: var(--dark); background: transparent; }
-        .expanded-search-container button { background: var(--primary); color: white; border: none; padding: 0 25px; height: 100%; font-weight: 600; cursor: pointer; transition: background 0.3s; font-family: 'Poppins', sans-serif; }
+        .expanded-search-container input { flex: 1; border: none; padding: 0 10px; height: 100%; outline: none; font-family: 'Poppins', sans-serif; font-size: 1rem; color: var(--dark); background: transparent; pointer-events: none; }
+        .expanded-search-container button { background: var(--primary); color: white; border: none; padding: 0 25px; height: 100%; font-weight: 600; cursor: pointer; transition: background 0.3s; font-family: 'Poppins', sans-serif; flex-shrink: 0; pointer-events: none; }
         .expanded-search-container button:hover { background: #14532d; }
+
+        /* FLIGHT ANIMATION STYLES */
+        .expanded-search-container .fa-search {
+            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        header:not(.at-top) .expanded-search-container .fa-search {
+            transform: translateX(var(--flight-dist)) scale(1.3333);
+            opacity: 0;
+        }
+        .header-search-icon i {
+            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        header.at-top .header-search-icon i {
+            transform: translateX(calc(var(--flight-dist) * -1)) scale(0.75);
+            opacity: 0;
+        }
 
         .progress-bar { height: 4px; background-color: var(--primary); width: 0%; position: absolute; bottom: -4px; left: 0; transition: width 0.4s ease-out, opacity 0.3s ease; opacity: 1; }
         .logo { display: flex; align-items: center; height: 100%; max-width: 180px; cursor: pointer; }
@@ -770,10 +787,10 @@
 
                 <!-- Expanded Top Search -->
                 <div class="expanded-search-wrapper" id="expandedSearchWrapper">
-                    <div class="expanded-search-container">
+                    <div class="expanded-search-container" onclick="navigateTo('search')" style="cursor: pointer;">
                         <i class="fas fa-search" style="padding: 0 15px; color: var(--primary);"></i>
-                        <input type="text" id="topSearchInput" placeholder="Search for products, categories..." onkeypress="if(event.key==='Enter') triggerTopSearch()">
-                        <button type="button" onclick="triggerTopSearch()">Search</button>
+                        <input type="text" id="topSearchInput" placeholder="Search for products, categories..." readonly>
+                        <button type="button">Search</button>
                     </div>
                 </div>
 
@@ -1956,6 +1973,40 @@
             }
             window.addEventListener('scroll', handleHeaderScroll);
 
+            // --- SEARCH ICON FLIGHT ANIMATION ---
+            function updateSearchAnimationVariables() {
+                const header = document.querySelector('header');
+                const leftIcon = document.querySelector('.expanded-search-container .fa-search');
+                const rightIcon = document.querySelector('.header-search-icon i');
+                if(header && leftIcon && rightIcon) {
+                    header.style.transition = 'none';
+                    leftIcon.style.transition = 'none';
+                    rightIcon.style.transition = 'none';
+                    
+                    const wasAtTop = header.classList.contains('at-top');
+                    
+                    header.classList.remove('at-top');
+                    const rectR = rightIcon.getBoundingClientRect();
+                    
+                    header.classList.add('at-top');
+                    const rectL = leftIcon.getBoundingClientRect();
+                    
+                    if(!wasAtTop) header.classList.remove('at-top');
+                    
+                    const distX = (rectR.left + rectR.width / 2) - (rectL.left + rectL.width / 2);
+                    if (!isNaN(distX)) {
+                        header.style.setProperty('--flight-dist', `${distX}px`);
+                    }
+                    
+                    void header.offsetHeight;
+                    
+                    header.style.transition = '';
+                    leftIcon.style.transition = '';
+                    rightIcon.style.transition = '';
+                }
+            }
+            window.addEventListener('resize', updateSearchAnimationVariables);
+
             // --- TRIGGER EXPANDED TOP SEARCH ---
             window.triggerTopSearch = function() {
                 const input = document.getElementById('topSearchInput');
@@ -2690,6 +2741,9 @@
                     } else if (finalPageId === 'all-reviews' && currentProduct) {
                         renderAllReviewsPage();
                     }
+                    
+                    // Trigger animation update slightly after rendering
+                    setTimeout(updateSearchAnimationVariables, 100);
                 };
                 
                 if (isInitialLoad === true) {
@@ -5664,6 +5718,9 @@
                 
                 // Initial Watermark pass for any pre-loaded images
                 document.querySelectorAll('img').forEach(applyWatermarkToElement);
+
+                // Add calculation for search icon animation after rendering completes
+                setTimeout(updateSearchAnimationVariables, 500); 
             });
     </script>
 </body>
