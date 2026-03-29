@@ -17,6 +17,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <!-- jQuery & Summernote (For Rich Text Editor) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+
     <style>
         :root {
             --primary-color: #3b82f6; 
@@ -279,6 +284,13 @@
         .dark-mode .loader-bar-container { border-color: #fff; background: var(--dark-color); }
         .dark-mode .loader-bar { background: repeating-linear-gradient(45deg, #fff, #fff 10px, transparent 10px, transparent 20px); }
         @keyframes progress { 0% { background-position: 0 0; } 100% { background-position: 28px 0; } }
+
+        /* Summernote UI Fixes for Admin Panel */
+        .note-editor .note-editing-area { background: #fff; color: #000; }
+        .dark-mode .note-editor .note-editing-area { background: var(--light-color); color: var(--dark-color); }
+        .note-editor.note-frame { border-color: var(--border-color); border-radius: 8px; overflow: hidden; }
+        .note-toolbar { background: var(--light-gray); border-bottom: 1px solid var(--border-color); }
+        .note-modal-content { background: var(--light-color); color: var(--dark-color); }
 
         /* Invoice Print Area */
         @media print { 
@@ -695,13 +707,16 @@
                             <h4 style="margin: 25px 0 15px; color: var(--primary-color); font-size: 15px;">Hero Section Elements</h4>
                             <div class="form-row">
                                 <div class="form-group"><label>Hero Title</label><input type="text" id="heroTitle" class="form-control"></div>
-                                <div class="form-group"><label>Hero Description</label><textarea id="heroDesc" class="form-control" rows="2"></textarea></div>
+                            </div>
+                            <div class="form-full">
+                                <div class="form-group">
+                                    <label>Hero Description</label>
+                                    <textarea id="heroDesc" class="form-control" rows="2"></textarea>
+                                </div>
                             </div>
                             
                             <h4 style="margin: 25px 0 15px; color: var(--primary-color); font-size: 15px;">Logistics & Delivery</h4>
                             <div class="form-row">
-                                <div class="form-group"><label>Delivery Inside City (৳)</label><input type="number" id="deliveryInside" class="form-control" required></div>
-                                <div class="form-group"><label>Delivery Outside City (৳)</label><input type="number" id="deliveryOutside" class="form-control" required></div>
                                 <div class="form-group">
                                     <label>COD Handling Fee (৳)</label>
                                     <input type="number" id="codHandlingFee" class="form-control" required>
@@ -727,10 +742,10 @@
                         <form id="appearanceSettingsForm">
                             <div class="form-full dynamic-list-wrapper">
                                 <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; color: var(--dark-color); font-weight: 600;">
-                                    Hero Banner Images/Iframes 
+                                    Hero Banner Images
                                     <button type="button" class="btn-icon-add" onclick="addBannerField()"><i class="fas fa-plus"></i></button>
                                 </label>
-                                <div class="dynamic-list-header"><span style="flex:1;">Type</span><span style="flex:3;">URL Source</span><span style="width:32px; text-align:center;"></span></div>
+                                <div class="dynamic-list-header"><span style="flex:1;">URL Source</span><span style="width:32px; text-align:center;"></span></div>
                                 <div id="bannerContainer" class="dynamic-list"></div>
                             </div>
 
@@ -837,10 +852,10 @@
                 
                 <div class="form-full dynamic-list-wrapper">
                     <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; color: var(--dark-color); font-weight: 600;">
-                        Product Images 
+                        Product Images / Videos
                         <button type="button" class="btn-icon-add" onclick="addMediaField()"><i class="fas fa-plus"></i></button>
                     </label>
-                    <div class="dynamic-list-header"><span style="flex:1;">Image URL</span><span style="width:32px; text-align:center;"></span></div>
+                    <div class="dynamic-list-header"><span style="width:80px;">Type</span><span style="flex:1;">Media URL</span><span style="width:32px; text-align:center;"></span></div>
                     <div id="mediaContainer" class="dynamic-list"></div>
                 </div>
 
@@ -868,7 +883,7 @@
                 <div class="form-full">
                     <div class="form-group">
                         <label for="productDescription">Product Details</label>
-                        <textarea id="productDescription" class="form-control" rows="4" placeholder="Enter details..."></textarea>
+                        <textarea id="productDescription" class="form-control" rows="4"></textarea>
                     </div>
                 </div>
                 
@@ -1464,11 +1479,14 @@
             }
             
             activeProds.forEach(p => {
-                const img = p.images && p.images.length ? p.images[0] : '';
+                const imgData = p.images && p.images.length ? p.images[0] : '';
+                const imgUrl = typeof imgData === 'string' ? imgData : (imgData.url || '');
+                const imgTag = (typeof imgData === 'object' && imgData.type === 'video') ? `<video src="${imgUrl}" style="width: 100%; height: 80px; object-fit: cover; border-radius: 6px; margin-bottom: 8px;" muted></video>` : `<img src="${imgUrl}" style="width: 100%; height: 80px; object-fit: cover; border-radius: 6px; margin-bottom: 8px;">`;
+                
                 const isSelected = p.id === currentVal ? 'border-color: var(--primary-color); background: rgba(59,130,246,0.1);' : 'border-color: #e2e8f0; background: #fff;';
                 grid.innerHTML += `
                     <div class="popup-product-item" onclick="selectPopUpProduct('${p.id}')" style="cursor:pointer; border: 2px solid; border-radius: 8px; padding: 8px; text-align: center; transition: 0.2s; ${isSelected}">
-                        <img src="${img}" style="width: 100%; height: 80px; object-fit: cover; border-radius: 6px; margin-bottom: 8px;">
+                        ${imgTag}
                         <div style="font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--dark-color);">${p.name}</div>
                         <div style="font-size: 12px; color: var(--primary-color); font-weight: 600;">৳${p.price}</div>
                     </div>
@@ -1520,8 +1538,23 @@
             container.innerHTML = html;
         }
 
-        // Initialize UI Events
+        // Initialize UI Events and Editor
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Summernote Rich Text Editors
+            $('#heroDesc, #footerAddress, #footerAbout, #productDescription').summernote({
+                placeholder: 'Type here...',
+                tabsize: 2,
+                height: 150,
+                toolbar: [
+                  ['style', ['style']],
+                  ['font', ['bold', 'underline', 'italic', 'clear']],
+                  ['color', ['color']],
+                  ['para', ['ul', 'ol', 'paragraph']],
+                  ['insert', ['link', 'picture', 'video']],
+                  ['view', ['codeview']]
+                ]
+            });
+
             // Populate Return Refund Select Options dynamically
             const rrSelect = document.getElementById('returnRefundTime');
             if (rrSelect) {
@@ -1628,6 +1661,7 @@
                 document.getElementById('modalTitle').textContent = 'Add New Product';
                 document.querySelector('#productForm button[type="submit"]').textContent = 'Save Product';
                 productForm.reset();
+                $('#productDescription').summernote('code', ''); // Reset WYSIWYG
                 resetSEO();
                 
                 document.getElementById('sizeColorContainer').innerHTML = ''; 
@@ -1773,14 +1807,12 @@
                     document.getElementById('domainName').value = data.domainName || '';
                     document.getElementById('logoUrl').value = data.logoUrl || '';
                     document.getElementById('heroTitle').value = data.heroTitle || '';
-                    document.getElementById('heroDesc').value = data.heroDesc || '';
-                    document.getElementById('deliveryInside').value = data.deliveryInside || 0;
-                    document.getElementById('deliveryOutside').value = data.deliveryOutside || 0;
+                    $('#heroDesc').summernote('code', data.heroDesc || '');
                     document.getElementById('codHandlingFee').value = data.codHandlingFee || 0;
                     document.getElementById('footerPhone').value = data.footerPhone || '';
                     document.getElementById('footerEmail').value = data.footerEmail || '';
-                    document.getElementById('footerAddress').value = data.footerAddress || '';
-                    document.getElementById('footerAbout').value = data.footerAbout || '';
+                    $('#footerAddress').summernote('code', data.footerAddress || '');
+                    $('#footerAbout').summernote('code', data.footerAbout || '');
                     document.getElementById('footerCopyright').value = data.footerCopyright || '';
                     
                     document.getElementById('loginStoreName').innerText = `${data.siteName || 'Store'} Admin`;
@@ -1793,7 +1825,7 @@
                 bannerContainer.innerHTML = '';
                 slidesSnap.forEach(d => {
                     const s = d.data();
-                    addBannerField(s.src, s.type, d.id);
+                    addBannerField(s.src, d.id);
                 });
 
                 // Load Socials
@@ -1901,7 +1933,21 @@
             });
 
             filteredProducts.forEach(p => {
-                const img = (p.images && p.images.length > 0) ? p.images[0] : '';
+                const imgData = (p.images && p.images.length > 0) ? p.images[0] : '';
+                const imgUrl = typeof imgData === 'string' ? imgData : (imgData.url || '');
+                const imgType = typeof imgData === 'string' ? 'image' : (imgData.type || 'image');
+                
+                let imgHtml = '';
+                if (imgUrl) {
+                    if (imgType === 'video') {
+                        imgHtml = `<video src="${imgUrl}" style="width:45px; height:45px; border-radius:8px; object-fit:cover; border: 1px solid var(--border-color);" muted></video>`;
+                    } else {
+                        imgHtml = `<img src="${imgUrl}" style="width:45px; height:45px; border-radius:8px; object-fit:cover; border: 1px solid var(--border-color);">`;
+                    }
+                } else {
+                    imgHtml = `<div style="width:45px; height:45px; border-radius:8px; background:var(--light-gray); border: 1px solid var(--border-color);"></div>`;
+                }
+
                 let currentStatus = p.status || 'Active';
                 if (p.stock <= 0 && currentStatus !== 'Inactive') currentStatus = 'Out of Stock';
                 let statusClass = 'status-active';
@@ -1914,7 +1960,7 @@
                 row.innerHTML = `
                     <td>
                         <div style="display:flex; align-items:center; gap:12px;">
-                            <img src="${img}" style="width:45px; height:45px; border-radius:8px; object-fit:cover; border: 1px solid var(--border-color);">
+                            ${imgHtml}
                             <strong style="color:var(--primary-color); font-size: 13px;">${p.pid || 'N/A'}</strong>
                         </div>
                     </td>
@@ -2612,7 +2658,7 @@
             
             let stock = parseInt(document.getElementById('productStock').value) || 0;
             const sales = parseInt(document.getElementById('productSales').value) || 0;
-            const description = document.getElementById('productDescription').value;
+            const description = $('#productDescription').summernote('code');
             let status = document.getElementById('productStatus').value;
             
             let hasReturnPolicy = document.getElementById('returnRefundToggle').checked;
@@ -2628,8 +2674,14 @@
             const deliveryInside = parseFloat(document.getElementById('prodDeliveryInside').value) || 0;
             const deliveryOutside = parseFloat(document.getElementById('prodDeliveryOutside').value) || 0;
 
-            const imageInputs = document.querySelectorAll('.product-media-input');
-            const images = Array.from(imageInputs).map(inp => inp.value).filter(val => val.trim() !== '');
+            const mediaItems = document.querySelectorAll('#mediaContainer .media-item');
+            const images = Array.from(mediaItems).map(item => {
+                return {
+                    type: item.querySelector('.media-type').value,
+                    url: item.querySelector('.product-media-input').value
+                };
+            }).filter(val => val.url.trim() !== '');
+
             const seo_tag = adminSeoKeywords.join(', ');
 
             let variants = [];
@@ -2780,7 +2832,9 @@
                     const selectedProd = adminProducts.find(p => p.id === payload.productId);
                     payload.name = selectedProd ? selectedProd.name : '';
                     payload.title = selectedProd ? selectedProd.name : '';
-                    payload.bannerLogo = selectedProd && selectedProd.images && selectedProd.images.length ? selectedProd.images[0] : '';
+                    
+                    let popupImgObj = selectedProd && selectedProd.images && selectedProd.images.length ? selectedProd.images[0] : '';
+                    payload.bannerLogo = typeof popupImgObj === 'string' ? popupImgObj : (popupImgObj.url || '');
                     payload.image = payload.bannerLogo; // Explicitly adding image
                     
                     payload.price = selectedProd ? selectedProd.price : 0;
@@ -2842,14 +2896,12 @@
                     domainName: document.getElementById('domainName').value,
                     logoUrl: document.getElementById('logoUrl').value,
                     heroTitle: document.getElementById('heroTitle').value,
-                    heroDesc: document.getElementById('heroDesc').value,
-                    deliveryInside: parseFloat(document.getElementById('deliveryInside').value),
-                    deliveryOutside: parseFloat(document.getElementById('deliveryOutside').value),
+                    heroDesc: $('#heroDesc').summernote('code'),
                     codHandlingFee: parseFloat(document.getElementById('codHandlingFee').value),
                     footerPhone: document.getElementById('footerPhone').value,
                     footerEmail: document.getElementById('footerEmail').value,
-                    footerAddress: document.getElementById('footerAddress').value,
-                    footerAbout: document.getElementById('footerAbout').value,
+                    footerAddress: $('#footerAddress').summernote('code'),
+                    footerAbout: $('#footerAbout').summernote('code'),
                     footerCopyright: document.getElementById('footerCopyright').value
                 };
                 await db.collection('settings').doc('general').set(payload, {merge:true});
@@ -2871,10 +2923,9 @@
                 const bannerItems = document.querySelectorAll('#bannerContainer .dynamic-item');
                 bannerItems.forEach((item, idx) => {
                     const src = item.querySelector('.banner-url').value;
-                    const type = item.querySelector('.banner-type').value;
                     if(src) {
                         const ref = db.collection('heroSlides').doc();
-                        batch.set(ref, { src, type, order: idx });
+                        batch.set(ref, { src, type: 'image', order: idx });
                     }
                 });
 
@@ -2903,7 +2954,7 @@
             document.getElementById('productPrice').value = p.price || '';
             document.getElementById('productStock').value = p.stock || 0;
             document.getElementById('productSales').value = p.sales || 0;
-            document.getElementById('productDescription').value = p.description || '';
+            $('#productDescription').summernote('code', p.description || '');
             document.getElementById('productStatus').value = p.status || 'Active';
             
             document.getElementById('returnRefundToggle').checked = p.hasReturnPolicy || false;
@@ -2927,8 +2978,9 @@
 
             const mc = document.getElementById('mediaContainer'); mc.innerHTML = '';
             if(p.images) p.images.forEach(img => {
-                const html = `<div class="dynamic-item"><input type="text" class="form-control product-media-input" value="${img}"><button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button></div>`;
-                mc.insertAdjacentHTML('beforeend', html);
+                let url = typeof img === 'string' ? img : img.url;
+                let type = typeof img === 'string' ? 'image' : (img.type || 'image');
+                addMediaField(url, type);
             });
 
             adminSeoKeywords = p.seo_tag ? (typeof p.seo_tag === 'string' ? p.seo_tag.split(',').map(s=>s.trim()).filter(Boolean) : [...p.seo_tag]) : (p.keywords ? [...p.keywords] : []);
@@ -3075,9 +3127,76 @@
             }
         };
 
-        function updateOrderStatus(id, status) { 
+        window.updateOrderStatus = async function(id, newStatus) { 
             showLoader();
-            db.collection('orders').doc(id).update({status: status}).finally(()=> hideLoader()); 
+            try {
+                const orderRef = db.collection('orders').doc(id);
+                const doc = await orderRef.get();
+                if (!doc.exists) { hideLoader(); return; }
+                const order = doc.data();
+
+                if (newStatus !== 'Pending' && !order.stockDeducted) {
+                    await deductStock(order);
+                    await orderRef.update({ status: newStatus, stockDeducted: true });
+                } else {
+                    await orderRef.update({ status: newStatus });
+                }
+            } catch(e) {
+                console.error("Status update error:", e);
+                alert("Failed to update status: " + e.message);
+            } finally {
+                hideLoader();
+            }
+        };
+
+        // Inventory Deduction Logic
+        async function deductStock(order) {
+            let itemsArray = Array.isArray(order.cartItems) ? order.cartItems : (Array.isArray(order.products) ? order.products : null);
+            if (!itemsArray) return;
+
+            const batch = db.batch();
+            for (let item of itemsArray) {
+                let prod = adminProducts.find(p => p.pid === item.pid || p.id === item.productId);
+                if (!prod) continue;
+
+                let pRef = db.collection('products').doc(prod.id);
+                let newProdStock = parseInt(prod.stock) || 0;
+                let qtyToDeduct = parseInt(item.qty) || 1;
+                let variantsUpdated = false;
+                let updatedVariants = prod.variants ? JSON.parse(JSON.stringify(prod.variants)) : [];
+
+                if (updatedVariants.length > 0) {
+                    for (let v of updatedVariants) {
+                        let colorMatch = (!item.color || item.color === 'N/A' || v.color === item.color);
+                        if (colorMatch) {
+                            if (v.sizes && v.sizes.length > 0 && item.size && item.size !== 'N/A') {
+                                let sizeObj = v.sizes.find(s => s.size === item.size);
+                                if (sizeObj) {
+                                    sizeObj.stock = Math.max(0, sizeObj.stock - qtyToDeduct);
+                                    variantsUpdated = true;
+                                }
+                            } else {
+                                v.stock = Math.max(0, v.stock - qtyToDeduct);
+                                variantsUpdated = true;
+                            }
+                        }
+                    }
+                }
+
+                newProdStock = Math.max(0, newProdStock - qtyToDeduct);
+                let newStatus = prod.status;
+                if (newProdStock <= 0 && newStatus !== 'Inactive') {
+                    newStatus = 'Out of Stock';
+                }
+
+                let updateData = { stock: newProdStock, status: newStatus };
+                if (variantsUpdated) {
+                    updateData.variants = updatedVariants;
+                }
+
+                batch.update(pRef, updateData);
+            }
+            await batch.commit();
         }
         
         window.deleteOrder = async function(id) { 
@@ -3096,8 +3215,15 @@
         }
 
         // Dynamic Field Generators
-        window.addMediaField = function() {
-            const html = `<div class="dynamic-item"><input type="text" class="form-control product-media-input" placeholder="Image URL" style="flex:1;"><button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button></div>`;
+        window.addMediaField = function(url='', type='image') {
+            const html = `<div class="dynamic-item media-item">
+                <select class="form-control media-type" style="width: 80px; flex: none;">
+                    <option value="image" ${type==='image'?'selected':''}>Image</option>
+                    <option value="video" ${type==='video'?'selected':''}>Video</option>
+                </select>
+                <input type="text" class="form-control product-media-input" placeholder="Media URL" value="${url}" style="flex:1;">
+                <button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button>
+            </div>`;
             document.getElementById('mediaContainer').insertAdjacentHTML('beforeend', html);
         };
         
@@ -3161,8 +3287,11 @@
             }
         };
         
-        window.addBannerField = function(src="", type="image", id="") {
-            const html = `<div class="dynamic-item" data-id="${id}"><select class="form-control banner-type" style="flex:1;"><option value="image" ${type==='image'?'selected':''}>Image</option><option value="iframe" ${type==='iframe'?'selected':''}>Iframe</option></select><input type="text" class="form-control banner-url" placeholder="URL Source" value="${src}" style="flex:3;"><button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button></div>`;
+        window.addBannerField = function(src="", id="") {
+            const html = `<div class="dynamic-item" data-id="${id}">
+                <input type="text" class="form-control banner-url" placeholder="Image URL Source" value="${src}" style="flex:1;">
+                <button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button>
+            </div>`;
             document.getElementById('bannerContainer').insertAdjacentHTML('beforeend', html);
         };
         window.addSocialField = function(icon="", url="", id="") {
