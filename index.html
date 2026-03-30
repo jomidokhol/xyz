@@ -88,9 +88,9 @@
         .expanded-search-wrapper { position: absolute; left: 20px; right: 60px; top: 0; bottom: 0; display: flex; align-items: center; opacity: 0; pointer-events: none; transform: translateY(0); transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); z-index: 5; }
         header.at-top .expanded-search-wrapper { opacity: 1; pointer-events: auto; transform: translateY(0); }
         
-        .expanded-search-container { width: 100%; height: 46px; display: flex; align-items: center; background: white; border: 2px solid var(--primary); border-radius: 25px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
-        .expanded-search-container input { flex: 1; border: none; padding: 0 10px; height: 100%; outline: none; font-family: 'Poppins', sans-serif; font-size: 1rem; color: var(--dark); background: transparent; pointer-events: none; }
-        .expanded-search-container button { background: var(--primary); color: white; border: none; padding: 0 25px; height: 100%; font-weight: 600; cursor: pointer; transition: background 0.3s; font-family: 'Poppins', sans-serif; flex-shrink: 0; pointer-events: none; }
+        .expanded-search-container { width: 100%; height: 46px; display: flex; align-items: center; background: white; border: 2px solid var(--primary); border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); padding: 3px; }
+        .expanded-search-container input { flex: 1; border: none; padding: 0 15px; height: 100%; outline: none; font-family: 'Poppins', sans-serif; font-size: 1rem; color: var(--dark); background: transparent; pointer-events: none; }
+        .expanded-search-container button { background: var(--primary); color: white; border: none; padding: 0 20px; height: 100%; border-radius: 20px; font-weight: 600; cursor: pointer; transition: background 0.3s; font-family: 'Poppins', sans-serif; flex-shrink: 0; pointer-events: none; }
         .expanded-search-container button:hover { background: #14532d; }
 
         /* FLIGHT ANIMATION STYLES */
@@ -143,7 +143,7 @@
         .mobile-auth { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
         
         /* Adjusted Hero to overlay behind header smoothly */
-        .hero { position: relative; color: white; width: 100%; aspect-ratio: 2.5 / 1; max-height: 80vh; margin-bottom: 20px; overflow: hidden; display: flex; align-items: center; margin-top: -70px; padding-top: 70px; }
+        .hero { position: relative; color: white; width: 100%; aspect-ratio: 2.5 / 1; max-height: 80vh; margin-bottom: 20px; overflow: hidden; display: flex; align-items: center; margin-top: -70px; padding-top: 70px; border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; }
         .hero-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
         .hero-slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1s ease; }
         .hero-slide.active { opacity: 1; }
@@ -185,7 +185,9 @@
         .price-group { display: flex; align-items: baseline; gap: 6px; margin-bottom: auto; }
         .new-price { font-size: clamp(1rem, 4vw, 1.25rem); font-weight: 800; color: #16a34a; line-height: 1; }
         .old-price { font-size: clamp(0.75rem, 2vw, 0.9rem); color: #9ca3af; text-decoration: line-through; font-weight: 500; }
-        .sales-section { font-size: clamp(0.7rem, 2vw, 0.85rem); color: #6b7280; font-weight: 500; padding-top: 6px; }
+        .sales-section { display: flex; align-items: center; justify-content: space-between; font-size: clamp(0.7rem, 2vw, 0.85rem); color: #6b7280; font-weight: 500; padding-top: 6px; }
+        .rating-badge { display: flex; align-items: center; gap: 4px; color: #4b5563; font-weight: 600; }
+        .rating-badge i { color: #facc15; }
 
         .filter-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; position: sticky; top: 70px; z-index: 95; background: #f3f4f6; padding: 15px 0; }
         .filter-dropdown-container { position: relative; }
@@ -678,11 +680,11 @@
         .payment-highlight-yellow { color: #ffe600; font-weight: 700; font-size: 14px;}
         
         .payment-copy-btn {
-            background: transparent; border: 1px solid rgba(255,255,255,0.6);
-            color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;
-            cursor: pointer; margin-left: 8px; display: inline-flex; align-items: center; transition: 0.2s;
+            background: rgba(0, 0, 0, 0.2); border: none;
+            color: white; padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 500;
+            cursor: pointer; margin-left: 8px; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s;
         }
-        .payment-copy-btn:hover { background: rgba(255,255,255,0.2); border-color: white; }
+        .payment-copy-btn:hover { background: rgba(0, 0, 0, 0.3); }
         
         /* Fixed RED VERIFY button for all payment gateways */
         .payment-verify-btn {
@@ -786,8 +788,9 @@
                 <!-- Expanded Top Search -->
                 <div class="expanded-search-wrapper" id="expandedSearchWrapper">
                     <div class="expanded-search-container" onclick="navigateTo('search')" style="cursor: pointer;">
-                        <i class="fas fa-search" style="padding: 0 15px; color: var(--primary);"></i>
+                        <i class="fas fa-search" style="width:0; padding:0; margin:0; opacity:0; overflow:hidden;"></i>
                         <input type="text" id="topSearchInput" placeholder="Search for products, categories..." readonly>
+                        <i class="fas fa-camera" style="color: #9ca3af; font-size: 1.2rem; margin-right: 10px;"></i>
                         <button type="button">Search</button>
                     </div>
                 </div>
@@ -1149,7 +1152,7 @@
                         <li>"<span class="payment-highlight-yellow">Send Money</span>" -এ ক্লিক করুন।</li>
                         <li>
                             প্রাপক নম্বর হিসেবে এই নম্বরটি লিখুন: <span class="payment-highlight-yellow" id="paymentAdminNumber">...</span>
-                            <button type="button" class="payment-copy-btn" onclick="copyPaymentNumber()">Copy</button>
+                            <button type="button" class="payment-copy-btn" onclick="copyPaymentNumber()"><i class="far fa-copy"></i> Copy</button>
                         </li>
                         <li>টাকার পরিমাণ: <span class="payment-highlight-yellow" id="paymentInstructionAmount">0.00</span></li>
                         <li>নিশ্চিত করতে এখন আপনার <span id="payInstructionGwName1">Gateway</span> মোবাইল মেনু পিন লিখুন।</li>
@@ -1974,11 +1977,10 @@
             // --- SEARCH ICON FLIGHT ANIMATION ---
             function updateSearchAnimationVariables() {
                 const header = document.querySelector('header');
-                const leftIcon = document.querySelector('.expanded-search-container .fa-search');
+                const leftTarget = document.querySelector('.expanded-search-container');
                 const rightIcon = document.querySelector('.header-search-icon i');
-                if(header && leftIcon && rightIcon) {
+                if(header && leftTarget && rightIcon) {
                     header.style.transition = 'none';
-                    leftIcon.style.transition = 'none';
                     rightIcon.style.transition = 'none';
                     
                     const wasAtTop = header.classList.contains('at-top');
@@ -1987,11 +1989,11 @@
                     const rectR = rightIcon.getBoundingClientRect();
                     
                     header.classList.add('at-top');
-                    const rectL = leftIcon.getBoundingClientRect();
+                    const rectL = leftTarget.getBoundingClientRect();
                     
                     if(!wasAtTop) header.classList.remove('at-top');
                     
-                    const distX = (rectR.left + rectR.width / 2) - (rectL.left + rectL.width / 2);
+                    const distX = (rectR.left + rectR.width / 2) - (rectL.left + 20);
                     if (!isNaN(distX)) {
                         header.style.setProperty('--flight-dist', `${distX}px`);
                     }
@@ -1999,7 +2001,6 @@
                     void header.offsetHeight;
                     
                     header.style.transition = '';
-                    leftIcon.style.transition = '';
                     rightIcon.style.transition = '';
                 }
             }
@@ -2253,11 +2254,11 @@
                 if (selectedItemsArray && selectedItemsArray.length > 0) {
                     inside = Math.max(...selectedItemsArray.map(item => {
                         let p = products.find(prod => prod.id === item.id);
-                        return p && p.deliveryInside !== undefined ? p.deliveryInside : appDeliveryInside;
+                        return p && p.deliveryInside !== undefined && p.deliveryInside !== '' && p.deliveryInside !== null ? parseFloat(p.deliveryInside) : appDeliveryInside;
                     }));
                     outside = Math.max(...selectedItemsArray.map(item => {
                         let p = products.find(prod => prod.id === item.id);
-                        return p && p.deliveryOutside !== undefined ? p.deliveryOutside : appDeliveryOutside;
+                        return p && p.deliveryOutside !== undefined && p.deliveryOutside !== '' && p.deliveryOutside !== null ? parseFloat(p.deliveryOutside) : appDeliveryOutside;
                     }));
                 }
                 return region === 'Outside Dhaka' ? outside : inside;
@@ -2963,19 +2964,19 @@
                                 let prodRef = db.collection('products').doc(item.id || item.pid);
                                 let prodDoc = await prodRef.get();
                                 if (prodDoc.exists) {
-                                    let pData = prodDoc.data();
-                                    if (pData.variants && pData.variants.length > 0) {
-                                        let vIndex = pData.variants.findIndex(v => v.color === item.color && (v.size === item.size || item.size === 'N/A' || !item.size));
-                                        if (vIndex !== -1) {
-                                            pData.variants[vIndex].stock = Math.max(0, pData.variants[vIndex].stock - item.qty);
+                                        let pData = prodDoc.data();
+                                        if (pData.variants && pData.variants.length > 0) {
+                                            let vIndex = pData.variants.findIndex(v => v.color === item.color && (v.size === item.size || item.size === 'N/A' || !item.size));
+                                            if (vIndex !== -1) {
+                                                pData.variants[vIndex].stock = Math.max(0, pData.variants[vIndex].stock - item.qty);
+                                            }
+                                        } else {
+                                            pData.stock = Math.max(0, (pData.stock || 0) - item.qty);
                                         }
-                                    } else {
-                                        pData.stock = Math.max(0, (pData.stock || 0) - item.qty);
+                                        await prodRef.update({ variants: pData.variants, stock: pData.stock });
                                     }
-                                    await prodRef.update({ variants: pData.variants, stock: pData.stock });
                                 }
                             }
-                        }
                         if (order.status === 'Delivered' && !order.salesAdded) {
                             updates.salesAdded = true;
                             for (let item of order.cartItems) {
@@ -3503,6 +3504,7 @@
                 setTimeout(showNextSlide, 3000);
             }
             
+            // REDEFINED: renderProducts to include accurate rating UI with total sold
             function renderProducts(productsToRender, targetGrid) {
                 targetGrid.innerHTML = '';
                 if (productsToRender.length === 0) {
@@ -3527,7 +3529,6 @@
                     const discountBadge = discountPercentage > 0 ? `<div class="off-badge">-${discountPercentage}%</div>` : '';
                     const watermark = isOutOfStock ? `<div class="out-of-stock-banner">OUT OF STOCK</div>` : '';
                     
-                    // Display image and handle Video Icon Overlay
                     let displayImg = 'https://via.placeholder.com/200';
                     let hasVideo = false;
                     if (product.images && product.images.length > 0) {
@@ -3555,7 +3556,8 @@
                                 ${originalPrice > price ? `<span class="old-price">৳${originalPrice.toFixed(0)}</span>` : ''}
                             </div>
                             <div class="sales-section">
-                                ${formattedSalesCount} sold
+                                <span class="rating-badge"><i class="fas fa-star"></i> ${product.rating ? parseFloat(product.rating).toFixed(1) : '0.0'}</span>
+                                <span>${formattedSalesCount} sold</span>
                             </div>
                         </div>`;
                     
@@ -3567,6 +3569,7 @@
                 });
             }
 
+            // REDEFINED: renderSuggestedProducts to include accurate rating UI with total sold
             function renderSuggestedProducts(currentProd) {
                 const grid = document.getElementById('suggestedProductsGrid');
                 grid.innerHTML = '';
@@ -3640,7 +3643,8 @@
                                 ${originalPrice > price ? `<span class="old-price">৳${originalPrice.toFixed(0)}</span>` : ''}
                             </div>
                             <div class="sales-section">
-                                ${formattedSalesCount} sold
+                                <span class="rating-badge"><i class="fas fa-star"></i> ${product.rating ? parseFloat(product.rating).toFixed(1) : '0.0'}</span>
+                                <span>${formattedSalesCount} sold</span>
                             </div>
                         </div>`;
 
