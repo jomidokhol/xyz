@@ -736,6 +736,25 @@
                             <button type="submit" class="btn btn-primary" style="width: auto; margin-top: 10px; padding: 12px 30px;">Save General Settings</button>
                         </form>
                     </div>
+                    
+                    <!-- Restricted Keywords Section -->
+                    <div class="form-section">
+                        <h3 class="table-title" style="margin-bottom: 25px;">Content Moderation</h3>
+                        <form id="restrictedKeywordsForm">
+                            <div class="form-full">
+                                <div class="form-group">
+                                    <label>Restricted Keywords</label>
+                                    <div class="tag-container" id="restrictedTagsContainer" style="padding: 6px;">
+                                        <div id="restrictedInputWrapper" style="display:flex; flex:1; min-width: 250px;">
+                                            <input type="text" id="restrictedInput" placeholder="Type restricted keyword and press + or Enter">
+                                            <button type="button" class="btn-icon-add" onclick="addRestrictedKeyword()" style="width:28px; height:28px; font-size:12px; margin-left:5px;"><i class="fas fa-plus"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: auto; margin-top: 10px; padding: 12px 30px;">Save Keywords</button>
+                        </form>
+                    </div>
 
                     <div class="form-section">
                         <h3 class="table-title" style="margin-bottom: 25px;">Appearance & Socials</h3>
@@ -1230,6 +1249,10 @@
             <form id="blockUserForm">
                 <input type="hidden" id="blockUserId">
                 <div class="form-group">
+                    <label>Reason for Blocking (Bullet points/Text)</label>
+                    <textarea id="blockReason" class="form-control" rows="3" required placeholder="Enter reason for blocking..."></textarea>
+                </div>
+                <div class="form-group">
                     <label>Block Duration</label>
                     <select id="blockDuration" class="form-control">
                         <option value="1">1 Day</option>
@@ -1298,6 +1321,7 @@
         let adminPopups = [];
         let adminGateways = [];
         let adminSeoKeywords = [];
+        let adminRestrictedKeywords = [];
         
         let dashChart = null; // Variable for ChartJS instance
 
@@ -1327,6 +1351,8 @@
         
         const seoInput = document.getElementById('seoInput');
         const seoTagsContainer = document.getElementById('seoTagsContainer');
+        const restrictedInput = document.getElementById('restrictedInput');
+        const restrictedTagsContainer = document.getElementById('restrictedTagsContainer');
 
         const productsTable = document.getElementById('productsTable');
         const categoriesTable = document.getElementById('categoriesTable');
@@ -1738,6 +1764,7 @@
                 showLoader();
                 const userId = document.getElementById('blockUserId').value;
                 const duration = document.getElementById('blockDuration').value;
+                const reason = document.getElementById('blockReason').value;
                 
                 let blockUntil = null;
                 if (duration === 'permanent') {
@@ -1752,7 +1779,8 @@
                 try {
                     await db.collection('users').doc(userId).update({
                         isBlocked: true,
-                        blockUntil: blockUntil
+                        blockUntil: blockUntil,
+                        blockReason: reason
                     });
                     closeModal('blockUserModal');
                 } catch(e) {
@@ -1762,7 +1790,8 @@
                 }
             });
 
-            seoInput.addEventListener('keydown', handleSeoInput);
+            if (seoInput) seoInput.addEventListener('keydown', handleSeoInput);
+            if (restrictedInput) restrictedInput.addEventListener('keydown', handleRestrictedInput);
 
             productForm.addEventListener('submit', handleProductSubmit);
             categoryForm.addEventListener('submit', handleCategorySubmit);
@@ -1771,6 +1800,7 @@
             gatewayForm.addEventListener('submit', handleGatewaySubmit);
             generalSettingsForm.addEventListener('submit', saveGeneralSettings);
             appearanceSettingsForm.addEventListener('submit', saveSlidesAndSocials);
+            document.getElementById('restrictedKeywordsForm').addEventListener('submit', saveRestrictedKeywords);
             
             // New Forms Listeners
             document.getElementById('returnActionForm').addEventListener('submit', handleReturnActionSubmit);
@@ -1836,6 +1866,13 @@
                     const s = d.data();
                     addSocialField(s.iconClass, s.url, d.id);
                 });
+                
+                // Load Restricted Keywords
+                const resDoc = await db.collection('settings').doc('restricted').get();
+                if(resDoc.exists) {
+                    adminRestrictedKeywords = resDoc.data().keywords || [];
+                    renderRestrictedTags();
+                }
             } catch(e) { console.error(e); }
         }
 
@@ -2438,7 +2475,26 @@
             });
             
             filteredCustomers.forEach(c => {
-                let statusBadge = c.isBlocked ? `<span class="status status-cancelled">Blocked</span>` : `<span class="status status-active">Active</span>`;
+                let isCurrentlyBlocked = c.isBlocked;
+                
+                // Auto-unblock logic check
+                if (isCurrentlyBlocked && c.blockUntil && c.blockUntil !== 'permanent') {
+                    if (new Date(c.blockUntil) < new Date()) {
+                        isCurrentlyBlocked = false;
+                        // Silently update database to unblock
+                        db.collection('users').doc(c.id).update({
+                            isBlocked: false,
+                            blockUntil: firebase.firestore.FieldValue.delete(),
+                            blockReason: firebase.firestore.FieldValue.delete()
+                        });
+                    }
+                }
+
+                let statusBadge = isCurrentlyBlocked ? `<span class="status status-cancelled" title="${c.blockReason || 'Blocked'}">Blocked</span>` : `<span class="status status-active">Active</span>`;
+                
+                let blockActionBtn = isCurrentlyBlocked 
+                    ? `<button class="btn-action btn-success" onclick="unblockUser('${c.id}')" title="Unblock User"><i class="fas fa-unlock"></i> Unblock</button>` 
+                    : `<button class="btn-action btn-delete" onclick="openBlockUserModal('${c.id}')" title="Block User"><i class="fas fa-ban"></i> Block</button>`;
                 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -2450,7 +2506,7 @@
                     <td>
                         <div class="action-buttons">
                             ${statusBadge}
-                            <button class="btn-action btn-delete" onclick="openBlockUserModal('${c.id}')" title="Block User"><i class="fas fa-ban"></i> Block</button>
+                            ${blockActionBtn}
                         </div>
                     </td>
                 `;
@@ -2460,7 +2516,25 @@
 
         window.openBlockUserModal = function(userId) {
             document.getElementById('blockUserId').value = userId;
+            document.getElementById('blockReason').value = '';
             openModal('blockUserModal');
+        }
+        
+        window.unblockUser = async function(userId) {
+            if(confirm("Are you sure you want to unblock this user?")) {
+                showLoader();
+                try {
+                    await db.collection('users').doc(userId).update({
+                        isBlocked: false,
+                        blockUntil: firebase.firestore.FieldValue.delete(),
+                        blockReason: firebase.firestore.FieldValue.delete()
+                    });
+                } catch(e) {
+                    alert(e.message);
+                } finally {
+                    hideLoader();
+                }
+            }
         }
 
         function populateOffersTable() {
@@ -2671,8 +2745,11 @@
             const deliveryMinDays = parseInt(document.getElementById('deliveryMinDays').value) || 1;
             const deliveryMaxDays = parseInt(document.getElementById('deliveryMaxDays').value) || 3;
 
-            const deliveryInside = parseFloat(document.getElementById('prodDeliveryInside').value) || 0;
-            const deliveryOutside = parseFloat(document.getElementById('prodDeliveryOutside').value) || 0;
+            let dIn = parseFloat(document.getElementById('prodDeliveryInside').value);
+            const deliveryInside = isNaN(dIn) ? 0 : dIn;
+            
+            let dOut = parseFloat(document.getElementById('prodDeliveryOutside').value);
+            const deliveryOutside = isNaN(dOut) ? 0 : dOut;
 
             const mediaItems = document.querySelectorAll('#mediaContainer .media-item');
             const images = Array.from(mediaItems).map(item => {
@@ -2943,6 +3020,19 @@
                 alert('Hero Slides & Socials Updated!');
             } finally { hideLoader(); }
         }
+        
+        async function saveRestrictedKeywords(e) {
+            e.preventDefault();
+            showLoader();
+            try {
+                await db.collection('settings').doc('restricted').set({
+                    keywords: adminRestrictedKeywords
+                }, {merge:true});
+                alert('Restricted Keywords Saved Successfully!');
+            } catch(err) {
+                alert(err.message);
+            } finally { hideLoader(); }
+        }
 
         // Edit & Delete
         window.editProduct = function(id) {
@@ -2973,8 +3063,8 @@
             document.getElementById('deliveryMinDays').value = p.deliveryMinDays || '1';
             document.getElementById('deliveryMaxDays').value = p.deliveryMaxDays || '3';
 
-            document.getElementById('prodDeliveryInside').value = p.deliveryInside || '';
-            document.getElementById('prodDeliveryOutside').value = p.deliveryOutside || '';
+            document.getElementById('prodDeliveryInside').value = p.deliveryInside !== undefined ? p.deliveryInside : '';
+            document.getElementById('prodDeliveryOutside').value = p.deliveryOutside !== undefined ? p.deliveryOutside : '';
 
             const mc = document.getElementById('mediaContainer'); mc.innerHTML = '';
             if(p.images) p.images.forEach(img => {
@@ -3327,6 +3417,34 @@
         }
         window.removeTag = function(index) { adminSeoKeywords.splice(index, 1); renderTags(); }
         function resetSEO() { adminSeoKeywords = []; renderTags(); }
+
+        window.addRestrictedKeyword = function() {
+            const input = document.getElementById('restrictedInput');
+            const val = input.value.replace(/,/g, '').trim();
+            if (val && !adminRestrictedKeywords.includes(val)) {
+                adminRestrictedKeywords.push(val); 
+                renderRestrictedTags();
+            }
+            input.value = '';
+        };
+
+        function handleRestrictedInput(e) {
+            if (e.key === ',' || e.key === 'Enter') {
+                e.preventDefault();
+                addRestrictedKeyword();
+            }
+        }
+
+        function renderRestrictedTags() {
+            const tags = restrictedTagsContainer.querySelectorAll('.tag');
+            tags.forEach(t => t.remove());
+            adminRestrictedKeywords.forEach((tag, idx) => {
+                const el = document.createElement('div'); el.className = 'tag';
+                el.innerHTML = `${tag} <i class="fas fa-times" onclick="removeRestrictedTag(${idx})"></i>`;
+                restrictedTagsContainer.insertBefore(el, document.getElementById('restrictedInputWrapper'));
+            });
+        }
+        window.removeRestrictedTag = function(index) { adminRestrictedKeywords.splice(index, 1); renderRestrictedTags(); }
         
         window.toggleSizeColor = function() {
             const sec = document.getElementById('sizeColorSection');
