@@ -291,6 +291,11 @@
         .note-editor.note-frame { border-color: var(--border-color); border-radius: 8px; overflow: hidden; }
         .note-toolbar { background: var(--light-gray); border-bottom: 1px solid var(--border-color); }
         .note-modal-content { background: var(--light-color); color: var(--dark-color); }
+        
+        /* FIX: Summernote Modals and Dropdowns hiding behind global z-indexes */
+        .note-modal { z-index: 10000 !important; }
+        .note-modal-backdrop { z-index: 9999 !important; }
+        .note-popover { z-index: 10000 !important; }
 
         /* Invoice Print Area */
         @media print { 
@@ -377,6 +382,9 @@
                 <li><a href="#" class="menu-item" data-page="offers"><i class="fas fa-tags"></i> Offers</a></li>
                 <li><a href="#" class="menu-item" data-page="popup"><i class="fas fa-bullhorn"></i> Pop Ups</a></li>
                 
+                <li class="menu-header">Security</li>
+                <li><a href="#" class="menu-item" data-page="spyDetector"><i class="fas fa-user-secret"></i> Spy Detector</a></li>
+
                 <li class="menu-header">Preferences</li>
                 <li><a href="#" class="menu-item" data-page="settings"><i class="fas fa-cog"></i> Settings</a></li>
                 <li><a href="#" class="menu-item" data-page="payment"><i class="fas fa-credit-card"></i> Payment Gateways</a></li>
@@ -674,6 +682,43 @@
                     </div>
                 </div>
                 
+                <!-- Spy Detector Page -->
+                <div id="spyDetectorPage" class="page-content hidden">
+                    <div class="table-header">
+                        <h3 class="table-title">Spy Detector Dashboard</h3>
+                    </div>
+                    
+                    <div class="form-section" style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <h4 style="margin-bottom: 5px; color: var(--dark-color); font-size: 16px;">Automatic Surveillance</h4>
+                            <p style="font-size: 13px; color: var(--gray-color); max-width: 500px; line-height: 1.5;">Monitors for restricted keywords in names, profiles, and detects excessive daily cancellations (5+ per day). Automatically issues a 1-day block for first offense, and permanent block for subsequent violations.</p>
+                        </div>
+                        <label class="switch" style="transform: scale(1.2); margin-right: 10px;">
+                            <input type="checkbox" id="spyToggle" onchange="toggleSpyDetector()">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="table-container">
+                        <div style="padding: 15px 24px; border-bottom: 1px solid var(--border-color); background: var(--light-gray);">
+                            <h4 style="font-size: 14px; font-weight: 600; color: var(--dark-color);">Spy Detector Active Session Log</h4>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 120px;">Time</th>
+                                    <th>User Account</th>
+                                    <th>Detected Violation</th>
+                                    <th style="width: 150px;">Action Taken</th>
+                                </tr>
+                            </thead>
+                            <tbody id="spyLogTable">
+                                <tr><td colspan="4" style="text-align:center; padding: 25px; color: var(--gray-color);">No violations detected in this session yet.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <div id="paymentPage" class="page-content hidden">
                     <div class="table-header">
                         <h3 class="table-title">Payment Gateways</h3>
@@ -1335,6 +1380,10 @@
         let editingGatewayId = null;
         let currentOrderFilter = 'Pending';
         
+        // Spy Detector State Variables
+        let isSpyDetectorOn = false;
+        let spySessionLogs = [];
+        
         let adminLastSeenOrderCount = parseInt(localStorage.getItem('adminLastSeenOrderCount')) || 0;
 
         const loginPage = document.getElementById('loginPage');
@@ -1566,19 +1615,29 @@
 
         // Initialize UI Events and Editor
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Summernote Rich Text Editors
+            // Initialize Summernote Rich Text Editors with full functionality
             $('#heroDesc, #footerAddress, #footerAbout, #productDescription').summernote({
                 placeholder: 'Type here...',
                 tabsize: 2,
                 height: 150,
                 toolbar: [
                   ['style', ['style']],
+                  ['fontname', ['fontname']],
+                  ['fontsize', ['fontsize']],
                   ['font', ['bold', 'underline', 'italic', 'clear']],
                   ['color', ['color']],
                   ['para', ['ul', 'ol', 'paragraph']],
+                  ['table', ['table']],
                   ['insert', ['link', 'picture', 'video']],
                   ['view', ['codeview']]
-                ]
+                ],
+                popover: {
+                    image: [
+                        ['image', ['resizeFull', 'resizeHalf', 'resizeQuarter', 'resizeNone']],
+                        ['float', ['floatLeft', 'floatRight', 'floatNone']],
+                        ['remove', ['removeMedia']]
+                    ]
+                }
             });
 
             // Populate Return Refund Select Options dynamically
@@ -1813,6 +1872,7 @@
             showLoader();
             try {
                 await loadSettings();
+                await loadSpyDetector(); // Spy Detector Fetch Call
                 loadCategories();
                 loadProducts();
                 loadOrders();
@@ -1826,6 +1886,142 @@
             } finally {
                 hideLoader();
             }
+        }
+        
+        // Spy Detector State & Core Setup
+        async function loadSpyDetector() {
+            db.collection('settings').doc('spyDetector').onSnapshot(doc => {
+                if(doc.exists) {
+                    isSpyDetectorOn = doc.data().isActive || false;
+                } else {
+                    isSpyDetectorOn = false;
+                }
+                document.getElementById('spyToggle').checked = isSpyDetectorOn;
+                if (isSpyDetectorOn) runSpyCheck();
+            });
+        }
+
+        window.toggleSpyDetector = async function() {
+            const val = document.getElementById('spyToggle').checked;
+            try {
+                await db.collection('settings').doc('spyDetector').set({ isActive: val }, {merge:true});
+            } catch(e) { console.error(e); }
+        };
+
+        function runSpyCheck() {
+            if (!isSpyDetectorOn) return;
+
+            const todayStart = new Date();
+            todayStart.setHours(0, 0, 0, 0);
+
+            adminCustomers.forEach(c => {
+                if (c.isBlocked && c.blockUntil === 'permanent') return;
+
+                // Check if already on active 1-day spy block to avoid immediate re-trigger
+                if (c.isBlocked && c.blockReason && c.blockReason.includes('Spy Detector') && c.blockUntil !== 'permanent') {
+                    if (new Date(c.blockUntil) > new Date()) return;
+                }
+
+                let violation = null;
+
+                // 1. Check Restricted Keywords in user profile (Name, email, search logs etc)
+                if (adminRestrictedKeywords && adminRestrictedKeywords.length > 0) {
+                    const checkStr = JSON.stringify(c).toLowerCase();
+                    for (let kw of adminRestrictedKeywords) {
+                        if (kw.trim() && checkStr.includes(kw.toLowerCase().trim())) {
+                            violation = `Restricted Keyword Used: ${kw}`;
+                            break;
+                        }
+                    }
+                }
+
+                // 2. Check 5+ Order Cancellations Today
+                if (!violation) {
+                    let userCancelsToday = adminOrders.filter(o => {
+                        let isUserOrder = (o.userId === c.id) || (o.customer === c.name) || (o.customerEmail === c.email);
+                        if (!isUserOrder) return false;
+                        if (o.status !== 'Cancelled') return false;
+
+                        let oDate = new Date(o.date);
+                        if (isNaN(oDate.getTime()) && o.createdAt) {
+                            oDate = new Date(o.createdAt.toDate ? o.createdAt.toDate() : o.createdAt);
+                        }
+                        if (isNaN(oDate.getTime())) return false;
+                        return oDate >= todayStart;
+                    });
+
+                    if (userCancelsToday.length >= 5) {
+                        violation = `Cancelled ${userCancelsToday.length} orders today`;
+                    }
+                }
+
+                if (violation) {
+                    applySpyPenalty(c, violation);
+                }
+            });
+        }
+
+        async function applySpyPenalty(user, reason) {
+            let strike = user.spyStrikeCount || 0;
+            let blockUntil = '';
+            let newStrike = strike + 1;
+            let penaltyLabel = '';
+
+            if (strike === 0) {
+                // 1st offense = 1 Day Block
+                let d = new Date();
+                d.setDate(d.getDate() + 1);
+                blockUntil = d.toISOString();
+                penaltyLabel = `1-Day Block`;
+                reason = `Spy Detector (1st Strike): ` + reason;
+            } else {
+                // 2nd offense or more = Permanent Block
+                blockUntil = 'permanent';
+                penaltyLabel = `Permanent Block`;
+                reason = `Spy Detector (Permanent): ` + reason;
+            }
+
+            try {
+                await db.collection('users').doc(user.id).update({
+                    isBlocked: true,
+                    blockUntil: blockUntil,
+                    blockReason: reason,
+                    spyStrikeCount: newStrike
+                });
+                
+                // Add to session log
+                const timeStr = new Date().toLocaleTimeString();
+                spySessionLogs.unshift({
+                    time: timeStr,
+                    user: user.name || user.id,
+                    violation: reason,
+                    action: penaltyLabel
+                });
+                renderSpyLogs();
+                
+            } catch(e) {
+                console.error("Spy penalty error:", e);
+            }
+        }
+
+        function renderSpyLogs() {
+            const tbody = document.getElementById('spyLogTable');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            if (spySessionLogs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 25px; color: var(--gray-color);">No violations detected in this session yet.</td></tr>`;
+                return;
+            }
+            spySessionLogs.forEach(log => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-size: 13px; color: var(--gray-color);">${log.time}</td>
+                    <td style="font-weight: 500;">${log.user}</td>
+                    <td style="color: var(--danger-color); font-size: 13px;">${log.violation}</td>
+                    <td><span class="status status-cancelled">${log.action}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
         async function loadSettings() {
@@ -1903,6 +2099,7 @@
                 populateOrdersTable();
                 populateRecentOrdersTable();
                 updateDashboardStats();
+                if(isSpyDetectorOn) runSpyCheck();
             });
         }
         
@@ -1932,6 +2129,7 @@
                 adminCustomers = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
                 populateCustomersTable();
                 updateDashboardStats();
+                if(isSpyDetectorOn) runSpyCheck();
             });
         }
 
