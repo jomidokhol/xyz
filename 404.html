@@ -142,8 +142,8 @@
         .mobile-nav-links a { text-decoration: none; color: var(--dark); font-weight: 500; display: block; padding: 10px 0; }
         .mobile-auth { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
         
-        /* Adjusted Hero to overlay behind header smoothly and curve downwards */
-        .hero { position: relative; color: white; width: 100%; aspect-ratio: 2.5 / 1; max-height: 80vh; margin-bottom: 20px; overflow: hidden; display: flex; align-items: center; margin-top: -70px; padding-top: 70px; border-radius: 0 0 50% 50% / 0 0 35px 35px; }
+        /* Adjusted Hero to overlay behind header smoothly with downward curved border */
+        .hero { position: relative; color: white; width: 100%; aspect-ratio: 2.5 / 1; max-height: 80vh; margin-bottom: 20px; overflow: hidden; display: flex; align-items: center; margin-top: -70px; padding-top: 70px; border-bottom-left-radius: 50% 25px; border-bottom-right-radius: 50% 25px; }
         .hero-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
         .hero-slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1s ease; }
         .hero-slide.active { opacity: 1; }
@@ -934,8 +934,8 @@
                             <span id="detailStockStatus" style="margin-left: 10px; font-size: 0.9rem; color: var(--gray); display: none !important;"></span>
                         </div>
                         
-                        <div id="detailLowStockWarning" style="color: #dc2626; font-size: 0.85rem; font-weight: 600; margin-bottom: 20px; margin-top: -10px; display: none;">
-                            <i class="fas fa-bell" style="animation: pulseLight 1.5s infinite;"></i> Almost sold out, grab now!
+                        <div id="detailAlmostSoldOut" style="display: none; color: #dc2626; font-size: 0.85rem; font-weight: 600; margin-bottom: 15px; margin-top: -10px;">
+                            <i class="fas fa-exclamation-circle"></i> Almost Sold Out, Grab Now!
                         </div>
                         
                         <div id="productReviewsSection" style="margin-top: 30px; margin-bottom: 30px; border-top: 1px solid #eee; padding-top: 20px;">
@@ -1168,7 +1168,7 @@
             </div>
         </div>
 
-        <!-- NEW TRANSACTION CONFIRMATION PAGE -->
+        <!-- NEW TRANSACTION CONFIRMATION PAGE (Design matched with trx.png) -->
         <div id="trx-confirmation-page" class="page-section" style="background: white; min-height: 100vh; padding: 20px;">
             <div style="max-width: 500px; margin: 0 auto; display: flex; flex-direction: column; height: 100%;">
                 <h2 style="text-align: center; font-size: 2rem; font-weight: bold; margin: 30px 0;">Payment Confirmation</h2>
@@ -1744,14 +1744,14 @@
         <div class="options-panel-body" id="vlVariantSelectors"></div>
         <div class="variant-selector" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; margin-bottom: 10px;">
             <h4 style="margin-bottom: 10px;">Quantity</h4>
-            <div class="quantity-selector" style="margin-top:0; padding-top:0; border-top:none; justify-content:flex-start; margin-bottom: 10px;">
+            <div class="quantity-selector" style="margin-top:0; padding-top:0; border-top:none; justify-content:flex-start;">
                 <button class="qty-btn" id="vlDecQty">-</button>
                 <input type="number" class="qty-input" id="vlQty" value="1" min="1">
                 <button class="qty-btn" id="vlIncQty">+</button>
                 <span id="vlStockStatus" style="margin-left: 10px; font-size: 0.9rem; color: var(--gray); display: none !important;"></span>
             </div>
-            <div id="vlLowStockWarning" style="color: #dc2626; font-size: 0.85rem; font-weight: 600; display: none;">
-                <i class="fas fa-bell" style="animation: pulseLight 1.5s infinite;"></i> Almost sold out, grab now!
+            <div id="vlAlmostSoldOut" style="display: none; color: #dc2626; font-size: 0.85rem; font-weight: 600; margin-top: 8px;">
+                <i class="fas fa-exclamation-circle"></i> Almost Sold Out, Grab Now!
             </div>
         </div>
         <div class="variant-panel-btn-wrapper">
@@ -1869,7 +1869,7 @@
                 'Green': '#16a34a',
                 'Blue': '#2563eb',
                 'Sky Blue': '#0ea5e9',
-                'Purple': '#89318C',
+                'Purple': '#882D8E',
                 'Yellow': '#ca8a04'
             };
 
@@ -2405,6 +2405,13 @@
                                         document.getElementById('detailStockStatus').textContent = `(Total Stock: ${totalStock})`;
                                         
                                         const isOutOfStock = currentProduct.status === 'Out of Stock' || totalStock <= 0;
+                                        
+                                        if(totalStock <= 10 && totalStock > 0 && !isOutOfStock) {
+                                            document.getElementById('detailAlmostSoldOut').style.display = 'block';
+                                        } else {
+                                            document.getElementById('detailAlmostSoldOut').style.display = 'none';
+                                        }
+
                                         if(isOutOfStock) {
                                             document.getElementById('detailAddToCartSticky').style.display = 'none';
                                             document.getElementById('detailBuyNowSticky').style.display = 'none';
@@ -2415,12 +2422,6 @@
                                             document.getElementById('detailBuyNowSticky').style.display = 'block';
                                             document.getElementById('soldOutDisplay').style.display = 'none';
                                             document.getElementById('stickyActionsBar').classList.remove('sold-out-mode');
-                                        }
-
-                                        const detailLowStock = document.getElementById('detailLowStockWarning');
-                                        if (detailLowStock) {
-                                            if (totalStock > 0 && totalStock <= 10) detailLowStock.style.display = 'block';
-                                            else detailLowStock.style.display = 'none';
                                         }
                                     }
                                 }
@@ -3011,6 +3012,7 @@
                         let isToReceive = ['Shipped', 'Delivered'].includes(order.status);
                         let isReturns = ['Cancelled', 'Returned'].includes(order.status);
                         let isToReview = false;
+
                         let hasUnreviewed = false;
                         let hasReturnable = false;
                         let canCancelOrder = true;
@@ -3107,13 +3109,11 @@
 
                         let actionButtonsHtml = '';
                         if (isToPay) {
-                            actionButtonsHtml += `<button class="btn btn-primary" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 6px; margin-left:10px;" onclick="resumePayment('${order.id}')"><i class="fas fa-credit-card"></i> Pay Now</button>`;
+                            actionButtonsHtml += `<button class="btn btn-primary" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 6px; margin-left:10px;" onclick="resumePayment('${order.id}')"><i class="fas-card"></i> Pay Now</button>`;
                         }
                         if (isToShip && order.status !== 'Delivered' && order.status !== 'Cancelled' && canCancelOrder) {
                             actionButtonsHtml += `<button class="btn btn-outline" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 6px; margin-left:10px;" onclick="cancelOrder('${order.id}')"><i class="fas fa-times"></i> Cancel</button>`;
-                        যেখান থেকে কোড লেখা বন্ধ হয়েছিল ঠিক সেখান থেকে সম্পূর্ণ ফাইলের বাকি অংশটুকু নিচে দেওয়া হলো। আপনার নির্দেশিত ২ নং পরিবর্তন অনুযায়ী, ভেরিয়েন্ট সিলেক্ট করার সময় স্টক যদি ১০ বা তার কম হয়, তবে "Almost sold out, grab now!" ওয়ার্নিং মেসেজটি ট্রিগার করার লজিক এখানে যুক্ত করা হয়েছে। এছাড়া ৩ নং পরিবর্তন অনুযায়ী পপ-আপের লিঙ্কটি একই উইন্ডোতে (`window.location.href`) ওপেন হওয়ার বিষয়টিও নিশ্চিত করা আছে।
-
-```javascript
+                        }
                         if (order.status === 'Delivered' || order.status === 'Cancelled') {
                             actionButtonsHtml += `<button class="btn btn-primary" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 6px; margin-left:10px;" onclick="reBuyOrder('${order.id}')"><i class="fas fa-shopping-bag"></i> Re-buy</button>`;
                         } else if (!isToPay) {
@@ -3517,6 +3517,155 @@
                 setTimeout(showNextSlide, 3000);
             }
             
+            function renderProducts(productsToRender, targetGrid) {
+                targetGrid.innerHTML = '';
+                if (productsToRender.length === 0) {
+                    targetGrid.innerHTML = `<div class="empty-state"><i class="fas fa-box-open"></i><h3>No Products Found</h3><p>Try searching for something else or adjusting filters.</p></div>`;
+                    return;
+                }
+                productsToRender.forEach(product => {
+                    const totalStock = product.variants && product.variants.length > 0 
+                                       ? product.variants.reduce((sum, v) => sum + v.stock, 0)
+                                       : (product.stock || 0);
+
+                    const isOutOfStock = product.status === 'Out of Stock' || totalStock <= 0;
+                    
+                    const productCard = document.createElement('div');
+                    productCard.className = 'product-card';
+                    productCard.dataset.id = product.id;
+                    
+                    const price = product.variants && product.variants.length > 0 ? product.variants[0].price : (product.price || 0);
+                    const originalPrice = product.originalPrice ? product.originalPrice : 0;
+                    const discountPercentage = originalPrice > price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+                    
+                    const discountBadge = discountPercentage > 0 ? `<div class="off-badge">-${discountPercentage}%</div>` : '';
+                    const watermark = isOutOfStock ? `<div class="out-of-stock-banner">OUT OF STOCK</div>` : '';
+                    
+                    let displayImg = 'https://via.placeholder.com/200';
+                    let hasVideo = false;
+                    if (product.images && product.images.length > 0) {
+                        const firstMedia = product.images[0];
+                        displayImg = typeof firstMedia === 'string' ? firstMedia : (firstMedia.url || 'https://via.placeholder.com/200');
+                        hasVideo = product.images.some(media => typeof media === 'object' && media.type === 'video');
+                    }
+                    
+                    const videoIconHtml = hasVideo ? `<div style="position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.6); color:white; padding:4px 8px; border-radius:4px; z-index:3; font-size:12px; display:flex; align-items:center; gap:5px; font-weight:600;"><i class="fas fa-play-circle"></i> Video</div>` : '';
+
+                    const salesCount = product.sales || 0;
+                    const formattedSalesCount = formatNumberKM(salesCount);
+
+                    productCard.innerHTML = `
+                        <div class="img-frame">
+                            <img src="${displayImg}" alt="${product.name}" class="product-img">
+                            ${videoIconHtml}
+                            ${discountBadge}
+                            ${watermark}
+                        </div>
+                        <div class="card-info">
+                            <h3 class="product-title">${product.name}</h3>
+                            <div class="price-group">
+                                <span class="new-price">৳${price.toFixed(0)}</span>
+                                ${originalPrice > price ? `<span class="old-price">৳${originalPrice.toFixed(0)}</span>` : ''}
+                            </div>
+                            <div class="sales-section">
+                                <span class="rating-badge"><i class="fas fa-star"></i> ${product.rating ? parseFloat(product.rating).toFixed(1) : '0.0'}</span>
+                                <span>${formattedSalesCount} sold</span>
+                            </div>
+                        </div>`;
+                    
+                    productCard.addEventListener('click', () => {
+                         navigateTo(`product-details?id=${product.id}`);
+                    });
+
+                    targetGrid.appendChild(productCard);
+                });
+            }
+
+            function renderSuggestedProducts(currentProd) {
+                const grid = document.getElementById('suggestedProductsGrid');
+                grid.innerHTML = '';
+                
+                const currentNameWords = currentProd.name.toLowerCase().split(' ');
+
+                const suggested = products.filter(p => {
+                    if (p.id == currentProd.id) return false;
+                    
+                    let seoMatch = false;
+                    if (currentProd.seo_tag && p.seo_tag) {
+                        let currentTags = typeof currentProd.seo_tag === 'string' ? currentProd.seo_tag.split(',').map(s=>s.trim().toLowerCase()) : currentProd.seo_tag.map(s=>s.toLowerCase());
+                        let pTags = typeof p.seo_tag === 'string' ? p.seo_tag.split(',').map(s=>s.trim().toLowerCase()) : p.seo_tag.map(s=>s.toLowerCase());
+                        seoMatch = pTags.some(t => currentTags.includes(t));
+                    }
+
+                    const nameMatch = currentNameWords.some(word => word.length > 3 && p.name.toLowerCase().includes(word));
+                    const keywordMatch = p.keywords && currentProd.keywords && p.keywords.some(k => currentProd.keywords.includes(k));
+                    const categoryMatch = p.category && currentProd.category && p.category === currentProd.category;
+                    
+                    return nameMatch || seoMatch || keywordMatch || categoryMatch;
+                }).slice(0, 4); 
+
+                if (suggested.length === 0) {
+                    document.querySelector('.suggested-products-section').style.display = 'none';
+                    return;
+                }
+                document.querySelector('.suggested-products-section').style.display = 'block';
+                
+                suggested.forEach(product => {
+                    const totalStock = product.variants && product.variants.length > 0 
+                                       ? product.variants.reduce((sum, v) => sum + v.stock, 0)
+                                       : (product.stock || 0);
+
+                    const isOutOfStock = product.status === 'Out of Stock' || totalStock <= 0;
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    card.dataset.id = product.id;
+                    
+                    const price = product.variants && product.variants.length > 0 ? product.variants[0].price : (product.price || 0);
+                    const originalPrice = product.originalPrice ? product.originalPrice : 0;
+                    const discountPercentage = originalPrice > price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+                    
+                    const discountBadge = discountPercentage > 0 ? `<div class="off-badge">-${discountPercentage}%</div>` : '';
+                    const watermark = isOutOfStock ? `<div class="out-of-stock-banner">OUT OF STOCK</div>` : '';
+                    
+                    let displayImg = 'https://via.placeholder.com/200';
+                    let hasVideo = false;
+                    if (product.images && product.images.length > 0) {
+                        const firstMedia = product.images[0];
+                        displayImg = typeof firstMedia === 'string' ? firstMedia : (firstMedia.url || 'https://via.placeholder.com/200');
+                        hasVideo = product.images.some(media => typeof media === 'object' && media.type === 'video');
+                    }
+                    
+                    const videoIconHtml = hasVideo ? `<div style="position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.6); color:white; padding:4px 8px; border-radius:4px; z-index:3; font-size:12px; display:flex; align-items:center; gap:5px; font-weight:600;"><i class="fas fa-play-circle"></i> Video</div>` : '';
+
+                    const salesCount = product.sales || 0;
+                    const formattedSalesCount = formatNumberKM(salesCount);
+
+                    card.innerHTML = `
+                        <div class="img-frame">
+                            <img src="${displayImg}" alt="${product.name}" class="product-img">
+                            ${videoIconHtml}
+                            ${discountBadge}
+                            ${watermark}
+                        </div>
+                        <div class="card-info">
+                            <h3 class="product-title">${product.name}</h3>
+                            <div class="price-group">
+                                <span class="new-price">৳${price.toFixed(0)}</span>
+                                ${originalPrice > price ? `<span class="old-price">৳${originalPrice.toFixed(0)}</span>` : ''}
+                            </div>
+                            <div class="sales-section">
+                                <span class="rating-badge"><i class="fas fa-star"></i> ${product.rating ? parseFloat(product.rating).toFixed(1) : '0.0'}</span>
+                                <span>${formattedSalesCount} sold</span>
+                            </div>
+                        </div>`;
+
+                    card.addEventListener('click', () => {
+                        navigateTo(`product-details?id=${product.id}`);
+                    });
+                    grid.appendChild(card);
+                });
+            }
+
             function getStarRatingHTML(rating) {
                 let stars = '';
                 const fullStars = Math.floor(rating);
@@ -3619,6 +3768,12 @@
                 
                 const isOutOfStock = currentProduct.status === 'Out of Stock' || totalStock <= 0;
                 
+                if(totalStock <= 10 && totalStock > 0 && !isOutOfStock) {
+                    document.getElementById('detailAlmostSoldOut').style.display = 'block';
+                } else {
+                    document.getElementById('detailAlmostSoldOut').style.display = 'none';
+                }
+
                 if(isOutOfStock) {
                     document.getElementById('detailAddToCartSticky').style.display = 'none';
                     document.getElementById('detailBuyNowSticky').style.display = 'none';
@@ -3629,13 +3784,6 @@
                     document.getElementById('detailBuyNowSticky').style.display = 'block';
                     soldOutDisplay.style.display = 'none';
                     stickyActionsBar.classList.remove('sold-out-mode');
-                }
-
-                // Show Low Stock Warning on Product Page
-                const detailLowStock = document.getElementById('detailLowStockWarning');
-                if(detailLowStock) {
-                    if (totalStock > 0 && totalStock <= 10) detailLowStock.style.display = 'block';
-                    else detailLowStock.style.display = 'none';
                 }
                 
                 const returnPolicyContainer = document.getElementById('detailReturnPolicy');
@@ -4034,7 +4182,7 @@
                     const isOutOfStock = v.stock <= 0;
                     const imgHTML = v.image ? `<img src="${v.image}" class="variant-img" alt="${v.color}">` : '';
                     colorHTML += `
-                        <div class="variant-option color-option ${isOutOfStock ? 'out-of-stock' : ''}" data-index="${index}" data-stock="${v.stock}">
+                        <div class="variant-option color-option ${isOutOfStock ? 'out-of-stock' : ''}" data-index="${index}">
                             ${imgHTML}
                             <span class="var-name">${v.color}</span>
                             <div class="var-price">৳${v.price}</div>
@@ -4094,12 +4242,11 @@
                                     if(parseInt(document.getElementById('vlQty').value) > sStock) {
                                         document.getElementById('vlQty').value = sStock || 1;
                                     }
-                                    
-                                    // Update low stock warning
-                                    const vlLowStock = document.getElementById('vlLowStockWarning');
-                                    if(vlLowStock) {
-                                        if(sStock > 0 && sStock <= 10) vlLowStock.style.display = 'block';
-                                        else vlLowStock.style.display = 'none';
+
+                                    if(sStock <= 10 && sStock > 0) {
+                                        document.getElementById('vlAlmostSoldOut').style.display = 'block';
+                                    } else {
+                                        document.getElementById('vlAlmostSoldOut').style.display = 'none';
                                     }
                                 });
                             });
@@ -4109,9 +4256,8 @@
                                 firstSize.click();
                             } else {
                                 document.getElementById('vlStockStatus').textContent = `(Stock: 0)`;
+                                document.getElementById('vlAlmostSoldOut').style.display = 'none';
                                 selectedVariant = null; 
-                                const vlLowStock = document.getElementById('vlLowStockWarning');
-                                if(vlLowStock) vlLowStock.style.display = 'none';
                             }
                         } else {
                             sizeBlock.style.display = 'none';
@@ -4121,11 +4267,10 @@
                                 document.getElementById('vlQty').value = selectedVar.stock || 1;
                             }
                             
-                            // Update low stock warning
-                            const vlLowStock = document.getElementById('vlLowStockWarning');
-                            if(vlLowStock) {
-                                if(selectedVar.stock > 0 && selectedVar.stock <= 10) vlLowStock.style.display = 'block';
-                                else vlLowStock.style.display = 'none';
+                            if(selectedVar.stock <= 10 && selectedVar.stock > 0) {
+                                document.getElementById('vlAlmostSoldOut').style.display = 'block';
+                            } else {
+                                document.getElementById('vlAlmostSoldOut').style.display = 'none';
                             }
                         }
                     });
