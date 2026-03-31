@@ -293,9 +293,9 @@
         .note-modal-content { background: var(--light-color); color: var(--dark-color); }
         
         /* FIX: Summernote Modals and Dropdowns hiding behind global z-indexes */
-        .note-modal { z-index: 10000 !important; }
-        .note-modal-backdrop { z-index: 9999 !important; }
-        .note-popover { z-index: 10000 !important; }
+        .note-modal { z-index: 100060 !important; }
+        .note-modal-backdrop { z-index: 100050 !important; }
+        .note-popover { z-index: 100060 !important; }
 
         /* Invoice Print Area */
         @media print { 
@@ -618,7 +618,7 @@
                     <div class="table-header">
                         <h3 class="table-title">Customers Directory</h3>
                         <div style="display: flex; gap: 15px;">
-                            <input type="text" id="customerSearchById" class="form-control" placeholder="Search by Customer ID..." style="width: 250px;">
+                            <input type="text" id="customerSearchById" class="form-control" placeholder="Search by ID, Name, Email or Phone..." style="width: 300px;">
                         </div>
                     </div>
                     <div class="table-container">
@@ -1620,6 +1620,7 @@
                 placeholder: 'Type here...',
                 tabsize: 2,
                 height: 150,
+                dialogsInBody: true,
                 toolbar: [
                   ['style', ['style']],
                   ['fontname', ['fontname']],
@@ -2669,7 +2670,11 @@
 
             const filteredCustomers = adminCustomers.filter(c => {
                 if (!searchVal) return true;
-                return (c.id || '').toLowerCase().includes(searchVal);
+                const sVal = searchVal.toLowerCase();
+                return (c.id || '').toLowerCase().includes(sVal) ||
+                       (c.name || '').toLowerCase().includes(sVal) ||
+                       (c.email || '').toLowerCase().includes(sVal) ||
+                       (c.phone || '').toLowerCase().includes(sVal);
             });
             
             filteredCustomers.forEach(c => {
@@ -2755,7 +2760,7 @@
             popUpsTable.innerHTML = '';
             adminPopups.forEach(p => {
                 let displayType = p.section === 'opening' ? 'Opening Page' : 'Random Product';
-                let contentDisplay = p.type === 'product' ? `<span style="color:var(--success-color); font-weight:500;">Product: ${p.title || p.name || 'Selected'}</span>` : (p.actionButton ? `<span style="color:var(--primary-color); font-weight:500;">${p.actionButtonName}</span>` : '<span style="color:var(--gray-color)">None</span>');
+                let contentDisplay = p.type === 'product' ? `<span style="color:var(--success-color); font-weight:500;">Product: ${p.title || p.name || 'Selected'}</span><br><small style="color:var(--primary-color);">Action: ${p.actionButtonName || 'Shop Now'}</small>` : (p.actionButton ? `<span style="color:var(--primary-color); font-weight:500;">${p.actionButtonName}</span>` : '<span style="color:var(--gray-color)">None</span>');
                 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -3117,7 +3122,7 @@
                     payload.discount = selectedProd ? selectedProd.discount : 0;
                     payload.actionButton = true;
                     payload.actionButtonName = "Shop Now";
-                    payload.actionButtonLink = selectedProd ? `/product/${selectedProd.id}` : '';
+                    payload.actionButtonLink = selectedProd ? `product-details.html?id=${selectedProd.id}` : '';
                 } else {
                     const actionButton = document.getElementById('popUpActionButtonToggle').checked;
                     payload.name = section === 'random-product' ? document.getElementById('popUpName').value : '';
