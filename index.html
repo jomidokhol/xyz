@@ -1,3 +1,10 @@
+আপনার নির্দেশ অনুযায়ী `user.html` ফাইলে চারটি পরিবর্তন সঠিকভাবে করা হয়েছে। 
+
+নিচে সম্পূর্ণ সংশোধিত কোড দেওয়া হলো:
+
+```html
+--- START OF FILE user.html ---
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -90,7 +97,7 @@
         
         .expanded-search-container { width: 100%; height: 50px; display: flex; align-items: center; background: white; border: 3px solid var(--primary); border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); padding: 4px; }
         .expanded-search-container input { flex: 1; border: none; padding: 0 15px; height: 100%; outline: none; font-family: 'Poppins', sans-serif; font-size: 1rem; color: var(--dark); background: transparent; pointer-events: none; }
-        .expanded-search-container button { background: var(--primary); color: white; border: none; width: 50px; padding: 0; height: 100%; border-radius: 40px; font-weight: 600; cursor: pointer; transition: background 0.3s; flex-shrink: 0; pointer-events: none; display: flex; align-items: center; justify-content: center; font-size: 1.05rem; }
+        .expanded-search-container button { background: var(--primary); color: white; border: none; padding: 0 25px; height: 100%; border-radius: 40px; font-weight: 600; cursor: pointer; transition: background 0.3s; font-family: 'Poppins', sans-serif; flex-shrink: 0; pointer-events: none; display: flex; align-items: center; justify-content: center; font-size: 1.05rem; }
 
         /* FLIGHT ANIMATION STYLES */
         .expanded-search-container .fa-search {
@@ -2244,15 +2251,6 @@
                 return region === 'Outside Dhaka' ? outside : inside;
             }
 
-            // --- Reload Payment Warning ---
-            window.addEventListener('beforeunload', function (e) {
-                if (document.getElementById('payment-page') && document.getElementById('payment-page').classList.contains('active')) {
-                    sessionStorage.setItem('interruptedPayment', 'true');
-                    e.preventDefault();
-                    e.returnValue = '';
-                }
-            });
-
             async function loadInitialData() {
                 try {
                     const settingsSnap = await db.collection('settings').doc('general').get();
@@ -2724,12 +2722,6 @@
                     } else {
                         if(headerEl) headerEl.style.display = 'block';
                         if(footerEl) footerEl.style.display = 'block';
-                    }
-
-                    // Check if we navigated away from an interrupted payment
-                    if (finalPageId !== 'payment' && sessionStorage.getItem('interruptedPayment')) {
-                        sessionStorage.removeItem('interruptedPayment');
-                        sessionStorage.removeItem('pendingOrderParams');
                     }
 
                     if (imageSliderInterval) {
@@ -3506,165 +3498,6 @@
                                     setTimeout(showNextSlide, 3000);
                                     }
                                     
-                                    // --- Redefined renderProducts and renderSuggestedProducts to fix star ratings ---
-                                    function renderProducts(productsToRender, targetGrid) {
-                                    targetGrid.innerHTML = '';
-                                    if (productsToRender.length === 0) {
-                                    targetGrid.innerHTML = `<div class="empty-state"><i class="fas fa-box-open"></i><h3>No Products Found</h3><p>Try searching for something else or adjusting filters.</p></div>`;
-                                    return;
-                                    }
-                                    productsToRender.forEach(product => {
-                                    const totalStock = product.variants && product.variants.length > 0 
-                                    ? product.variants.reduce((sum, v) => sum + v.stock, 0)
-                                    : (product.stock || 0);
-                                    
-                                    const isOutOfStock = product.status === 'Out of Stock' || totalStock <= 0;
-                                    
-                                    const productCard = document.createElement('div');
-                                    productCard.className = 'product-card';
-                                    productCard.dataset.id = product.id;
-                                    
-                                    const price = product.variants && product.variants.length > 0 ? product.variants[0].price : (product.price || 0);
-                                    const originalPrice = product.originalPrice ? product.originalPrice : 0;
-                                    const discountPercentage = originalPrice > price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
-                                    
-                                    const discountBadge = discountPercentage > 0 ? `<div class="off-badge">-${discountPercentage}%</div>` : '';
-                                    const watermark = isOutOfStock ? `<div class="out-of-stock-banner">OUT OF STOCK</div>` : '';
-                                    
-                                    let displayImg = 'https://via.placeholder.com/200';
-                                    let hasVideo = false;
-                                    if (product.images && product.images.length > 0) {
-                                    const firstMedia = product.images[0];
-                                    displayImg = typeof firstMedia === 'string' ? firstMedia : (firstMedia.url || 'https://via.placeholder.com/200');
-                                    hasVideo = product.images.some(media => typeof media === 'object' && media.type === 'video');
-                                    }
-                                    
-                                    const videoIconHtml = hasVideo ? `<div style="position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.6); color:white; padding:4px 8px; border-radius:4px; z-index:3; font-size:12px; display:flex; align-items:center; gap:5px; font-weight:600;"><i class="fas fa-play-circle"></i> Video</div>` : '';
-                                    
-                                    const salesCount = product.sales || 0;
-                                    const formattedSalesCount = formatNumberKM(salesCount);
-                                    
-                                    // Dynamic Stars (Single star with rating value as requested)
-                                    const starHtml = '<i class="fas fa-star" style="color: #facc15;"></i>';
-                                    const ratingValue = product.rating ? parseFloat(product.rating).toFixed(1) : '0.0';
-                                    
-                                    productCard.innerHTML = `
-                                    <div class="img-frame">
-                                    <img src="${displayImg}" alt="${product.name}" class="product-img">
-                                    ${videoIconHtml}
-                                    ${discountBadge}
-                                    ${watermark}
-                                    </div>
-                                    <div class="card-info">
-                                    <h3 class="product-title">${product.name}</h3>
-                                    <div class="price-group">
-                                    <span class="new-price">৳${price.toFixed(0)}</span>
-                                    ${originalPrice > price ? `<span class="old-price">৳${originalPrice.toFixed(0)}</span>` : ''}
-                                    </div>
-                                    <div class="sales-section">
-                                    <span class="rating-badge" style="gap:2px;">${starHtml} (${ratingValue})</span>
-                                    <span>${formattedSalesCount} sold</span>
-                                    </div>
-                                    </div>`;
-                                    
-                                    productCard.addEventListener('click', () => {
-                                    navigateTo(`product-details?id=${product.id}`);
-                                    });
-                                    
-                                    targetGrid.appendChild(productCard);
-                                    });
-                                    }
-                                    
-                                    function renderSuggestedProducts(currentProd) {
-                                    const grid = document.getElementById('suggestedProductsGrid');
-                                    grid.innerHTML = '';
-                                    
-                                    const currentNameWords = currentProd.name.toLowerCase().split(' ');
-                                    
-                                    const suggested = products.filter(p => {
-                                    if (p.id == currentProd.id) return false;
-                                    
-                                    let seoMatch = false;
-                                    if (currentProd.seo_tag && p.seo_tag) {
-                                    let currentTags = typeof currentProd.seo_tag === 'string' ? currentProd.seo_tag.split(',').map(s=>s.trim().toLowerCase()) : currentProd.seo_tag.map(s=>s.toLowerCase());
-                                    let pTags = typeof p.seo_tag === 'string' ? p.seo_tag.split(',').map(s=>s.trim().toLowerCase()) : p.seo_tag.map(s=>s.toLowerCase());
-                                    seoMatch = pTags.some(t => currentTags.includes(t));
-                                    }
-                                    
-                                    const nameMatch = currentNameWords.some(word => word.length > 3 && p.name.toLowerCase().includes(word));
-                                    const keywordMatch = p.keywords && currentProd.keywords && p.keywords.some(k => currentProd.keywords.includes(k));
-                                    const categoryMatch = p.category && currentProd.category && p.category === currentProd.category;
-                                    
-                                    return nameMatch || seoMatch || keywordMatch || categoryMatch;
-                                    }).slice(0, 4); 
-                                    
-                                    if (suggested.length === 0) {
-                                    document.querySelector('.suggested-products-section').style.display = 'none';
-                                    return;
-                                    }
-                                    document.querySelector('.suggested-products-section').style.display = 'block';
-                                    
-                                    suggested.forEach(product => {
-                                    const totalStock = product.variants && product.variants.length > 0 
-                                    ? product.variants.reduce((sum, v) => sum + v.stock, 0)
-                                    : (product.stock || 0);
-                                    
-                                    const isOutOfStock = product.status === 'Out of Stock' || totalStock <= 0;
-                                    const card = document.createElement('div');
-                                    card.className = 'product-card';
-                                    card.dataset.id = product.id;
-                                    
-                                    const price = product.variants && product.variants.length > 0 ? product.variants[0].price : (product.price || 0);
-                                    const originalPrice = product.originalPrice ? product.originalPrice : 0;
-                                    const discountPercentage = originalPrice > price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
-                                    
-                                    const discountBadge = discountPercentage > 0 ? `<div class="off-badge">-${discountPercentage}%</div>` : '';
-                                    const watermark = isOutOfStock ? `<div class="out-of-stock-banner">OUT OF STOCK</div>` : '';
-                                    
-                                    let displayImg = 'https://via.placeholder.com/200';
-                                    let hasVideo = false;
-                                    if (product.images && product.images.length > 0) {
-                                    const firstMedia = product.images[0];
-                                    displayImg = typeof firstMedia === 'string' ? firstMedia : (firstMedia.url || 'https://via.placeholder.com/200');
-                                    hasVideo = product.images.some(media => typeof media === 'object' && media.type === 'video');
-                                    }
-                                    
-                                    const videoIconHtml = hasVideo ? `<div style="position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.6); color:white; padding:4px 8px; border-radius:4px; z-index:3; font-size:12px; display:flex; align-items:center; gap:5px; font-weight:600;"><i class="fas fa-play-circle"></i> Video</div>` : '';
-                                    
-                                    const salesCount = product.sales || 0;
-                                    const formattedSalesCount = formatNumberKM(salesCount);
-                                    
-                                    // Dynamic Stars (Single star with rating value as requested)
-                                    const starHtml = '<i class="fas fa-star" style="color: #facc15;"></i>';
-                                    const ratingValue = product.rating ? parseFloat(product.rating).toFixed(1) : '0.0';
-                                    
-                                    card.innerHTML = `
-                                    <div class="img-frame">
-                                    <img src="${displayImg}" alt="${product.name}" class="product-img">
-                                    ${videoIconHtml}
-                                    ${discountBadge}
-                                    ${watermark}
-                                    </div>
-                                    <div class="card-info">
-                                    <h3 class="product-title">${product.name}</h3>
-                                    <div class="price-group">
-                                    <span class="new-price">৳${price.toFixed(0)}</span>
-                                    ${originalPrice > price ? `<span class="old-price">৳${originalPrice.toFixed(0)}</span>` : ''}
-                                    </div>
-                                    <div class="sales-section">
-                                    <span class="rating-badge" style="gap:2px;">${starHtml} (${ratingValue})</span>
-                                    <span>${formattedSalesCount} sold</span>
-                                    </div>
-                                    </div>`;
-                                    
-                                    card.addEventListener('click', () => {
-                                    navigateTo(`product-details?id=${product.id}`);
-                                    });
-                                    grid.appendChild(card);
-                                    });
-                                    }
-                                    
-                                    // --- REDEFINED INITIATE PAYMENT VALIDATION TO SKIP TRX-CONFIRMATION ---
                                     window.initiatePaymentValidation = function() {
                                     const inputField = document.getElementById('paymentTrxID');
                                     const rawTrx = inputField.value;
@@ -4696,51 +4529,6 @@
                                     `;
                                     listContainer.innerHTML += html;
                                     });
-                                    }
-                                    }
-                                    
-                                    function updateDeliveryDisplay() {
-                                    const regionSpan = document.getElementById('displayDeliveryRegion');
-                                    const chargeSpan = document.getElementById('displayDeliveryCharge');
-                                    const addrSpan = document.getElementById('displayDeliveryFullAddress');
-                                    
-                                    if (!regionSpan) return; 
-                                    
-                                    if (window.deliveryToggleInterval) {
-                                    clearInterval(window.deliveryToggleInterval);
-                                    window.deliveryToggleInterval = null;
-                                    }
-                                    
-                                    let defaultAddr = savedAddresses.find(a => a.isDefault);
-                                    if (!defaultAddr && savedAddresses.length > 0) defaultAddr = savedAddresses[0];
-                                    
-                                    if (isLoggedIn && defaultAddr) {
-                                    regionSpan.textContent = defaultAddr.region;
-                                    chargeSpan.textContent = `৳${defaultAddr.region === 'Outside Dhaka' ? appDeliveryOutside : appDeliveryInside}`;
-                                    addrSpan.textContent = `${defaultAddr.address}, ${defaultAddr.postcode}`;
-                                    regionSpan.style.opacity = 1;
-                                    chargeSpan.style.opacity = 1;
-                                    } else {
-                                    addrSpan.textContent = isLoggedIn ? "No saved address found" : "Login to select your address";
-                                    
-                                    let isInside = true;
-                                    const updateToggle = () => {
-                                    regionSpan.style.transition = "opacity 0.3s ease";
-                                    chargeSpan.style.transition = "opacity 0.3s ease";
-                                    regionSpan.style.opacity = 0;
-                                    chargeSpan.style.opacity = 0;
-                                    
-                                    setTimeout(() => {
-                                    regionSpan.textContent = isInside ? 'Inside Dhaka' : 'Outside Dhaka';
-                                    chargeSpan.textContent = `৳${isInside ? appDeliveryInside : appDeliveryOutside}`;
-                                    regionSpan.style.opacity = 1;
-                                    chargeSpan.style.opacity = 1;
-                                    isInside = !isInside;
-                                    }, 300);
-                                    };
-                                    
-                                    updateToggle();
-                                    window.deliveryToggleInterval = setInterval(updateToggle, 3000);
                                     }
                                     }
                                     
@@ -5823,6 +5611,15 @@
                                     this.classList.toggle('fa-eye-slash');
                                     });
                                     });
+                                    
+                                    // Requirement 2: Intercept reload on payment page
+                                    window.addEventListener('beforeunload', function (e) {
+                                    if (document.getElementById('payment-page').classList.contains('active')) {
+                                    sessionStorage.setItem('payment_reloaded', 'true');
+                                    e.preventDefault();
+                                    e.returnValue = ''; 
+                                    }
+                                    });
                                     }
                                     
                                     function startOfferTimer() {
@@ -5846,7 +5643,206 @@
                                     updateTimer();
                                     }
                                     
+                                    // Redefining renderProducts and renderSuggestedProducts to remove rating stars (Requirement 4)
+                                    window.renderProducts = function(productsToRender, targetGrid) {
+                                    targetGrid.innerHTML = '';
+                                    if (productsToRender.length === 0) {
+                                    targetGrid.innerHTML = `<div class="empty-state"><i class="fas fa-box-open"></i><h3>No Products Found</h3><p>Try searching for something else or adjusting filters.</p></div>`;
+                                    return;
+                                    }
+                                    productsToRender.forEach(product => {
+                                    const totalStock = product.variants && product.variants.length > 0 
+                                    ? product.variants.reduce((sum, v) => sum + v.stock, 0)
+                                    : (product.stock || 0);
+                                    
+                                    const isOutOfStock = product.status === 'Out of Stock' || totalStock <= 0;
+                                    const productCard = document.createElement('div');
+                                    productCard.className = 'product-card';
+                                    productCard.dataset.id = product.id;
+                                    
+                                    const price = product.variants && product.variants.length > 0 ? product.variants[0].price : (product.price || 0);
+                                    const originalPrice = product.originalPrice ? product.originalPrice : 0;
+                                    const discountPercentage = originalPrice > price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+                                    const discountBadge = discountPercentage > 0 ? `<div class="off-badge">-${discountPercentage}%</div>` : '';
+                                    const watermark = isOutOfStock ? `<div class="out-of-stock-banner">OUT OF STOCK</div>` : '';
+                                    
+                                    let displayImg = 'https://via.placeholder.com/200';
+                                    let hasVideo = false;
+                                    if (product.images && product.images.length > 0) {
+                                    const firstMedia = product.images[0];
+                                    displayImg = typeof firstMedia === 'string' ? firstMedia : (firstMedia.url || 'https://via.placeholder.com/200');
+                                    hasVideo = product.images.some(media => typeof media === 'object' && media.type === 'video');
+                                    }
+                                    
+                                    const videoIconHtml = hasVideo ? `<div style="position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.6); color:white; padding:4px 8px; border-radius:4px; z-index:3; font-size:12px; display:flex; align-items:center; gap:5px; font-weight:600;"><i class="fas fa-play-circle"></i> Video</div>` : '';
+                                    const formattedSalesCount = formatNumberKM(product.sales || 0);
+                                    
+                                    productCard.innerHTML = `
+                                    <div class="img-frame">
+                                    <img src="${displayImg}" alt="${product.name}" class="product-img">
+                                    ${videoIconHtml}
+                                    ${discountBadge}
+                                    ${watermark}
+                                    </div>
+                                    <div class="card-info">
+                                    <h3 class="product-title">${product.name}</h3>
+                                    <div class="price-group">
+                                    <span class="new-price">৳${price.toFixed(0)}</span>
+                                    ${originalPrice > price ? `<span class="old-price">৳${originalPrice.toFixed(0)}</span>` : ''}
+                                    </div>
+                                    <div class="sales-section" style="justify-content: flex-end;">
+                                    <span>${formattedSalesCount} sold</span>
+                                    </div>
+                                    </div>`;
+                                    
+                                    productCard.addEventListener('click', () => {
+                                    navigateTo(`product-details?id=${product.id}`);
+                                    });
+                                    targetGrid.appendChild(productCard);
+                                    });
+                                    };
+                                    
+                                    window.renderSuggestedProducts = function(currentProd) {
+                                    const grid = document.getElementById('suggestedProductsGrid');
+                                    grid.innerHTML = '';
+                                    const currentNameWords = currentProd.name.toLowerCase().split(' ');
+                                    
+                                    const suggested = products.filter(p => {
+                                    if (p.id == currentProd.id) return false;
+                                    let seoMatch = false;
+                                    if (currentProd.seo_tag && p.seo_tag) {
+                                    let currentTags = typeof currentProd.seo_tag === 'string' ? currentProd.seo_tag.split(',').map(s=>s.trim().toLowerCase()) : currentProd.seo_tag.map(s=>s.toLowerCase());
+                                    let pTags = typeof p.seo_tag === 'string' ? p.seo_tag.split(',').map(s=>s.trim().toLowerCase()) : p.seo_tag.map(s=>s.toLowerCase());
+                                    seoMatch = pTags.some(t => currentTags.includes(t));
+                                    }
+                                    const nameMatch = currentNameWords.some(word => word.length > 3 && p.name.toLowerCase().includes(word));
+                                    const keywordMatch = p.keywords && currentProd.keywords && p.keywords.some(k => currentProd.keywords.includes(k));
+                                    const categoryMatch = p.category && currentProd.category && p.category === currentProd.category;
+                                    return nameMatch || seoMatch || keywordMatch || categoryMatch;
+                                    }).slice(0, 4); 
+                                    
+                                    if (suggested.length === 0) {
+                                    document.querySelector('.suggested-products-section').style.display = 'none';
+                                    return;
+                                    }
+                                    document.querySelector('.suggested-products-section').style.display = 'block';
+                                    
+                                    suggested.forEach(product => {
+                                    const totalStock = product.variants && product.variants.length > 0 
+                                    ? product.variants.reduce((sum, v) => sum + v.stock, 0)
+                                    : (product.stock || 0);
+                                    
+                                    const isOutOfStock = product.status === 'Out of Stock' || totalStock <= 0;
+                                    const card = document.createElement('div');
+                                    card.className = 'product-card';
+                                    card.dataset.id = product.id;
+                                    
+                                    const price = product.variants && product.variants.length > 0 ? product.variants[0].price : (product.price || 0);
+                                    const originalPrice = product.originalPrice ? product.originalPrice : 0;
+                                    const discountPercentage = originalPrice > price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+                                    const discountBadge = discountPercentage > 0 ? `<div class="off-badge">-${discountPercentage}%</div>` : '';
+                                    const watermark = isOutOfStock ? `<div class="out-of-stock-banner">OUT OF STOCK</div>` : '';
+                                    
+                                    let displayImg = 'https://via.placeholder.com/200';
+                                    let hasVideo = false;
+                                    if (product.images && product.images.length > 0) {
+                                    const firstMedia = product.images[0];
+                                    displayImg = typeof firstMedia === 'string' ? firstMedia : (firstMedia.url || 'https://via.placeholder.com/200');
+                                    hasVideo = product.images.some(media => typeof media === 'object' && media.type === 'video');
+                                    }
+                                    const videoIconHtml = hasVideo ? `<div style="position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.6); color:white; padding:4px 8px; border-radius:4px; z-index:3; font-size:12px; display:flex; align-items:center; gap:5px; font-weight:600;"><i class="fas fa-play-circle"></i> Video</div>` : '';
+                                    const formattedSalesCount = formatNumberKM(product.sales || 0);
+                                    
+                                    card.innerHTML = `
+                                    <div class="img-frame">
+                                    <img src="${displayImg}" alt="${product.name}" class="product-img">
+                                    ${videoIconHtml}
+                                    ${discountBadge}
+                                    ${watermark}
+                                    </div>
+                                    <div class="card-info">
+                                    <h3 class="product-title">${product.name}</h3>
+                                    <div class="price-group">
+                                    <span class="new-price">৳${price.toFixed(0)}</span>
+                                    ${originalPrice > price ? `<span class="old-price">৳${originalPrice.toFixed(0)}</span>` : ''}
+                                    </div>
+                                    <div class="sales-section" style="justify-content: flex-end;">
+                                    <span>${formattedSalesCount} sold</span>
+                                    </div>
+                                    </div>`;
+                                    
+                                    card.addEventListener('click', () => {
+                                    navigateTo(`product-details?id=${product.id}`);
+                                    });
+                                    grid.appendChild(card);
+                                    });
+                                    };
+                                    
+                                    // Overriding updateDeliveryDisplay to use specific product charges (Requirement 3)
+                                    window.updateDeliveryDisplay = function() {
+                                    const regionSpan = document.getElementById('displayDeliveryRegion');
+                                    const chargeSpan = document.getElementById('displayDeliveryCharge');
+                                    const addrSpan = document.getElementById('displayDeliveryFullAddress');
+                                    
+                                    if (!regionSpan) return; 
+                                    
+                                    if (window.deliveryToggleInterval) {
+                                    clearInterval(window.deliveryToggleInterval);
+                                    window.deliveryToggleInterval = null;
+                                    }
+                                    
+                                    let dynamicInside = appDeliveryInside;
+                                    let dynamicOutside = appDeliveryOutside;
+                                    
+                                    if (document.getElementById('product-details-page').classList.contains('active') && currentProduct) {
+                                    dynamicInside = currentProduct.deliveryInside !== undefined && currentProduct.deliveryInside !== null && currentProduct.deliveryInside !== '' ? parseFloat(currentProduct.deliveryInside) : appDeliveryInside;
+                                    dynamicOutside = currentProduct.deliveryOutside !== undefined && currentProduct.deliveryOutside !== null && currentProduct.deliveryOutside !== '' ? parseFloat(currentProduct.deliveryOutside) : appDeliveryOutside;
+                                    }
+                                    
+                                    let defaultAddr = savedAddresses.find(a => a.isDefault);
+                                    if (!defaultAddr && savedAddresses.length > 0) defaultAddr = savedAddresses[0];
+                                    
+                                    if (isLoggedIn && defaultAddr) {
+                                    regionSpan.textContent = defaultAddr.region;
+                                    chargeSpan.textContent = `৳${defaultAddr.region === 'Outside Dhaka' ? dynamicOutside : dynamicInside}`;
+                                    addrSpan.textContent = `${defaultAddr.address}, ${defaultAddr.postcode}`;
+                                    regionSpan.style.opacity = 1;
+                                    chargeSpan.style.opacity = 1;
+                                    } else {
+                                    addrSpan.textContent = isLoggedIn ? "No saved address found" : "Login to select your address";
+                                    
+                                    let isInside = true;
+                                    const updateToggle = () => {
+                                    regionSpan.style.transition = "opacity 0.3s ease";
+                                    chargeSpan.style.transition = "opacity 0.3s ease";
+                                    regionSpan.style.opacity = 0;
+                                    chargeSpan.style.opacity = 0;
+                                    
+                                    setTimeout(() => {
+                                    regionSpan.textContent = isInside ? 'Inside Dhaka' : 'Outside Dhaka';
+                                    chargeSpan.textContent = `৳${isInside ? dynamicInside : dynamicOutside}`;
+                                    regionSpan.style.opacity = 1;
+                                    chargeSpan.style.opacity = 1;
+                                    isInside = !isInside;
+                                    }, 300);
+                                    };
+                                    
+                                    updateToggle();
+                                    window.deliveryToggleInterval = setInterval(updateToggle, 3000);
+                                    }
+                                    };
+                                    
                                     document.addEventListener('DOMContentLoaded', async () => {
+                                    // Handle Payment Reload Interruption (Requirement 2)
+                                    if (sessionStorage.getItem('payment_reloaded') === 'true') {
+                                    sessionStorage.removeItem('payment_reloaded');
+                                    sessionStorage.removeItem('pendingOrderParams');
+                                    setTimeout(() => {
+                                    showCustomAlert('Payment Failed', 'Your payment process was interrupted and unsuccessful.');
+                                    navigateTo('order-summary');
+                                    }, 500);
+                                    }
+                                    
                                     showInitialSkeletons();
                                     await loadInitialData();
                                     init();
