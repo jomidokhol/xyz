@@ -88,9 +88,9 @@
         .expanded-search-wrapper { position: absolute; left: 20px; right: 90px; top: 0; bottom: 0; display: flex; align-items: center; opacity: 0; pointer-events: none; transform: translateY(0); transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); z-index: 5; }
         header.at-top .expanded-search-wrapper { opacity: 1; pointer-events: auto; transform: translateY(0); }
         
-        .expanded-search-container { width: 100%; height: 50px; display: flex; align-items: center; background: white; border: 3px solid #e81d4b; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); padding: 4px; }
+        .expanded-search-container { width: 100%; height: 50px; display: flex; align-items: center; background: white; border: 3px solid var(--primary); border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); padding: 4px; }
         .expanded-search-container input { flex: 1; border: none; padding: 0 15px; height: 100%; outline: none; font-family: 'Poppins', sans-serif; font-size: 1rem; color: var(--dark); background: transparent; pointer-events: none; }
-        .expanded-search-container button { background: #e81d4b; color: white; border: none; padding: 0 25px; height: 100%; border-radius: 40px; font-weight: 600; cursor: pointer; transition: background 0.3s; font-family: 'Poppins', sans-serif; flex-shrink: 0; pointer-events: none; display: flex; align-items: center; justify-content: center; font-size: 1.05rem; }
+        .expanded-search-container button { background: var(--primary); color: white; border: none; width: 50px; padding: 0; height: 100%; border-radius: 40px; font-weight: 600; cursor: pointer; transition: background 0.3s; flex-shrink: 0; pointer-events: none; display: flex; align-items: center; justify-content: center; font-size: 1.05rem; }
 
         /* FLIGHT ANIMATION STYLES */
         .expanded-search-container .fa-search {
@@ -789,7 +789,7 @@
                     <div class="expanded-search-container" onclick="navigateTo('search')" style="cursor: pointer;">
                         <i class="fas fa-search" style="width:0; padding:0; margin:0; opacity:0; overflow:hidden;"></i>
                         <input type="text" id="topSearchInput" placeholder="Search for products, categories..." readonly>
-                        <button type="button">Search</button>
+                        <button type="button"><i class="fas fa-search"></i></button>
                     </div>
                 </div>
 
@@ -2244,6 +2244,15 @@
                 return region === 'Outside Dhaka' ? outside : inside;
             }
 
+            // --- Reload Payment Warning ---
+            window.addEventListener('beforeunload', function (e) {
+                if (document.getElementById('payment-page') && document.getElementById('payment-page').classList.contains('active')) {
+                    sessionStorage.setItem('interruptedPayment', 'true');
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
+
             async function loadInitialData() {
                 try {
                     const settingsSnap = await db.collection('settings').doc('general').get();
@@ -2715,6 +2724,12 @@
                     } else {
                         if(headerEl) headerEl.style.display = 'block';
                         if(footerEl) footerEl.style.display = 'block';
+                    }
+
+                    // Check if we navigated away from an interrupted payment
+                    if (finalPageId !== 'payment' && sessionStorage.getItem('interruptedPayment')) {
+                        sessionStorage.removeItem('interruptedPayment');
+                        sessionStorage.removeItem('pendingOrderParams');
                     }
 
                     if (imageSliderInterval) {
