@@ -63,19 +63,21 @@
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        /* Fix for horizontal scroll gap */
-        html { overflow-x: hidden; max-width: 100vw; width: 100%; }
         /* Theme Color Updated to Dark Green */
         :root { --primary: #166534; --secondary: #f97316; --dark: #1f2937; --gray: #6b7280; --light: #f9fafb; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --transition: all 0.3s ease; --payment-theme-color: #d12053; }
-        body { font-family: 'Poppins', sans-serif; color: var(--dark); background-color: var(--light); line-height: 1.6; overflow-x: hidden; max-width: 100vw; width: 100%; }
+        
+        /* Fixed Horizontal Overflow */
+        html { overflow-x: hidden; width: 100%; max-width: 100vw; }
+        body { font-family: 'Poppins', sans-serif; color: var(--dark); background-color: var(--light); line-height: 1.6; overflow-x: hidden; width: 100%; max-width: 100vw; }
+        
         .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-        .page-section { display: none; animation: fadeIn 0.5s ease; width: 100%; }
+        .page-section { display: none; animation: fadeIn 0.5s ease; }
         .page-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideUp { from { transform: translate(-50%, 100px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
         
         /* HEADER TRANSITION CSS */
-        header { background-color: white; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 100; transition: background-color 0.4s ease, box-shadow 0.4s ease; --flight-dist: 0px; width: 100%; }
+        header { background-color: white; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 100; transition: background-color 0.4s ease, box-shadow 0.4s ease; --flight-dist: 0px; }
         .header-content { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; height: 70px; position: relative; }
         
         header.at-top { background-color: transparent !important; box-shadow: none !important; }
@@ -186,7 +188,9 @@
         .price-group { display: flex; align-items: baseline; gap: 6px; margin-bottom: auto; }
         .new-price { font-size: clamp(1rem, 4vw, 1.25rem); font-weight: 800; color: #16a34a; line-height: 1; }
         .old-price { font-size: clamp(0.75rem, 2vw, 0.9rem); color: #9ca3af; text-decoration: line-through; font-weight: 500; }
-        .sales-section { display: flex; align-items: center; justify-content: flex-end; font-size: clamp(0.7rem, 2vw, 0.85rem); color: #6b7280; font-weight: 500; padding-top: 6px; }
+        .sales-section { display: flex; align-items: center; justify-content: space-between; font-size: clamp(0.7rem, 2vw, 0.85rem); color: #6b7280; font-weight: 500; padding-top: 6px; }
+        .rating-badge { display: flex; align-items: center; gap: 4px; color: #4b5563; font-weight: 600; }
+        .rating-badge i { color: #facc15; }
 
         .filter-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; position: sticky; top: 70px; z-index: 95; background: #f3f4f6; padding: 15px 0; }
         .filter-dropdown-container { position: relative; }
@@ -497,7 +501,7 @@
         .od-meta-section .od-row { margin-bottom: 12px; }
         .od-actions { padding: 15px 20px; background: white; position: sticky; bottom: 0; border-top: 1px solid #eee; }
 
-        .promo-popup { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(200%); background-color: white; border: none; border-radius: 12px; display: flex; flex-direction: row !important; align-items: stretch; width: 400px; max-width: calc(100vw - 40px); z-index: 1500; transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1); padding: 0; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: visible; }
+        .promo-popup { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(200%); background-color: white; border: none; border-radius: 12px; display: flex; flex-direction: row !important; align-items: stretch; width: 400px; max-width: 95vw; z-index: 1500; transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1); padding: 0; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: visible; }
         .promo-popup.visible { transform: translateX(-50%) translateY(0); }
         .promo-popup-img { width: 130px; height: auto; object-fit: cover; border-right: 1px solid #eee; flex-shrink: 0; border-radius: 12px 0 0 12px; }
         .promo-popup-content { display: flex; flex-direction: column; justify-content: center; padding: 15px; flex-grow: 1; position: relative; }
@@ -2249,8 +2253,7 @@
                 if (document.getElementById('payment-page') && document.getElementById('payment-page').classList.contains('active')) {
                     sessionStorage.setItem('interruptedPayment', 'true');
                     e.preventDefault();
-                    e.returnValue = 'পেমেন্ট সম্পন্ন না করে রিলোড করলে অর্ডারটি বাতিল হতে পারে। আপনি কি নিশ্চিত?';
-                    return e.returnValue;
+                    e.returnValue = '';
                 }
             });
 
@@ -2700,27 +2703,21 @@
 
                 const displayPageAndData = () => {
                     let finalPageId = path.split('?')[0];
-                    
-                    // ISSUE 2 FIX: Check for interrupted payment status
-                    if (sessionStorage.getItem('interruptedPayment')) {
-                        sessionStorage.removeItem('interruptedPayment');
-                        if (sessionStorage.getItem('pendingOrderParams')) {
-                            finalPageId = 'order-summary';
-                            history.replaceState(null, '', '/order-summary');
-                            setTimeout(() => showCustomAlert('Payment Unsuccessful', 'পেমেন্ট সম্পন্ন হয়নি, অনুগ্রহ করে আবার চেষ্টা করুন।'), 800);
-                        } else {
-                            finalPageId = 'home';
-                            history.replaceState(null, '', '/home');
-                        }
-                    } else if (finalPageId !== 'payment' && sessionStorage.getItem('interruptedPayment') !== null) {
-                        sessionStorage.removeItem('interruptedPayment');
-                        sessionStorage.removeItem('pendingOrderParams');
-                    }
-
                     const profilePages = ['profile', 'profile-location', 'profile-tracking', 'profile-setup', 'profile-topay', 'profile-toship', 'profile-toreceive', 'profile-toreview', 'profile-returns'];
                     
                     if (!isLoggedIn && (profilePages.includes(finalPageId) || finalPageId === 'checkout' || finalPageId === 'order-summary' || finalPageId === 'write-review' || finalPageId === 'payment')) {
                         finalPageId = 'login';
+                    }
+
+                    // Handle page reload on payment page
+                    if (sessionStorage.getItem('interruptedPayment') === 'true') {
+                        sessionStorage.removeItem('interruptedPayment');
+                        sessionStorage.removeItem('pendingOrderParams');
+                        finalPageId = 'order-summary';
+                        history.replaceState(null, '', '/order-summary');
+                        setTimeout(() => {
+                            showCustomAlert('Payment Unsuccessful', 'Your payment process was interrupted. Please try again.');
+                        }, 800);
                     }
 
                     allPages.forEach(p => p.classList.remove('active'));
@@ -3260,7 +3257,7 @@
                                     await db.collection('orders').doc(orderId).update({ status: 'Cancelled' });
                                     showNotification('Order cancelled successfully.');
                                     fetchUserOrders();
-                                    } catch(e) {
+                                    } catchcatch(e) {
                                     showCustomAlert('Error', 'Failed to cancel order.');
                                     }
                                     };
@@ -3518,6 +3515,7 @@
                                     setTimeout(showNextSlide, 3000);
                                     }
                                     
+                                    // --- Redefined renderProducts and renderSuggestedProducts to fix star ratings ---
                                     function renderProducts(productsToRender, targetGrid) {
                                     targetGrid.innerHTML = '';
                                     if (productsToRender.length === 0) {
@@ -3555,6 +3553,8 @@
                                     const salesCount = product.sales || 0;
                                     const formattedSalesCount = formatNumberKM(salesCount);
                                     
+                                    // Removed Dynamic Stars and text rating from here
+                                    
                                     productCard.innerHTML = `
                                     <div class="img-frame">
                                     <img src="${displayImg}" alt="${product.name}" class="product-img">
@@ -3568,7 +3568,8 @@
                                     <span class="new-price">৳${price.toFixed(0)}</span>
                                     ${originalPrice > price ? `<span class="old-price">৳${originalPrice.toFixed(0)}</span>` : ''}
                                     </div>
-                                    <div class="sales-section" style="justify-content: flex-end;">
+                                    <div class="sales-section">
+                                    <span class="rating-badge"></span>
                                     <span>${formattedSalesCount} sold</span>
                                     </div>
                                     </div>`;
@@ -3640,6 +3641,8 @@
                                     const salesCount = product.sales || 0;
                                     const formattedSalesCount = formatNumberKM(salesCount);
                                     
+                                    // Removed Dynamic Stars and text rating from here
+                                    
                                     card.innerHTML = `
                                     <div class="img-frame">
                                     <img src="${displayImg}" alt="${product.name}" class="product-img">
@@ -3653,7 +3656,8 @@
                                     <span class="new-price">৳${price.toFixed(0)}</span>
                                     ${originalPrice > price ? `<span class="old-price">৳${originalPrice.toFixed(0)}</span>` : ''}
                                     </div>
-                                    <div class="sales-section" style="justify-content: flex-end;">
+                                    <div class="sales-section">
+                                    <span class="rating-badge"></span>
                                     <span>${formattedSalesCount} sold</span>
                                     </div>
                                     </div>`;
@@ -3665,6 +3669,7 @@
                                     });
                                     }
                                     
+                                    // --- REDEFINED INITIATE PAYMENT VALIDATION TO SKIP TRX-CONFIRMATION ---
                                     window.initiatePaymentValidation = function() {
                                     const inputField = document.getElementById('paymentTrxID');
                                     const rawTrx = inputField.value;
@@ -3933,6 +3938,14 @@
                                     renderVariantPreview(currentProduct, detailVariantSelectors);
                                     renderSuggestedProducts(currentProduct);
                                     updateDeliveryDisplay(); 
+                                    
+                                    // Fixed: Properly reflect product delivery charges from the DB based on the current product
+                                    let regionText = document.getElementById('displayDeliveryRegion').textContent || 'Inside Dhaka';
+                                    let chargeAmount = (regionText === 'Outside Dhaka') ? 
+                                        (currentProduct.deliveryOutside !== undefined ? parseFloat(currentProduct.deliveryOutside) : appDeliveryOutside) : 
+                                        (currentProduct.deliveryInside !== undefined ? parseFloat(currentProduct.deliveryInside) : appDeliveryInside);
+                                    document.getElementById('displayDeliveryCharge').textContent = `৳${chargeAmount}`;
+                                    
                                     fetchAndRenderProductReviews(currentProduct.id);
                                     
                                     let currentImageIndex = 0;
@@ -4714,20 +4727,22 @@
                                     let defaultAddr = savedAddresses.find(a => a.isDefault);
                                     if (!defaultAddr && savedAddresses.length > 0) defaultAddr = savedAddresses[0];
                                     
-                                    // Modified Dynamic Delivery Logic for Product Details Page
-                                    let pInside = appDeliveryInside;
-                                    let pOutside = appDeliveryOutside;
-                                    if (document.getElementById('product-details-page').classList.contains('active') && currentProduct) {
-                                        pInside = currentProduct.deliveryInside !== undefined && currentProduct.deliveryInside !== '' && currentProduct.deliveryInside !== null ? parseFloat(currentProduct.deliveryInside) : appDeliveryInside;
-                                        pOutside = currentProduct.deliveryOutside !== undefined && currentProduct.deliveryOutside !== '' && currentProduct.deliveryOutside !== null ? parseFloat(currentProduct.deliveryOutside) : appDeliveryOutside;
-                                    }
-                                    
                                     if (isLoggedIn && defaultAddr) {
-                                    regionSpan.textContent = defaultAddr.region;
-                                    chargeSpan.textContent = `৳${defaultAddr.region === 'Outside Dhaka' ? pOutside : pInside}`;
-                                    addrSpan.textContent = `${defaultAddr.address}, ${defaultAddr.postcode}`;
-                                    regionSpan.style.opacity = 1;
-                                    chargeSpan.style.opacity = 1;
+                                        regionSpan.textContent = defaultAddr.region;
+                                        
+                                        // Product specific delivery charge if on product details page
+                                        if (currentProduct && document.getElementById('product-details-page').classList.contains('active')) {
+                                            let chargeAmount = (defaultAddr.region === 'Outside Dhaka') ? 
+                                                (currentProduct.deliveryOutside !== undefined ? parseFloat(currentProduct.deliveryOutside) : appDeliveryOutside) : 
+                                                (currentProduct.deliveryInside !== undefined ? parseFloat(currentProduct.deliveryInside) : appDeliveryInside);
+                                            chargeSpan.textContent = `৳${chargeAmount}`;
+                                        } else {
+                                            chargeSpan.textContent = `৳${defaultAddr.region === 'Outside Dhaka' ? appDeliveryOutside : appDeliveryInside}`;
+                                        }
+                                        
+                                        addrSpan.textContent = `${defaultAddr.address}, ${defaultAddr.postcode}`;
+                                        regionSpan.style.opacity = 1;
+                                        chargeSpan.style.opacity = 1;
                                     } else {
                                     addrSpan.textContent = isLoggedIn ? "No saved address found" : "Login to select your address";
                                     
@@ -4740,7 +4755,17 @@
                                     
                                     setTimeout(() => {
                                     regionSpan.textContent = isInside ? 'Inside Dhaka' : 'Outside Dhaka';
-                                    chargeSpan.textContent = `৳${isInside ? pInside : pOutside}`;
+                                    
+                                    // Product specific delivery charge toggle if on product details page
+                                    if (currentProduct && document.getElementById('product-details-page').classList.contains('active')) {
+                                        let chargeAmount = (!isInside) ? 
+                                            (currentProduct.deliveryOutside !== undefined ? parseFloat(currentProduct.deliveryOutside) : appDeliveryOutside) : 
+                                            (currentProduct.deliveryInside !== undefined ? parseFloat(currentProduct.deliveryInside) : appDeliveryInside);
+                                        chargeSpan.textContent = `৳${chargeAmount}`;
+                                    } else {
+                                        chargeSpan.textContent = `৳${isInside ? appDeliveryInside : appDeliveryOutside}`;
+                                    }
+                                    
                                     regionSpan.style.opacity = 1;
                                     chargeSpan.style.opacity = 1;
                                     isInside = !isInside;
@@ -4757,14 +4782,6 @@
                                     const listDiv = document.getElementById('addressSelectList');
                                     listDiv.innerHTML = '';
                                     
-                                    // Modified to fetch correct fee for address select modal
-                                    let pInside = appDeliveryInside;
-                                    let pOutside = appDeliveryOutside;
-                                    if (document.getElementById('product-details-page').classList.contains('active') && currentProduct) {
-                                        pInside = currentProduct.deliveryInside !== undefined && currentProduct.deliveryInside !== '' && currentProduct.deliveryInside !== null ? parseFloat(currentProduct.deliveryInside) : appDeliveryInside;
-                                        pOutside = currentProduct.deliveryOutside !== undefined && currentProduct.deliveryOutside !== '' && currentProduct.deliveryOutside !== null ? parseFloat(currentProduct.deliveryOutside) : appDeliveryOutside;
-                                    }
-                                    
                                     if (savedAddresses.length === 0) {
                                     listDiv.innerHTML = '<p style="color:var(--gray); text-align:center; margin-top:20px;">No saved address.</p>';
                                     } else {
@@ -4777,12 +4794,21 @@
                                     await setDefaultAddress(idx);
                                     closeAddressSelect();
                                     };
+                                    
+                                    // Calculate delivery charge specifically for address selector if on product details page
+                                    let displayCharge = addr.region === 'Outside Dhaka' ? appDeliveryOutside : appDeliveryInside;
+                                    if (currentProduct && document.getElementById('product-details-page').classList.contains('active')) {
+                                        displayCharge = (addr.region === 'Outside Dhaka') ? 
+                                            (currentProduct.deliveryOutside !== undefined ? parseFloat(currentProduct.deliveryOutside) : appDeliveryOutside) : 
+                                            (currentProduct.deliveryInside !== undefined ? parseFloat(currentProduct.deliveryInside) : appDeliveryInside);
+                                    }
+                                    
                                     div.innerHTML = `
                                     <div class="address-box-icon"><i class="fas fa-map-marker-alt" style="font-size:1.2rem;"></i></div>
                                     <div class="address-box-details">
                                     <h5 style="margin:0;">${addr.title || 'Address'}</h5>
                                     <p style="margin:0; font-size:0.8rem;">${addr.address}</p>
-                                    <p style="margin:0; font-size:0.75rem; color:var(--primary); font-weight:600;">Delivery: ৳${addr.region === 'Outside Dhaka' ? pOutside : pInside}</p>
+                                    <p style="margin:0; font-size:0.75rem; color:var(--primary); font-weight:600;">Delivery: ৳${displayCharge}</p>
                                     </div>
                                     ${isDefault ? '<div style="color:#16a34a;"><i class="fas fa-check-circle"></i></div>' : ''}
                                     `;
@@ -5875,5 +5901,5 @@
                                     setTimeout(updateSearchAnimationVariables, 500); 
                                     });
                                     </script>
-                                   </body>
+                                    </body>
 </html>
