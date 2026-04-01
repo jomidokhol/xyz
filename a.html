@@ -566,12 +566,11 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Req ID</th>
+                                    <th>User Name</th>
+                                    <th>Gmail</th>
+                                    <th>Phone Number</th>
                                     <th>Order ID</th>
-                                    <th>Customer</th>
-                                    <th>Product Info</th>
-                                    <th>Reason</th>
-                                    <th>Status & Message</th>
+                                    <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -838,12 +837,61 @@
             <h3 id="returnActionTitle" style="font-size: 20px; margin-bottom: 20px;">Return Action</h3>
             <form id="returnActionForm">
                 <input type="hidden" id="returnActionReqId">
-                <input type="hidden" id="returnActionStatus">
+                <div class="form-group">
+                    <label>Change Status</label>
+                    <select id="returnActionStatus" class="form-control" required>
+                        <option value="Pending">Pending</option>
+                        <option value="Accepted">Accept Request</option>
+                        <option value="Rejected">Reject/Cancel Request</option>
+                    </select>
+                </div>
                 <div class="form-group">
                     <label>Custom Message for Customer (Optional)</label>
                     <textarea id="returnActionMessage" class="form-control" rows="3" placeholder="Explain the reason for approval or disapproval..."></textarea>
                 </div>
                 <button type="submit" class="btn btn-primary" id="returnActionBtn" style="margin-top:10px; width: 100%;">Save Status</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Return Details Modal -->
+    <div id="returnDetailsModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <button class="close-modal-btn" onclick="closeModal('returnDetailsModal')"><i class="fas fa-times"></i></button>
+            <h3 style="font-size: 20px; margin-bottom: 20px;">Return Request Details</h3>
+            <div id="returnDetailsContent" style="background: var(--light-gray); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); line-height: 1.6;"></div>
+        </div>
+    </div>
+
+    <!-- Handover Modal -->
+    <div id="handoverModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <button class="close-modal-btn" onclick="cancelHandover()"><i class="fas fa-times"></i></button>
+            <h3 style="font-size: 20px; margin-bottom: 20px;">Delivery Handover Details</h3>
+            <p style="font-size: 13px; color: var(--gray-color); margin-bottom: 15px;">You can leave fields blank if not available right now.</p>
+            <form id="handoverForm">
+                <input type="hidden" id="handoverOrderId">
+                <div class="form-group">
+                    <label>Agency Name</label>
+                    <input type="text" id="hoAgencyName" class="form-control" placeholder="e.g. RedX / Pathao">
+                </div>
+                <div class="form-group">
+                    <label>Agency Logo (URL)</label>
+                    <input type="url" id="hoAgencyLogo" class="form-control" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label>Delivery Boy Name</label>
+                    <input type="text" id="hoBoyName" class="form-control" placeholder="Optional">
+                </div>
+                <div class="form-group">
+                    <label>Delivery Boy Mobile</label>
+                    <input type="text" id="hoBoyMobile" class="form-control" placeholder="Optional">
+                </div>
+                <div class="form-group">
+                    <label>Live Tracking Link</label>
+                    <input type="url" id="hoTrackingLink" class="form-control" placeholder="https://...">
+                </div>
+                <button type="submit" class="btn btn-primary" style="margin-top:10px; width: 100%;">Save & Update Status</button>
             </form>
         </div>
     </div>
@@ -1866,6 +1914,40 @@
             document.getElementById('returnActionForm').addEventListener('submit', handleReturnActionSubmit);
             document.getElementById('addReturnReasonForm').addEventListener('submit', handleReturnReasonSubmit);
             document.getElementById('addCancelReasonForm').addEventListener('submit', handleCancelReasonSubmit);
+            
+            // Handover Form Listener
+            document.getElementById('handoverForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                showLoader();
+                const id = document.getElementById('handoverOrderId').value;
+                const agencyName = document.getElementById('hoAgencyName').value;
+                const agencyLogo = document.getElementById('hoAgencyLogo').value;
+                const boyName = document.getElementById('hoBoyName').value;
+                const boyMobile = document.getElementById('hoBoyMobile').value;
+                const trackingLink = document.getElementById('hoTrackingLink').value;
+
+                const deliveryInfo = { agencyName, agencyLogo, boyName, boyMobile, trackingLink };
+
+                try {
+                    const orderRef = db.collection('orders').doc(id);
+                    const doc = await orderRef.get();
+                    if (!doc.exists) { hideLoader(); return; }
+                    const order = doc.data();
+
+                    let updateData = { status: 'Handover', deliveryInfo: deliveryInfo };
+                    if (!order.stockDeducted) {
+                        await deductStock(order);
+                        updateData.stockDeducted = true;
+                    }
+
+                    await orderRef.update(updateData);
+                    closeModal('handoverModal');
+                } catch(err) {
+                    alert(err.message);
+                } finally {
+                    hideLoader();
+                }
+            });
         });
 
         // Firebase Data Fetching
@@ -2410,39 +2492,27 @@
             tbody.innerHTML = '';
             adminReturns.forEach(r => {
                 let statusBadge = '';
-                let actionsHtml = `<button class="btn-action btn-delete" onclick="deleteReturn('${r.id}')" title="Delete"><i class="fas fa-trash"></i></button>`;
-                
-                if (r.status === 'Pending' || !r.status) {
-                    statusBadge = `<span class="status status-pending">Pending</span>`;
-                    actionsHtml = `
-                        <button class="btn-action btn-success" onclick="openReturnActionModal('${r.id}', 'Approved')" title="Approve"><i class="fas fa-check"></i></button>
-                        <button class="btn-action btn-delete" style="background-color: var(--danger-color);" onclick="openReturnActionModal('${r.id}', 'Disapproved')" title="Disapprove"><i class="fas fa-times"></i></button>
-                        ${actionsHtml}
-                    `;
-                } else if (r.status === 'Approved') {
-                    statusBadge = `<span class="status status-active">Approved</span>`;
-                } else if (r.status === 'Disapproved' || r.status === 'Rejected') {
-                    statusBadge = `<span class="status status-cancelled">${r.status}</span>`;
-                } else if (r.status === 'Refunded') {
-                    statusBadge = `<span class="status status-delivered">Refunded</span>`;
-                } else {
-                    statusBadge = `<span class="status status-pending">${r.status}</span>`;
-                }
+                if (r.status === 'Pending' || !r.status) statusBadge = `<span class="status status-pending">Pending</span>`;
+                else if (r.status === 'Accepted' || r.status === 'Approved') statusBadge = `<span class="status status-active">Accepted</span>`;
+                else statusBadge = `<span class="status status-cancelled">${r.status}</span>`;
+
+                let phoneHtml = r.customerPhone ? `${r.customerPhone} <i class="fas fa-copy" style="cursor:pointer; color:var(--primary-color); margin-left:5px;" onclick="navigator.clipboard.writeText('${r.customerPhone}'); alert('Phone Copied!')" title="Copy Phone"></i>` : 'N/A';
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td style="font-weight: 600;">#${r.id.substring(0,6)}</td>
+                    <td style="font-weight: 500;">${r.customerName || 'N/A'}</td>
+                    <td>${r.customerEmail || 'N/A'}</td>
+                    <td>${phoneHtml}</td>
                     <td style="color: var(--primary-color); font-weight:600;">#${r.orderId ? r.orderId.substring(0,8) : 'N/A'}</td>
-                    <td>${r.customerName || 'N/A'}<br><small style="color:var(--gray-color)">${r.customerEmail || ''}</small></td>
-                    <td>${r.productName || 'N/A'}<br><small style="color:var(--gray-color)">Qty: ${r.qty || 1}</small></td>
-                    <td style="max-width:200px; white-space:normal; font-size:12px;">${r.reason || 'N/A'}</td>
                     <td>
                         ${statusBadge}
                         ${r.adminMessage ? `<br><small style="color:var(--gray-color); display:block; margin-top:4px; max-width: 150px; white-space: normal; line-height: 1.3;">${r.adminMessage}</small>` : ''}
                     </td>
                     <td>
                         <div class="action-buttons">
-                            ${actionsHtml}
+                            <button class="btn-action btn-view" onclick="viewReturnDetails('${r.id}')" title="Details"><i class="fas fa-eye"></i></button>
+                            <button class="btn-action btn-edit" onclick="openReturnActionModal('${r.id}', '${r.status || 'Pending'}')" title="Change Status"><i class="fas fa-edit"></i></button>
+                            <button class="btn-action btn-delete" onclick="deleteReturn('${r.id}')" title="Delete"><i class="fas fa-trash"></i></button>
                         </div>
                     </td>
                 `;
@@ -2450,6 +2520,24 @@
             });
         }
         
+        window.viewReturnDetails = function(id) {
+            const r = adminReturns.find(x => x.id === id);
+            if(!r) return;
+            
+            let phoneHtml = r.customerPhone ? `${r.customerPhone} <i class="fas fa-copy" style="cursor:pointer; color:var(--primary-color); margin-left:5px;" onclick="navigator.clipboard.writeText('${r.customerPhone}'); alert('Phone Copied!')"></i>` : 'N/A';
+
+            document.getElementById('returnDetailsContent').innerHTML = `
+                <div class="detail-row"><div class="detail-label">User Name:</div><div class="detail-value">${r.customerName || 'N/A'}</div></div>
+                <div class="detail-row"><div class="detail-label">Email:</div><div class="detail-value">${r.customerEmail || 'N/A'}</div></div>
+                <div class="detail-row"><div class="detail-label">Phone:</div><div class="detail-value">${phoneHtml}</div></div>
+                <div class="detail-row"><div class="detail-label">Order ID:</div><div class="detail-value" style="color: var(--primary-color); font-weight: 600;">#${r.orderId || 'N/A'}</div></div>
+                <div class="detail-row"><div class="detail-label">Product Info:</div><div class="detail-value">${r.productName || 'N/A'} (Qty: ${r.qty || 1})</div></div>
+                <div class="detail-row"><div class="detail-label">Reason:</div><div class="detail-value" style="font-weight: 600; color: var(--danger-color);">${r.reason || 'N/A'}</div></div>
+                <div class="detail-row"><div class="detail-label">Description:</div><div class="detail-value" style="white-space: pre-wrap;">${r.description || r.message || 'No description provided.'}</div></div>
+            `;
+            openModal('returnDetailsModal');
+        };
+
         function populateReturnReasonsTable() {
             const tbody = document.getElementById('returnReasonsTable');
             tbody.innerHTML = '';
@@ -2484,10 +2572,10 @@
             });
         }
 
-        window.openReturnActionModal = function(id, status) {
+        window.openReturnActionModal = function(id, currentStatus) {
             document.getElementById('returnActionReqId').value = id;
-            document.getElementById('returnActionStatus').value = status;
-            document.getElementById('returnActionTitle').innerText = status === 'Approved' ? 'Approve Return' : 'Disapprove Return';
+            let stat = (currentStatus === 'Approved' || currentStatus === 'Accepted') ? 'Accepted' : (currentStatus === 'Disapproved' || currentStatus === 'Rejected' ? 'Rejected' : 'Pending');
+            document.getElementById('returnActionStatus').value = stat;
             document.getElementById('returnActionMessage').value = '';
             openModal('returnActionModal');
         };
@@ -3419,8 +3507,25 @@
                 try { await db.collection('paymentGateways').doc(id).delete(); } finally { hideLoader(); }
             }
         };
+        
+        window.cancelHandover = function() {
+            const id = document.getElementById('handoverOrderId').value;
+            const selectEl = document.querySelector(`select[onchange="updateOrderStatus('${id}', this.value)"]`);
+            if(selectEl) {
+                const order = adminOrders.find(o => o.id === id);
+                selectEl.value = order ? (order.status || 'Pending') : 'Pending';
+            }
+            closeModal('handoverModal');
+        };
 
         window.updateOrderStatus = async function(id, newStatus) { 
+            if (newStatus === 'Handover') {
+                document.getElementById('handoverOrderId').value = id;
+                document.getElementById('handoverForm').reset();
+                openModal('handoverModal');
+                return; 
+            }
+
             showLoader();
             try {
                 const orderRef = db.collection('orders').doc(id);
