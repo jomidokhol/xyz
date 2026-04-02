@@ -3186,7 +3186,6 @@
                                         
                                         let oDate = new Date(order.date);
                                         if (!isNaN(oDate.getTime())) {
-                                            if (Date.now() - oDate.getTime() > limitMs)
                                                 if (Date.now() - oDate.getTime() > limitMs) {
                                                 canCancelOrder = false;
                                             }
