@@ -997,33 +997,56 @@
             </div>
         </div>
 
-        <!-- Return & Refund Page Add -->
         <div id="return-request-page" class="page-section">
             <div class="container" style="max-width: 600px; padding: 40px 20px;">
                 <div class="back-btn" onclick="goBack()">
                     <i class="fas fa-chevron-left"></i> Return & Refund
                 </div>
                 <div style="background: white; border-radius: 8px; box-shadow: var(--shadow); padding: 25px; margin-top: 20px;">
-                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee; cursor: pointer;" id="rrProductInfoBlock" onclick="navigateToProduct(this.dataset.pid)">
                         <img id="rrProductImg" src="" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 1px solid #eee;">
                         <div>
-                            <h4 id="rrProductName" style="font-size: 1rem; margin: 0; line-height: 1.3;">Product Name</h4>
+                            <h4 id="rrProductName" style="font-size: 1rem; margin: 0; line-height: 1.3; color: var(--dark);">Product Name</h4>
                             <p id="rrProductVariant" style="font-size: 0.8rem; color: var(--gray); margin: 0;"></p>
                         </div>
                     </div>
 
                     <form id="returnRequestForm">
+                        <input type="hidden" id="rrOrderIdInput">
+                        <div class="form-group">
+                            <label class="form-label">Order ID</label>
+                            <input type="text" id="rrOrderId" class="form-control" readonly style="background:#f3f4f6;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Customer Name</label>
+                            <input type="text" id="rrCustomerName" class="form-control" readonly style="background:#f3f4f6;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" id="rrEmail" class="form-control" readonly style="background:#f3f4f6;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" id="rrPhone" class="form-control" readonly style="background:#f3f4f6;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Address</label>
+                            <input type="text" id="rrAddress" class="form-control" readonly style="background:#f3f4f6;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Post Code</label>
+                            <input type="text" id="rrPostCode" class="form-control" readonly style="background:#f3f4f6;">
+                        </div>
                         <div class="form-group">
                             <label class="form-label">Select Return Reason</label>
-                            <select id="rrReasonSelect" class="form-control" required>
-                                <option value="">Select a reason...</option>
-                            </select>
+                            <input type="text" id="rrReasonSelectInput" class="form-control" placeholder="Tap to select reason..." readonly required style="cursor:pointer; background-color: white;" onclick="openReturnReasonLayer()">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Description (Optional)</label>
-                            <textarea id="rrDescription" class="form-control" rows="4" placeholder="Please provide more details..."></textarea>
+                            <label class="form-label">Description (Min 30 chars)</label>
+                            <textarea id="rrDescription" class="form-control" rows="4" placeholder="Please provide more details..." required minlength="30"></textarea>
+                            <div id="rrDescCharCount" style="font-size: 0.8rem; color: var(--gray); text-align: right; margin-top: 5px;">0 / 30</div>
                         </div>
-                        <button type="submit" class="btn btn-primary" id="submitReturnBtn" style="width: 100%;">Submit Request</button>
+                        <button type="submit" class="btn btn-primary" id="submitReturnBtn" style="width: 100%;" disabled>Submit Request</button>
                     </form>
                 </div>
             </div>
@@ -1858,6 +1881,17 @@
                     <button type="submit" class="btn btn-primary">Save Address</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Return Reason Overlay -->
+    <div class="options-panel-overlay" id="returnReasonOverlay"></div>
+    <div class="options-panel" id="returnReasonPanel" style="max-height: 75vh; overflow-y: auto;">
+        <div class="options-panel-header" style="position:sticky; top:-20px; background:white; z-index:10; padding-top:20px;">
+            <h4 style="margin:0; font-size:1.1rem;">Select Reason</h4>
+            <button class="options-panel-close" onclick="closeReturnReasonLayer()">&times;</button>
+        </div>
+        <div class="options-panel-body" id="returnReasonList">
         </div>
     </div>
 
@@ -3087,7 +3121,7 @@
                         let isToPay = order.status === 'Pending Payment' && order.payment !== 'Cash on Delivery';
                         let isToShip = ['Pending', 'Received', 'Packing', 'Handed Over', 'Handover', 'Processing'].includes(order.status);
                         let isToReceive = ['Shipped', 'Delivered'].includes(order.status);
-                        let isReturns = ['Cancelled', 'Returned'].includes(order.status);
+                        let isReturns = ['Cancelled', 'Returned', 'Return Pending', 'Return Accepted', 'Return Rejected'].includes(order.status);
                         let isToReview = false;
 
                         let hasUnreviewed = false;
@@ -3152,7 +3186,7 @@
                                         
                                         let oDate = new Date(order.date);
                                         if (!isNaN(oDate.getTime())) {
-                                            if (Date.now() - oDate.getTime() > limitMs) {
+                                                if (Date.now() - oDate.getTime() > limitMs) {
                                                 canCancelOrder = false;
                                             }
                                         } else {
@@ -3163,13 +3197,47 @@
                                     }
                                 }
 
+                                let returnMsgHtml = '';
+                                if (item.returnStatus) {
+                                    hasReturnable = false;
+                                    isReturns = true;
+                                    
+                                    if (item.returnStatus === 'Pending') {
+                                        returnMsgHtml = `<div style="margin-top:10px; padding:10px; background:#fffbeb; color:#d97706; border-radius:6px; font-size:0.85rem; border:1px solid #fde68a;">
+                                            <i class="fas fa-clock"></i> <strong>আপনার রিফান্ড & রিটার্ন রিকুয়েষ্ট পেন্ডিং অবস্থায় আছে।</strong><br>
+                                            অর্ডার আইডি: ${order.id}
+                                        </div>`;
+                                    } else if (item.returnStatus === 'Accepted') {
+                                        let agency = item.returnAgency || order.deliveryInfo?.agencyName || 'কুরিয়ার সার্ভিস';
+                                        let rAddress = order.address || 'আপনার ঠিকানায়';
+                                        returnMsgHtml = `<div style="margin-top:10px; padding:12px; background:#dcfce7; color:#166534; border-radius:6px; font-size:0.85rem; border:1px solid #bbf7d0; line-height: 1.5;">
+                                            <strong>আপনার রিফান্ড & রিটার্ন রিকুয়েষ্ট গ্রহণ করা হয়েছে।</strong><br>
+                                            অর্ডার আইডি: ${order.id}<br>
+                                            দয়া করে ${agency} এর ${rAddress} ডেলিভারি বয়ের হাতে পণ্যটি তুলে দেওয়ার জন্য বলা হচ্ছে।<br>
+                                            <span style="font-size:0.8rem; color:#15803d; display:block; margin-top:8px; font-weight:600;">বিঃদ্রঃ ${agency} এর নিজশ্ব কোন কন্ডিশন থাকলে তা মানতে আপনি বাধ্য, আমরা এখানে কোন সাহায্য করতে পারব না।</span>
+                                        </div>`;
+                                    } else if (item.returnStatus === 'Rejected') {
+                                        let reasonStr = item.returnReason || 'নির্দিষ্ট কারণ নেই';
+                                        returnMsgHtml = `<div style="margin-top:10px; padding:12px; background:#fee2e2; color:#b91c1c; border-radius:6px; font-size:0.85rem; border:1px solid #fecaca; line-height: 1.5;">
+                                            <strong>আপনার রিটার্ন & রিফান্ড রিকুয়েষ্ট রিজেক্ট করা হয়েছে।</strong><br>
+                                            অর্ডার আইডি: ${order.id}<br>
+                                            আমরা আপনার রিকুয়েষ্ট বিবেচনা করে দেখেছি কিন্তু এখানে আমাদের করনীয় কিছু নেই, এবং আপনি যে সমস্যার কথা বলেছেন (<b>${reasonStr}</b>) তা এই পণ্যটির সাথে সমঞ্জস্যপূর্ণ নয়।
+                                            <div style="margin-top:12px; display:flex; gap:10px;">
+                                                <button class="btn btn-outline" style="padding:6px 12px; font-size:0.85rem; border-color:#b91c1c; color:#b91c1c; flex:1;" onclick="navigateTo('home')">Go Back Home</button>
+                                                <button class="btn btn-primary" style="padding:6px 12px; font-size:0.85rem; background:#b91c1c; border:none; flex:1;" onclick="window.location.href='support.html'">Support Chat</button>
+                                            </div>
+                                        </div>`;
+                                    }
+                                }
+
                                 itemsHtml += `
-                                    <div style="display:flex; align-items:center;gap:12px; margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:12px;">
+                                    <div style="display:flex; align-items:flex-start; gap:12px; margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:12px;">
                                         <img src="${item.image}" style="width:65px; height:65px; object-fit:cover; border-radius:6px; cursor:pointer; border: 1px solid #ddd;" onclick="navigateToProduct('${navId}')">
                                         <div style="flex:1;">
                                             <div style="font-weight:600; font-size:0.95rem; cursor:pointer; color: var(--dark); line-height:1.2;" onclick="navigateToProduct('${navId}')" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--dark)'">${item.name}${vStr}</div>
                                             <div style="font-size:0.85rem; color:var(--gray); margin-top:4px;">Qty: ${item.qty} | ৳${item.price}</div>
                                             <div>${returnBtnHtml}${reviewBtnHtml}</div>
+                                            ${returnMsgHtml}
                                         </div>
                                     </div>
                                 `;
@@ -3177,7 +3245,7 @@
                         }
                         
                         if (order.status === 'Delivered' && hasUnreviewed) isToReview = true;
-                        if (hasReturnable) isReturns = true;
+                        if (hasReturnable || order.hasReturn) isReturns = true;
 
                         if(isToPay) toPay++;
                         if(isToShip) toShip++;
@@ -3384,6 +3452,34 @@
                 }
             });
 
+            window.openReturnReasonLayer = function() {
+                const list = document.getElementById('returnReasonList');
+                list.innerHTML = '';
+                if(returnReasonsData.length === 0) {
+                    list.innerHTML = '<p style="padding: 20px; text-align: center; color: var(--gray);">No reasons available.</p>';
+                } else {
+                    returnReasonsData.forEach(r => {
+                        const div = document.createElement('div');
+                        div.style.cssText = "padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; font-size: 0.95rem;";
+                        div.textContent = r;
+                        div.onclick = () => {
+                            document.getElementById('rrReasonSelectInput').value = r;
+                            const len = document.getElementById('rrDescription').value.trim().length;
+                            if(len >= 30) document.getElementById('submitReturnBtn').disabled = false;
+                            closeReturnReasonLayer();
+                        };
+                        list.appendChild(div);
+                    });
+                }
+                document.getElementById('returnReasonOverlay').classList.add('active');
+                document.getElementById('returnReasonPanel').classList.add('active');
+            };
+
+            window.closeReturnReasonLayer = function() {
+                document.getElementById('returnReasonOverlay').classList.remove('active');
+                document.getElementById('returnReasonPanel').classList.remove('active');
+            };
+
             window.requestReturn = function(orderId, productId) {
                 const prod = products.find(p => p.id === productId || p.pid === productId);
                 const order = window.userOrders.find(o => o.id === orderId);
@@ -3392,6 +3488,7 @@
                 let item = order.cartItems.find(i => i.id === productId || i.pid === productId);
                 if(!item) return;
 
+                document.getElementById('rrProductInfoBlock').dataset.pid = prod.id;
                 document.getElementById('rrProductName').textContent = item.name;
                 document.getElementById('rrProductImg').src = item.image;
                 
@@ -3400,35 +3497,72 @@
                 if(item.size && item.size !== 'N/A') vStr += (vStr ? ', ' : '') + item.size;
                 document.getElementById('rrProductVariant').textContent = vStr ? `Variant: ${vStr}` : '';
 
-                const reasonSelect = document.getElementById('rrReasonSelect');
-                reasonSelect.innerHTML = '<option value="">Select a reason...</option>';
-                returnReasonsData.forEach(r => {
-                    reasonSelect.innerHTML += `<option value="${r}">${r}</option>`;
-                });
+                document.getElementById('rrOrderIdInput').value = orderId;
+                document.getElementById('rrOrderId').value = orderId;
+                document.getElementById('rrCustomerName').value = order.customer || (currentUser ? currentUser.name : '');
+                document.getElementById('rrEmail').value = currentUser ? currentUser.email : '';
+                document.getElementById('rrPhone').value = order.phone || (currentUser ? currentUser.phone : '');
+                document.getElementById('rrAddress').value = order.address || '';
+                
+                let match = order.address ? order.address.match(/\d{4}/) : null;
+                document.getElementById('rrPostCode').value = match ? match[0] : '';
+
+                document.getElementById('rrReasonSelectInput').value = '';
+                document.getElementById('rrDescription').value = '';
+                document.getElementById('rrDescCharCount').textContent = '0 / 30';
+                document.getElementById('rrDescCharCount').style.color = 'var(--gray)';
+                document.getElementById('submitReturnBtn').disabled = true;
 
                 document.getElementById('returnRequestForm').onsubmit = async (e) => {
                     e.preventDefault();
-                    const reason = document.getElementById('rrReasonSelect').value;
+                    const reason = document.getElementById('rrReasonSelectInput').value;
                     const desc = document.getElementById('rrDescription').value;
+                    
+                    if(!reason) {
+                        showCustomAlert('Error', 'Please select a reason.');
+                        return;
+                    }
+                    if(desc.trim().length < 30) return;
                     
                     showLoader();
                     try {
-                        await db.collection('returnRequests').add({
+                        let reqData = {
                             orderId: orderId,
                             productId: prod.id,
                             productName: item.name,
+                            productImage: item.image,
                             qty: item.qty,
                             userId: auth.currentUser.uid,
-                            customerName: currentUser.name,
-                            customerEmail: currentUser.email,
-                            customerPhone: currentUser.phone,
+                            customerName: document.getElementById('rrCustomerName').value,
+                            customerEmail: document.getElementById('rrEmail').value,
+                            customerPhone: document.getElementById('rrPhone').value,
+                            address: document.getElementById('rrAddress').value,
+                            postcode: document.getElementById('rrPostCode').value,
                             reason: reason,
                             description: desc,
                             status: 'Pending',
                             date: new Date().toISOString()
-                        });
+                        };
+                        await db.collection('returnRequests').add(reqData);
+
+                        let orderRef = db.collection('orders').doc(orderId);
+                        let orderDoc = await orderRef.get();
+                        if(orderDoc.exists) {
+                            let orderData = orderDoc.data();
+                            let cItems = orderData.cartItems;
+                            for(let i=0; i<cItems.length; i++) {
+                                if(cItems[i].id === prod.id || cItems[i].pid === prod.id) {
+                                    cItems[i].returnStatus = 'Pending';
+                                    cItems[i].returnReason = reason;
+                                    break;
+                                }
+                            }
+                            await orderRef.update({ cartItems: cItems, hasReturn: true });
+                        }
+
                         goBack();
-                        showCustomAlert('Return Requested', 'Your return/refund request has been submitted successfully.');
+                        showNotification('আপনার রিফান্ড & রিটার্ন রিকুয়েষ্ট সফলভাবে সাবমিট হয়েছে।');
+                        fetchUserOrders();
                     } catch(err) {
                         showCustomAlert('Error', 'Failed to submit return request.');
                     } finally {
@@ -5474,6 +5608,7 @@
                     if (e.target === document.getElementById('variantLayerOverlay')) closeVariantLayer();
                     if (e.target === document.getElementById('addressSelectOverlay')) closeAddressSelect();
                     if (e.target === document.getElementById('addressFormOverlay')) closeAddressFormLayer();
+                    if (e.target === document.getElementById('returnReasonOverlay')) closeReturnReasonLayer();
                     if (e.target === document.getElementById('datePickerOverlay')) closeDatePicker();
                     if (e.target === document.getElementById('trackingOverlay')) {
                         document.getElementById('trackingOverlay').classList.remove('active');
@@ -5579,6 +5714,24 @@
                         navigateTo('order-summary');
                     });
                 });
+
+                const rrDesc = document.getElementById('rrDescription');
+                const rrCharCount = document.getElementById('rrDescCharCount');
+                const submitReturnBtn = document.getElementById('submitReturnBtn');
+                
+                if(rrDesc) {
+                    rrDesc.addEventListener('input', () => {
+                        const len = rrDesc.value.trim().length;
+                        rrCharCount.textContent = `${len} / 30`;
+                        if (len >= 30 && document.getElementById('rrReasonSelectInput').value) {
+                            submitReturnBtn.disabled = false;
+                            rrCharCount.style.color = '#16a34a';
+                        } else {
+                            submitReturnBtn.disabled = true;
+                            rrCharCount.style.color = 'var(--gray)';
+                        }
+                    });
+                }
 
                 document.getElementById('applyCouponBtn')?.addEventListener('click', () => {
                     const code = document.getElementById('couponCode').value.trim().toUpperCase();
