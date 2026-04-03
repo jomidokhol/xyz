@@ -2567,6 +2567,8 @@
 
             async function loadInitialData() {
                 await loadGlobalData();
+                await loadGatewaysData(); // Fix 1: Ensure gateways load initially globally
+                await loadProductsData(); // Fix 1: Ensure products load initially globally
             }
 
             function init() {
@@ -2824,12 +2826,15 @@
                     }
 
                     if(finalPageId === 'home') {
-                        await Promise.all([loadHomeData(), loadProductsData()]);
+                        await loadHomeData();
                         applyFilterAndRender(currentlyDisplayedProducts, 'default', productGrid);
-                    } else if (finalPageId === 'search' || finalPageId === 'search-results' || finalPageId === 'product-details' || finalPageId === 'order-summary') {
-                        await loadProductsData();
-                    } else if (finalPageId === 'checkout' || finalPageId === 'payment') {
-                        await Promise.all([loadGatewaysData(), loadProductsData()]);
+                    } else if (finalPageId === 'search') {
+                        renderSearchHistory();
+                        searchPageInput.focus();
+                    } else if (finalPageId === 'order-summary') {
+                        renderOrderSummary();
+                    } else if (finalPageId === 'all-reviews' && currentProduct) {
+                        renderAllReviewsPage();
                     }
 
                     allPages.forEach(p => p.classList.remove('active'));
@@ -2877,13 +2882,6 @@
                         populateProfileData();
                     } else if (finalPageId === 'checkout') {
                         renderPaymentPage();
-                    } else if (finalPageId === 'search') {
-                        renderSearchHistory();
-                        searchPageInput.focus();
-                    } else if (finalPageId === 'order-summary') {
-                        renderOrderSummary();
-                    } else if (finalPageId === 'all-reviews' && currentProduct) {
-                        renderAllReviewsPage();
                     }
                     
                     setTimeout(updateSearchAnimationVariables, 100);
@@ -3208,20 +3206,25 @@
                                             অর্ডার আইডি: ${order.id}
                                         </div>`;
                                     } else if (item.returnStatus === 'Accepted') {
-                                        let agency = item.returnAgency || order.deliveryInfo?.agencyName || 'কুরিয়ার সার্ভিস';
-                                        let rAddress = order.address || 'আপনার ঠিকানায়';
+                                        let agencyLogo = order.deliveryInfo?.agencyLogo ? `<img src="${order.deliveryInfo.agencyLogo}" style="height:16px; vertical-align:middle; margin:0 4px;">` : '';
+                                        let agencyName = order.deliveryInfo?.agencyName ? `<strong>${order.deliveryInfo.agencyName}</strong>` : 'আমাদের নিকটতম ডেলিভারি এর্জেন্সি';
+                                        let adminMsg = item.adminMessage || item.returnAdminMessage ? `<div style="margin-top:8px; padding-top:8px; border-top:1px solid #bbf7d0; font-size:0.8rem;"><strong>Admin Message:</strong> ${item.adminMessage || item.returnAdminMessage}</div>` : '';
+                                        
                                         returnMsgHtml = `<div style="margin-top:10px; padding:12px; background:#dcfce7; color:#166534; border-radius:6px; font-size:0.85rem; border:1px solid #bbf7d0; line-height: 1.5;">
-                                            <strong>আপনার রিফান্ড & রিটার্ন রিকুয়েষ্ট গ্রহণ করা হয়েছে।</strong><br>
-                                            অর্ডার আইডি: ${order.id}<br>
-                                            দয়া করে ${agency} এর ${rAddress} ডেলিভারি বয়ের হাতে পণ্যটি তুলে দেওয়ার জন্য বলা হচ্ছে।<br>
-                                            <span style="font-size:0.8rem; color:#15803d; display:block; margin-top:8px; font-weight:600;">বিঃদ্রঃ ${agency} এর নিজশ্ব কোন কন্ডিশন থাকলে তা মানতে আপনি বাধ্য, আমরা এখানে কোন সাহায্য করতে পারব না।</span>
+                                            <strong style="font-size: 1rem;">আমরা অত্যান্ত দুঃখিত!</strong><br>
+                                            আপনার পার্সেলটি ${agencyName} ${agencyLogo} এর হাতে হস্তান্তর করার জন্য অনুরোধ করছি।<br>
+                                            অর্ডার আইডি: ${order.id}
+                                            ${adminMsg}
                                         </div>`;
                                     } else if (item.returnStatus === 'Rejected') {
                                         let reasonStr = item.returnReason || 'নির্দিষ্ট কারণ নেই';
+                                        let adminMsg = item.adminMessage || item.returnAdminMessage ? `<div style="margin-top:8px; padding-top:8px; border-top:1px solid #fecaca; font-size:0.8rem;"><strong>Admin Message:</strong> ${item.adminMessage || item.returnAdminMessage}</div>` : '';
+
                                         returnMsgHtml = `<div style="margin-top:10px; padding:12px; background:#fee2e2; color:#b91c1c; border-radius:6px; font-size:0.85rem; border:1px solid #fecaca; line-height: 1.5;">
-                                            <strong>আপনার রিটার্ন & রিফান্ড রিকুয়েষ্ট রিজেক্ট করা হয়েছে।</strong><br>
+                                            <strong style="font-size: 1rem;">আপনার রিটার্ন & রিফান্ড রিকুয়েষ্ট রিজেক্ট করা হয়েছে।</strong><br>
                                             অর্ডার আইডি: ${order.id}<br>
                                             আমরা আপনার রিকুয়েষ্ট বিবেচনা করে দেখেছি কিন্তু এখানে আমাদের করনীয় কিছু নেই, এবং আপনি যে সমস্যার কথা বলেছেন (<b>${reasonStr}</b>) তা এই পণ্যটির সাথে সমঞ্জস্যপূর্ণ নয়।
+                                            ${adminMsg}
                                             <div style="margin-top:12px; display:flex; gap:10px;">
                                                 <button class="btn btn-outline" style="padding:6px 12px; font-size:0.85rem; border-color:#b91c1c; color:#b91c1c; flex:1;" onclick="navigateTo('home')">Go Back Home</button>
                                                 <button class="btn btn-primary" style="padding:6px 12px; font-size:0.85rem; background:#b91c1c; border:none; flex:1;" onclick="window.location.href='support.html'">Support Chat</button>
@@ -3262,7 +3265,7 @@
                         if (order.status === 'Delivered' || order.status === 'Cancelled') {
                             actionButtonsHtml += `<button class="btn btn-primary" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 6px; margin-left:10px;" onclick="reBuyOrder('${order.id}')"><i class="fas fa-shopping-bag"></i> Re-buy</button>`;
                         } else if (!isToPay) {
-                            actionButtonsHtml += `<button class="btn btn-outline" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 6px; margin-left:10px;" onclick="showOrderTracking('${order.id}')"><i class="fas fa-truck"></i> Track</button>`;
+                            actionButtonsHtml += `<buttonclass="btn btn-outline" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 6px; margin-left:10px;" onclick="showOrderTracking('${order.id}')"><i class="fas fa-truck"></i> Track</button>`;
                         }
                         actionButtonsHtml += `<button class="btn btn-secondary" style="padding: 6px 15px; font-size: 0.85rem; margin-left:10px; border-radius: 6px;" onclick="showOrderSummary('${order.id}')"><i class="fas fa-file-invoice"></i> Summary</button>`;
 
@@ -3740,11 +3743,15 @@
                     let agencyLogoHtml = order.deliveryInfo.agencyLogo ? ` <img src="${order.deliveryInfo.agencyLogo}" style="height:14px; vertical-align:middle; object-fit:contain;">` : '';
                     hoDesc = `আপনার পার্সেলটি ${agencyName}${agencyLogoHtml} এর কাছে হ্যান্ড ওভার করা হলো।`;
                     
-                    if (order.deliveryInfo.deliveryBoyName || order.deliveryInfo.deliveryBoyPhone || order.deliveryInfo.trackingLink) {
+                    if (order.deliveryInfo.deliveryBoyName || order.deliveryInfo.deliveryBoyPhone || order.deliveryInfo.trackingLink || order.deliveryInfo.boyName || order.deliveryInfo.boyMobile) {
                         hoDesc += `<div style="margin-top: 8px; padding: 10px; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb; font-size: 0.85rem; color: #374151;">`;
-                        if (order.deliveryInfo.deliveryBoyName) hoDesc += `<div style="margin-bottom: 4px;"><strong>Rider:</strong> ${order.deliveryInfo.deliveryBoyName}</div>`;
-                        if (order.deliveryInfo.deliveryBoyPhone) {
-                            hoDesc += `<div style="margin-bottom: 4px; display:flex; align-items:center; gap:5px;"><strong>Phone:</strong> ${order.deliveryInfo.deliveryBoyPhone} <button onclick="navigator.clipboard.writeText('${order.deliveryInfo.deliveryBoyPhone}'); showNotification('Phone number copied!');" style="background:none; border:none; color:var(--primary); cursor:pointer; font-size:1rem; padding:0;"><i class="far fa-copy"></i></button></div>`;
+                        
+                        let riderName = order.deliveryInfo.deliveryBoyName || order.deliveryInfo.boyName;
+                        let riderPhone = order.deliveryInfo.deliveryBoyPhone || order.deliveryInfo.boyMobile;
+
+                        if (riderName) hoDesc += `<div style="margin-bottom: 4px;"><strong>Rider:</strong> ${riderName}</div>`;
+                        if (riderPhone) {
+                            hoDesc += `<div style="margin-bottom: 4px; display:flex; align-items:center; gap:5px;"><strong>Phone:</strong> ${riderPhone} <button onclick="navigator.clipboard.writeText('${riderPhone}'); showNotification('Phone number copied!');" style="background:none; border:none; color:var(--primary); cursor:pointer; font-size:1rem; padding:0;"><i class="far fa-copy"></i></button></div>`;
                         }
                         if (order.deliveryInfo.trackingLink) {
                             let tLink = order.deliveryInfo.trackingLink;
