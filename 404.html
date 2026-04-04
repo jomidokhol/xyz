@@ -3199,6 +3199,7 @@
                                 if (item.returnStatus) {
                                     hasReturnable = false;
                                     isReturns = true;
+                                    returnBtnHtml = ''; // Hide the return button when return is already requested
                                     
                                     if (item.returnStatus === 'Pending') {
                                         returnMsgHtml = `<div style="margin-top:10px; padding:10px; background:#fffbeb; color:#d97706; border-radius:6px; font-size:0.85rem; border:1px solid #fde68a;">
@@ -3213,7 +3214,8 @@
                                         returnMsgHtml = `<div style="margin-top:10px; padding:12px; background:#dcfce7; color:#166534; border-radius:6px; font-size:0.85rem; border:1px solid #bbf7d0; line-height: 1.5;">
                                             <strong style="font-size: 1rem;">আমরা অত্যান্ত দুঃখিত!</strong><br>
                                             আপনার পার্সেলটি ${agencyName} ${agencyLogo} এর হাতে হস্তান্তর করার জন্য অনুরোধ করছি।<br>
-                                            অর্ডার আইডি: ${order.id}
+                                            অর্ডার আইডি: ${order.id}<br>
+                                            বিঃদ্রঃ- ${agencyName} এর কোন বিশেষ শর্ত থাকলে তা মানতে হবে।
                                             ${adminMsg}
                                         </div>`;
                                     } else if (item.returnStatus === 'Rejected') {
@@ -3265,7 +3267,7 @@
                         if (order.status === 'Delivered' || order.status === 'Cancelled') {
                             actionButtonsHtml += `<button class="btn btn-primary" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 6px; margin-left:10px;" onclick="reBuyOrder('${order.id}')"><i class="fas fa-shopping-bag"></i> Re-buy</button>`;
                         } else if (!isToPay) {
-                            actionButtonsHtml += `<buttonclass="btn btn-outline" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 6px; margin-left:10px;" onclick="showOrderTracking('${order.id}')"><i class="fas fa-truck"></i> Track</button>`;
+                            actionButtonsHtml += `<button class="btn btn-outline" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 6px; margin-left:10px;" onclick="showOrderTracking('${order.id}')"><i class="fas fa-truck"></i> Track</button>`;
                         }
                         actionButtonsHtml += `<button class="btn btn-secondary" style="padding: 6px 15px; font-size: 0.85rem; margin-left:10px; border-radius: 6px;" onclick="showOrderSummary('${order.id}')"><i class="fas fa-file-invoice"></i> Summary</button>`;
 
