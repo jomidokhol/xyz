@@ -382,11 +382,11 @@
 </head>
 <body>
 
-<!-- Login Overlay -->
+<!-- Login Overlay (Added event.preventDefault() inline directly) -->
 <div id="login-overlay">
   <div class="login-box">
     <div class="login-title"><i class="fa-solid fa-user-shield"></i> Admin Login</div>
-    <form id="login-form" onsubmit="handleLogin(event)">
+    <form id="login-form" onsubmit="event.preventDefault(); window.handleLogin(event);">
       <div class="form-group">
         <label class="form-label">Email Address</label>
         <input type="email" id="admin-email" class="form-input" required>
@@ -616,10 +616,17 @@
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 🔥 FIREBASE CONFIG (Here provide your actual keys)
+  // 🔥 FIREBASE CONFIG (Updated)
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   const firebaseConfig = {
-
+    apiKey: "AIzaSyD5p-7Cgep9aGf6omMXDH8LOTy0C76jJaQ",
+    authDomain: "e-commerce-shop-24.firebaseapp.com",
+    databaseURL: "https://e-commerce-shop-24-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "e-commerce-shop-24",
+    storageBucket: "e-commerce-shop-24.firebasestorage.app",
+    messagingSenderId: "1000897291264",
+    appId: "1:1000897291264:web:4f1e78554c3e69d310a4e5",
+    measurementId: "G-MCFXRFDFT5"
   };
 
   const app = initializeApp(firebaseConfig);
@@ -645,7 +652,7 @@
   });
 
   window.handleLogin = function(e) {
-    e.preventDefault();
+    if(e) e.preventDefault();
     const email = document.getElementById('admin-email').value;
     const pass = document.getElementById('admin-pass').value;
     signInWithEmailAndPassword(auth, email, pass).catch(err => {
@@ -657,14 +664,7 @@
     signOut(auth);
   };
 
-  window.loapiKey: "AIzaSyD5p-7Cgep9aGf6omMXDH8LOTy0C76jJaQ",
-  authDomain: "e-commerce-shop-24.firebaseapp.com",
-  databaseURL: "https://e-commerce-shop-24-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "e-commerce-shop-24",
-  storageBucket: "e-commerce-shop-24.firebasestorage.app",
-  messagingSenderId: "1000897291264",
-  appId: "1:1000897291264:web:4f1e78554c3e69d310a4e5",
-  measurementId: "G-MCFXRFDFT5"adChatList = function() {
+  window.loadChatList = function() {
     const { onSnapshot, collection, orderBy, query } = window._firestore;
     const q = query(collection(db, 'chats'), orderBy('lastMessageTime', 'desc'));
     onSnapshot(q, (snap) => {
