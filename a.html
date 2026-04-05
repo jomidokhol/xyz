@@ -171,7 +171,7 @@
             max-height: 75vh; 
             width: 100%; 
             position: relative;
-            margin-top: 20px;
+            margin-top: 40px; /* Increased margin to push lists down */
         }
         table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 800px; text-align: left; }
         thead th { position: sticky; top: 0; z-index: 20; padding: 16px 20px; font-weight: 600; font-size: 13px; color: var(--gray-color); text-transform: uppercase; letter-spacing: 0.5px; background-color: var(--light-gray); border-bottom: 1px solid var(--border-color); white-space: nowrap; }
@@ -262,11 +262,11 @@
         
         .hidden { display: none !important; }
         
-        .page-content .table-header { position: sticky; top: var(--topbar-height); background-color: var(--light-gray); z-index: 101; padding: 20px 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); margin-bottom: 20px;}
+        .page-content .table-header { position: sticky; top: var(--topbar-height); background-color: var(--light-gray); z-index: 101; padding: 25px 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); margin-bottom: 30px;} /* Increased padding and margin */
         .table-title { font-size: 18px; font-weight: 600; color: var(--dark-color); }
         
         /* Order Tabs */
-        .order-tabs { display: flex; gap: 12px; position: sticky; top: calc(var(--topbar-height) + 80px); z-index: 100; background-color: var(--light-gray); padding: 10px 0; margin-bottom: 20px; }
+        .order-tabs { display: flex; gap: 12px; position: sticky; top: calc(var(--topbar-height) + 85px); z-index: 100; background-color: var(--light-gray); padding: 15px 0; margin-bottom: 30px; } /* Increased margin and top offset slightly */
         .tab-btn { padding: 10px 24px; border-radius: 30px; background: var(--light-color); border: 1px solid var(--border-color); color: var(--gray-color); font-weight: 500; font-size: 14px; transition: 0.3s; flex-shrink: 0;}
         .tab-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); }
         
@@ -692,7 +692,7 @@
                             <h4 style="margin-bottom: 5px; color: var(--dark-color); font-size: 16px;">Automatic Surveillance</h4>
                             <p style="font-size: 13px; color: var(--gray-color); max-width: 500px; line-height: 1.5;">Monitors for restricted keywords in names, profiles, and detects excessive daily cancellations (5+ per day). Automatically issues a 1-day block for first offense, and permanent block for subsequent violations.</p>
                         </div>
-                        <label class="switch" style="transform: scale(1.2); margin-right: 10px;">
+                        <label class="switch">
                             <input type="checkbox" id="spyToggle" onchange="toggleSpyDetector()">
                             <span class="slider"></span>
                         </label>
@@ -2034,12 +2034,17 @@
                     });
 
                     if (userCancelsToday.length >= 5) {
-                        violation = `Cancelled ${userCancelsToday.length} orders today`;
+                        violation = `Cancelled ${userCancelsToday.length} orders on ${new Date().toLocaleDateString()}`;
                     }
                 }
 
                 if (violation) {
-                    applySpyPenalty(c, violation);
+                    // Check if Admin manually unblocked this user for this EXACT reason before penalizing again
+                    if (!c.isBlocked && c.lastRawSpyViolation === violation) {
+                        // Skip penalizing, admin has consciously pardoned this violation
+                    } else {
+                        applySpyPenalty(c, violation);
+                    }
                 }
             });
         }
@@ -2049,6 +2054,7 @@
             let blockUntil = '';
             let newStrike = strike + 1;
             let penaltyLabel = '';
+            let rawReason = reason;
 
             if (strike === 0) {
                 // 1st offense = 1 Day Block
@@ -2069,7 +2075,8 @@
                     isBlocked: true,
                     blockUntil: blockUntil,
                     blockReason: reason,
-                    spyStrikeCount: newStrike
+                    spyStrikeCount: newStrike,
+                    lastRawSpyViolation: rawReason
                 });
                 
                 // Add to session log
@@ -3835,7 +3842,7 @@
                 <div class="detail-row"><div class="detail-label">Cart Items:</div><div class="detail-value" style="line-height:1.6;">${productsDetailHtml}</div></div>
                 <div class="detail-row"><div class="detail-label">Total Payable:</div><div class="detail-value" style="font-size: 16px; font-weight: 700; color: var(--primary-color);">৳${o.amount}</div></div>
                 <div class="detail-row"><div class="detail-label">Address:</div><div class="detail-value" style="font-weight: 500;">${o.address || 'N/A'}</div></div>
-                <div class="detail-row"><div class="detail-label">Payment Mode:</div><div class="detail-value"><span style="background:var(--light-color); border:1px solid var(--border-color); padding: 4px 8px; border-radius: 6px; font-weight: 600;">${o.payment || 'N/A'}</span> ${o.trxId ? `<br><small style="color:var(--success-color);font-weight:600; display:inline-block; margin-top:5px;">TrxID: ${o.trxId}</small>` : ''}</div></div>
+                <div class="detail-row"><div class="detail-label">Payment Mode:</div><div class="detail-value"><span style="background:var(--light-color); border1px solid var(--border-color); padding: 4px 8px; border-radius: 6px; font-weight: 600;">${o.payment || 'N/A'}</span> ${o.trxId ? `<br><small style="color:var(--success-color);font-weight:600; display:inline-block; margin-top:5px;">TrxID: ${o.trxId}</small>` : ''}</div></div>
                 <div class="detail-row"><div class="detail-label">Customer Name:</div><div class="detail-value" style="font-weight: 600;">${o.customer || 'N/A'}</div></div>
                 <div class="detail-row"><div class="detail-label">Order Date:</div><div class="detail-value" style="color: var(--gray-color);">${o.date || 'N/A'}</div></div>
             `;
