@@ -366,12 +366,6 @@
   .toast.show { transform: translateY(0); opacity: 1; }
   .toast.success { background: var(--green-deep); }
 
-  .config-code {
-    background: var(--gray-900); color: #86efac; border-radius: 8px;
-    padding: 14px; font-family: 'JetBrains Mono', monospace; font-size: 12px;
-    line-height: 1.6; overflow-x: auto; margin-top: 8px;
-  }
-
   /* Responsive sidebar mobile behavior */
   @media(max-width:900px){
     #sidebar { position: fixed; left: 0; top: 0; bottom: 0; transform: translateX(-100%); }
@@ -382,7 +376,7 @@
 </head>
 <body>
 
-<!-- Login Overlay (Added event.preventDefault() inline directly) -->
+<!-- Login Overlay -->
 <div id="login-overlay">
   <div class="login-box">
     <div class="login-title"><i class="fa-solid fa-user-shield"></i> Admin Login</div>
@@ -520,7 +514,7 @@
             <div class="card-title"><span class="card-icon"><i class="fa-solid fa-hand-holding-heart"></i></span> ওয়েলকাম মেসেজ</div>
             <div class="form-group">
               <label class="form-label">প্রাথমিক ওয়েলকাম বার্তা</label>
-              <textarea class="form-input" id="welcome-msg" placeholder="স্বাগতম! আমাদের সাপোর্ট টিমে আপনাকে স্বাগতম…">স্বাগতম! আমাদের সাপোর্ট টিমে আপনাকে স্বাগতম। কীভাবে সাহায্য করতে পারি?</textarea>
+              <textarea class="form-input" id="welcome-msg" placeholder="স্বাগতম! আমাদের সাপোর্ট টিমে আপনাকে স্বাগতম…"></textarea>
             </div>
             <button class="btn-primary" onclick="saveSettings('welcome')"><i class="fa-solid fa-floppy-disk"></i> সেভ করুন</button>
           </div>
@@ -534,9 +528,28 @@
             </div>
             <div class="toggle-row">
               <span class="toggle-label">অফলাইনে অটো রিপ্লাই</span>
-              <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+              <label class="toggle"><input type="checkbox" id="offline-reply-toggle" checked><span class="toggle-slider"></span></label>
             </div>
             <button class="btn-primary" style="margin-top:10px" onclick="saveSettings('autoreply')"><i class="fa-solid fa-floppy-disk"></i> সেভ করুন</button>
+          </div>
+
+          <!-- Google Gemini AI Config -->
+          <div class="settings-card full">
+            <div class="card-title"><span class="card-icon"><i class="fa-solid fa-brain"></i></span> Google Gemini AI অটো-রিপ্লাই</div>
+            <p style="font-size:12px;color:var(--gray-500);margin-bottom:14px">Gemini API ব্যবহার করে স্বয়ংক্রিয়ভাবে কাস্টমারদের প্রশ্নের উত্তর দিন।</p>
+            <div class="toggle-row" style="border-bottom:none;">
+              <span class="toggle-label">Gemini AI চালু করুন</span>
+              <label class="toggle"><input type="checkbox" id="gemini-toggle"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="form-group" style="margin-top: 10px;">
+              <label class="form-label">Gemini API Key</label>
+              <input type="password" class="form-input" id="gemini-apikey" placeholder="AIzaSy...">
+            </div>
+            <div class="form-group">
+              <label class="form-label">AI System Prompt (নির্দেশনা)</label>
+              <textarea class="form-input" id="gemini-prompt" placeholder="তুমি একজন ই-কমার্স সাপোর্ট এজেন্ট..."></textarea>
+            </div>
+            <button class="btn-primary" style="margin-top:12px" onclick="saveSettings('gemini')"><i class="fa-solid fa-floppy-disk"></i> এআই সেটিংস সেভ করুন</button>
           </div>
 
           <!-- Keyword Rules -->
@@ -551,47 +564,28 @@
             </div>
           </div>
 
+          <!-- Suggested Queries (With Answers) -->
+          <div class="settings-card full">
+            <div class="card-title"><span class="card-icon"><i class="fa-solid fa-lightbulb"></i></span> Suggested Queries (সাজেস্টেড প্রশ্ন ও উত্তর)</div>
+            <p style="font-size:12px;color:var(--gray-500);margin-bottom:14px">ইউজার এই প্রশ্নগুলোতে ক্লিক করলে স্বয়ংক্রিয়ভাবে উত্তর পাঠানো হবে।</p>
+            <div id="sq-list"></div>
+            <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+              <input type="text" class="form-input" id="new-sq-query" placeholder="সাজেস্টেড প্রশ্ন (যেমন: ডেলিভারি চার্জ কত?)" style="flex:0 0 250px">
+              <input type="text" class="form-input" id="new-sq-reply" placeholder="সাজেস্টেড উত্তর" style="flex:1;min-width:180px">
+              <button class="btn-secondary" onclick="addSuggestedQuery()"><i class="fa-solid fa-plus"></i> যোগ করুন</button>
+            </div>
+          </div>
+
           <!-- Quick Replies -->
-          <div class="settings-card">
-            <div class="card-title"><span class="card-icon"><i class="fa-solid fa-bolt"></i></span> কুইক রিপ্লাই</div>
+          <div class="settings-card full">
+            <div class="card-title"><span class="card-icon"><i class="fa-solid fa-bolt"></i></span> কুইক রিপ্লাই (অ্যাডমিন প্যানেল)</div>
             <div class="tag-list" id="qr-tags"></div>
-            <div style="display:flex;gap:8px;margin-top:10px">
+            <div style="display:flex;gap:8px;margin-top:10px; max-width:400px;">
               <input type="text" class="form-input" id="new-qr" placeholder="নতুন কুইক রিপ্লাই…">
               <button class="btn-secondary" onclick="addQuickReply()"><i class="fa-solid fa-plus"></i></button>
             </div>
           </div>
 
-          <!-- Suggested Queries -->
-          <div class="settings-card">
-            <div class="card-title"><span class="card-icon"><i class="fa-solid fa-lightbulb"></i></span> Suggested Queries (ইউজার)</div>
-            <div class="tag-list" id="sq-tags"></div>
-            <div style="display:flex;gap:8px;margin-top:10px">
-              <input type="text" class="form-input" id="new-sq" placeholder="সাজেস্টেড প্রশ্ন…">
-              <button class="btn-secondary" onclick="addSuggestedQuery()"><i class="fa-solid fa-plus"></i></button>
-            </div>
-          </div>
-
-          <!-- Firebase Config -->
-          <div class="settings-card full">
-            <div class="card-title"><span class="card-icon"><i class="fa-solid fa-fire"></i></span> Firebase কনফিগারেশন</div>
-            <p style="font-size:12px;color:var(--gray-500);margin-bottom:8px">নিচের কোড ফাইলে আপনার Firebase প্রজেক্টের তথ্য প্রতিস্থাপন করুন।</p>
-            <div class="config-code" id="firebase-config-display"></div>
-            <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-              <div style="flex:1;min-width:200px">
-                <label class="form-label">API Key</label>
-                <input type="text" class="form-input" id="cfg-apikey" placeholder="AIzaSy...">
-              </div>
-              <div style="flex:1;min-width:200px">
-                <label class="form-label">Project ID</label>
-                <input type="text" class="form-input" id="cfg-projectid" placeholder="my-shop-support">
-              </div>
-              <div style="flex:1;min-width:200px">
-                <label class="form-label">App ID</label>
-                <input type="text" class="form-input" id="cfg-appid" placeholder="1:123:web:abc">
-              </div>
-            </div>
-            <button class="btn-primary" style="margin-top:12px" onclick="saveFirebaseConfig()"><i class="fa-solid fa-fire"></i> কনফিগ আপডেট করুন</button>
-          </div>
         </div>
       </div>
     </div>
@@ -615,9 +609,6 @@
   import { getFirestore, collection, doc, setDoc, getDoc, addDoc, onSnapshot, updateDoc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 🔥 FIREBASE CONFIG (Updated)
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   const firebaseConfig = {
     apiKey: "AIzaSyD5p-7Cgep9aGf6omMXDH8LOTy0C76jJaQ",
     authDomain: "e-commerce-shop-24.firebaseapp.com",
@@ -729,9 +720,15 @@ const timeStr = (ts) => {
 let settings = {
   welcomeMsg: 'স্বাগতম! আমাদের সাপোর্ট টিমে আপনাকে স্বাগতম। কীভাবে সাহায্য করতে পারি?',
   autoReply: true,
+  offlineAutoReply: true,
   keywords: [],
   quickReplies: ['ধন্যবাদ', 'আমরা দেখছি', '১-২ দিনের মধ্যে সমাধান হবে'],
-  suggestedQueries: ['অর্ডার স্ট্যাটাস', 'ডেলিভারি চার্জ কত?']
+  suggestedQueries: [
+    { query: 'অর্ডার স্ট্যাটাস', reply: 'আপনার অর্ডার স্ট্যাটাস জানতে দয়া করে অর্ডার নাম্বারটি দিন।' }
+  ],
+  geminiEnabled: false,
+  geminiApiKey: '',
+  geminiPrompt: 'তুমি একজন ই-কমার্স সাপোর্ট এজেন্ট। গ্রাহকের প্রশ্নের সংক্ষিপ্ত ও সঠিক উত্তর দাও।'
 };
 
 window._users = [];
@@ -888,6 +885,7 @@ window.autoGrow = function(el) {
 
 function loadQuickRepliesBar(){
   const bar = document.getElementById('qr-bar');
+  if(!settings.quickReplies) return;
   bar.innerHTML = settings.quickReplies.map(qr=>
     `<div class="qr-chip" onclick="insertQuickReply('${qr.replace(/'/g,"\\'")}')"><i class="fa-solid fa-bolt"></i> ${qr}</div>`
   ).join('');
@@ -897,13 +895,47 @@ window.insertQuickReply = function(text){
   ta.value = text; ta.focus(); autoGrow(ta);
 };
 
+// ── SETTINGS FUNCTIONALITY ──
+
 function renderSettingsPage(){
-  renderKwList(); renderQrTags(); renderSqTags(); updateConfigDisplay();
+  renderKwList(); 
+  renderQrTags(); 
+  renderSqList();
+  
+  // Set UI input values
+  document.getElementById('welcome-msg').value = settings.welcomeMsg || '';
+  document.getElementById('auto-reply-toggle').checked = !!settings.autoReply;
+  document.getElementById('offline-reply-toggle').checked = !!settings.offlineAutoReply;
+  document.getElementById('gemini-toggle').checked = !!settings.geminiEnabled;
+  document.getElementById('gemini-apikey').value = settings.geminiApiKey || '';
+  document.getElementById('gemini-prompt').value = settings.geminiPrompt || '';
 }
+
+function applySettings(data){ 
+  Object.assign(settings, data); 
+  if(document.getElementById('view-settings').classList.contains('active')) {
+    renderSettingsPage(); 
+  }
+}
+
+window.saveSettings = async function(type){
+  // Grab latest values from DOM
+  settings.welcomeMsg = document.getElementById('welcome-msg').value;
+  settings.autoReply = document.getElementById('auto-reply-toggle').checked;
+  settings.offlineAutoReply = document.getElementById('offline-reply-toggle').checked;
+  settings.geminiEnabled = document.getElementById('gemini-toggle').checked;
+  settings.geminiApiKey = document.getElementById('gemini-apikey').value;
+  settings.geminiPrompt = document.getElementById('gemini-prompt').value;
+
+  if(window.saveSettingsToFirestore) {
+     await window.saveSettingsToFirestore(settings);
+  }
+  showToast('✅ সেটিংস সফলভাবে সেভ হয়েছে', true);
+};
 
 function renderKwList(){
   const list = document.getElementById('kw-list');
-  if(!settings.keywords.length){ list.innerHTML='<p style="color:var(--gray-400);font-size:13px">কোনো রুল নেই।</p>'; return; }
+  if(!settings.keywords || !settings.keywords.length){ list.innerHTML='<p style="color:var(--gray-400);font-size:13px">কোনো রুল নেই।</p>'; return; }
   list.innerHTML = settings.keywords.map((k,i)=>`
     <div class="kw-row">
       <input class="form-input kw-keyword" value="${escHtml(k.kw)}" onchange="settings.keywords[${i}].kw=this.value">
@@ -918,60 +950,57 @@ window.addKeyword = function(){
   const kw = document.getElementById('new-kw').value.trim();
   const reply = document.getElementById('new-kw-reply').value.trim();
   if(!kw||!reply) return showToast('কী-ওয়ার্ড ও রিপ্লাই উভয়ই দিন', false);
+  if(!settings.keywords) settings.keywords = [];
   settings.keywords.push({kw,reply});
-  document.getElementById('new-kw').value=''; document.getElementById('new-kw-reply').value=''; renderKwList();
+  document.getElementById('new-kw').value=''; document.getElementById('new-kw-reply').value=''; 
+  renderKwList();
+  saveSettings('keyword');
 };
-window.removeKeyword = function(i){ settings.keywords.splice(i,1); renderKwList(); };
+window.removeKeyword = function(i){ settings.keywords.splice(i,1); renderKwList(); saveSettings('keyword'); };
 
+// Quick Replies
 function renderQrTags(){
+  if(!settings.quickReplies) return;
   document.getElementById('qr-tags').innerHTML = settings.quickReplies.map((qr,i)=>`
     <span class="tag">${qr}<span class="tag-remove" onclick="removeQr(${i})"><i class="fa-solid fa-xmark"></i></span></span>
   `).join('');
 }
-window.removeQr = function(i){ settings.quickReplies.splice(i,1); renderQrTags(); };
+window.removeQr = function(i){ settings.quickReplies.splice(i,1); renderQrTags(); saveSettings('qr'); };
 window.addQuickReply = function(){
   const val = document.getElementById('new-qr').value.trim();
-  if(!val) return; settings.quickReplies.push(val); document.getElementById('new-qr').value='';
-  renderQrTags(); loadQuickRepliesBar();
+  if(!val) return; 
+  if(!settings.quickReplies) settings.quickReplies = [];
+  settings.quickReplies.push(val); 
+  document.getElementById('new-qr').value='';
+  renderQrTags(); loadQuickRepliesBar(); saveSettings('qr');
 };
 
-function renderSqTags(){
-  document.getElementById('sq-tags').innerHTML = settings.suggestedQueries.map((sq,i)=>`
-    <span class="tag">${sq}<span class="tag-remove" onclick="removeSq(${i})"><i class="fa-solid fa-xmark"></i></span></span>
+// Suggested Queries (With Reply Functionality)
+function renderSqList(){
+  const list = document.getElementById('sq-list');
+  if(!settings.suggestedQueries || !settings.suggestedQueries.length){ list.innerHTML='<p style="color:var(--gray-400);font-size:13px">কোনো সাজেস্টেড প্রশ্ন নেই।</p>'; return; }
+  list.innerHTML = settings.suggestedQueries.map((sq,i)=>`
+    <div class="kw-row">
+      <input class="form-input kw-keyword" style="flex:0 0 250px" value="${escHtml(sq.query || sq)}" onchange="settings.suggestedQueries[${i}].query=this.value">
+      <span class="kw-arrow"><i class="fa-solid fa-arrow-right-long"></i></span>
+      <input class="form-input kw-reply" value="${escHtml(sq.reply || '')}" onchange="settings.suggestedQueries[${i}].reply=this.value">
+      <span class="kw-del" onclick="removeSq(${i})"><i class="fa-solid fa-trash-can"></i></span>
+    </div>
   `).join('');
 }
-window.removeSq = function(i){ settings.suggestedQueries.splice(i,1); renderSqTags(); };
+
+window.removeSq = function(i){ settings.suggestedQueries.splice(i,1); renderSqList(); saveSettings('sq'); };
 window.addSuggestedQuery = function(){
-  const val = document.getElementById('new-sq').value.trim();
-  if(!val) return; settings.suggestedQueries.push(val); document.getElementById('new-sq').value=''; renderSqTags();
+  const query = document.getElementById('new-sq-query').value.trim();
+  const reply = document.getElementById('new-sq-reply').value.trim();
+  if(!query || !reply) return showToast('প্রশ্ন ও উত্তর উভয়ই দিন', false);
+  if(!settings.suggestedQueries) settings.suggestedQueries = [];
+  settings.suggestedQueries.push({query, reply}); 
+  document.getElementById('new-sq-query').value='';
+  document.getElementById('new-sq-reply').value=''; 
+  renderSqList(); 
+  saveSettings('sq');
 };
-
-window.saveSettings = async function(type){
-  if(window.saveSettingsToFirestore) await window.saveSettingsToFirestore(settings);
-  showToast('সেটিংস সেভ হয়েছে', true);
-};
-
-window.saveFirebaseConfig = function(){
-  const apiKey = document.getElementById('cfg-apikey').value;
-  const projectId = document.getElementById('cfg-projectid').value;
-  const appId = document.getElementById('cfg-appid').value;
-  if(!apiKey||!projectId) return showToast('API Key ও Project ID দিন', false);
-  updateConfigDisplay(apiKey, projectId, appId);
-  showToast('কনফিগ আপডেট হয়েছে। পেজ রিলোড করুন।', true);
-};
-
-function updateConfigDisplay(apiKey, projectId, appId){
-  document.getElementById('firebase-config-display').innerHTML =
-`<span style="color:#7dd3fc">const</span> firebaseConfig = {
-  apiKey: <span style="color:#fde68a">"${apiKey||'YOUR_API_KEY'}"</span>,
-  authDomain: <span style="color:#fde68a">"${projectId||'YOUR_PROJECT_ID'}.firebaseapp.com"</span>,
-  projectId: <span style="color:#fde68a">"${projectId||'YOUR_PROJECT_ID'}"</span>,
-  storageBucket: <span style="color:#fde68a">"${projectId||'YOUR_PROJECT_ID'}.appspot.com"</span>,
-  appId: <span style="color:#fde68a">"${appId||'YOUR_APP_ID'}"</span>
-};`;
-}
-
-function applySettings(data){ Object.assign(settings, data); }
 
 function showToast(msg, success=true){
   const t = document.getElementById('toast');
@@ -981,7 +1010,11 @@ function showToast(msg, success=true){
 }
 window.showToast = showToast;
 
-window.addEventListener('load', () => { updateConfigDisplay(); });
+window.addEventListener('load', () => { 
+  if(window.loadChatList) window.loadChatList();
+  if(window.loadSettingsData) window.loadSettingsData();
+  else renderSettingsPage();
+});
 </script>
 </body>
 </html>
