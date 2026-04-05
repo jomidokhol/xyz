@@ -171,7 +171,8 @@
             max-height: 75vh; 
             width: 100%; 
             position: relative;
-            margin-top: 40px; /* Increased margin to push lists down */
+            margin-top: 40px; /* Adjusted to prevent overlap */
+            margin-bottom: 20px;
         }
         table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 800px; text-align: left; }
         thead th { position: sticky; top: 0; z-index: 20; padding: 16px 20px; font-weight: 600; font-size: 13px; color: var(--gray-color); text-transform: uppercase; letter-spacing: 0.5px; background-color: var(--light-gray); border-bottom: 1px solid var(--border-color); white-space: nowrap; }
@@ -262,11 +263,11 @@
         
         .hidden { display: none !important; }
         
-        .page-content .table-header { position: sticky; top: var(--topbar-height); background-color: var(--light-gray); z-index: 101; padding: 25px 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); margin-bottom: 30px;} /* Increased padding and margin */
+        .page-content .table-header { position: sticky; top: var(--topbar-height); background-color: var(--light-gray); z-index: 101; padding: 20px 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); margin-bottom: 30px;}
         .table-title { font-size: 18px; font-weight: 600; color: var(--dark-color); }
         
         /* Order Tabs */
-        .order-tabs { display: flex; gap: 12px; position: sticky; top: calc(var(--topbar-height) + 85px); z-index: 100; background-color: var(--light-gray); padding: 15px 0; margin-bottom: 30px; } /* Increased margin and top offset slightly */
+        .order-tabs { display: flex; gap: 12px; position: sticky; top: calc(var(--topbar-height) + 80px); z-index: 100; background-color: var(--light-gray); padding: 10px 0; margin-bottom: 30px; }
         .tab-btn { padding: 10px 24px; border-radius: 30px; background: var(--light-color); border: 1px solid var(--border-color); color: var(--gray-color); font-weight: 500; font-size: 14px; transition: 0.3s; flex-shrink: 0;}
         .tab-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); }
         
@@ -323,6 +324,10 @@
             #addCancelReasonForm, #addReturnReasonForm { flex-direction: column !important; align-items: stretch !important; }
             #addCancelReasonForm button, #addReturnReasonForm button { width: 100% !important; height: auto !important; padding: 12px; margin-top: 10px; }
             #returnsPage .table-header button, #cancelReasonsPage .table-header button { width: 100%; margin-top: 5px !important; }
+            
+            /* Spy Detector Mobile Fixes */
+            #spyDetectorPage .form-section { flex-direction: column !important; align-items: flex-start !important; gap: 15px; }
+            #spyDetectorPage .form-section .switch { margin-top: 10px; margin-left: 0; transform: scale(1.1) !important; flex-shrink: 0; }
         }
 
         /* Custom scrollbar for wheel picker */
@@ -692,15 +697,16 @@
                             <h4 style="margin-bottom: 5px; color: var(--dark-color); font-size: 16px;">Automatic Surveillance</h4>
                             <p style="font-size: 13px; color: var(--gray-color); max-width: 500px; line-height: 1.5;">Monitors for restricted keywords in names, profiles, and detects excessive daily cancellations (5+ per day). Automatically issues a 1-day block for first offense, and permanent block for subsequent violations.</p>
                         </div>
-                        <label class="switch">
+                        <label class="switch" style="transform: scale(1.2); margin-right: 10px; flex-shrink: 0;">
                             <input type="checkbox" id="spyToggle" onchange="toggleSpyDetector()">
                             <span class="slider"></span>
                         </label>
                     </div>
 
                     <div class="table-container">
-                        <div style="padding: 15px 24px; border-bottom: 1px solid var(--border-color); background: var(--light-gray);">
+                        <div style="padding: 15px 24px; border-bottom: 1px solid var(--border-color); background: var(--light-gray); display: flex; justify-content: space-between; align-items: center;">
                             <h4 style="font-size: 14px; font-weight: 600; color: var(--dark-color);">Spy Detector Active Session Log</h4>
+                            <button class="btn btn-secondary" onclick="clearAllSpyLogs()" style="width:auto; padding: 6px 12px; font-size: 12px; margin-top:0;"><i class="fas fa-trash-alt"></i> Clear All</button>
                         </div>
                         <table>
                             <thead>
@@ -709,10 +715,11 @@
                                     <th>User Account</th>
                                     <th>Detected Violation</th>
                                     <th style="width: 150px;">Action Taken</th>
+                                    <th style="width: 80px;">Manage</th>
                                 </tr>
                             </thead>
                             <tbody id="spyLogTable">
-                                <tr><td colspan="4" style="text-align:center; padding: 25px; color: var(--gray-color);">No violations detected in this session yet.</td></tr>
+                                <tr><td colspan="5" style="text-align:center; padding: 25px; color: var(--gray-color);">No violations detected in this session yet.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -906,7 +913,7 @@
                 <input type="text" id="returnReasonInput" class="form-control" placeholder="Enter new reason..." required style="flex:1; min-width: 200px;">
                 <button type="submit" class="btn btn-primary" style="width:auto; padding: 0 20px; height: 43px;"><i class="fas fa-save"></i> Save</button>
             </form>
-            <div class="table-container" style="max-height: 50vh;">
+            <div class="table-container" style="max-height: 50vh; margin-top: 10px;">
                 <table>
                     <thead><tr><th>Reason</th><th style="width:100px;">Actions</th></tr></thead>
                     <tbody id="returnReasonsTable"></tbody>
@@ -920,7 +927,7 @@
         <div class="modal-content">
             <button class="close-modal-btn" onclick="closeModal('returnAnalysisModal')"><i class="fas fa-times"></i></button>
             <h3 style="font-size: 20px; margin-bottom: 20px;">Return Reasons Analysis</h3>
-            <div class="table-container" style="max-height: 60vh;">
+            <div class="table-container" style="max-height: 60vh; margin-top: 10px;">
                 <table>
                     <thead><tr><th>Reason</th><th style="width:80px;">Count</th><th>Percentage</th></tr></thead>
                     <tbody id="returnAnalysisTable"></tbody>
@@ -934,7 +941,7 @@
         <div class="modal-content">
             <button class="close-modal-btn" onclick="closeModal('cancelAnalysisModal')"><i class="fas fa-times"></i></button>
             <h3 style="font-size: 20px; margin-bottom: 20px;">Cancellation Reasons Analysis</h3>
-            <div class="table-container" style="max-height: 60vh;">
+            <div class="table-container" style="max-height: 60vh; margin-top: 10px;">
                 <table>
                     <thead><tr><th>Reason</th><th style="width:80px;">Count</th><th>Percentage</th></tr></thead>
                     <tbody id="cancelAnalysisTable"></tbody>
@@ -2012,8 +2019,13 @@
                     const checkStr = JSON.stringify(c).toLowerCase();
                     for (let kw of adminRestrictedKeywords) {
                         if (kw.trim() && checkStr.includes(kw.toLowerCase().trim())) {
-                            violation = `Restricted Keyword Used: ${kw}`;
-                            break;
+                            let possibleViolation = `Restricted Keyword Used: ${kw}`;
+                            // Check if this specific violation was forgiven by admin
+                            let isForgiven = c.forgivenSpyReasons && c.forgivenSpyReasons.some(r => r.includes(possibleViolation));
+                            if (!isForgiven) {
+                                violation = possibleViolation;
+                                break;
+                            }
                         }
                     }
                 }
@@ -2034,17 +2046,16 @@
                     });
 
                     if (userCancelsToday.length >= 5) {
-                        violation = `Cancelled ${userCancelsToday.length} orders on ${new Date().toLocaleDateString()}`;
+                        let possibleViolation = `Cancelled ${userCancelsToday.length} orders today`;
+                        let isForgiven = c.forgivenSpyReasons && c.forgivenSpyReasons.some(r => r.includes(possibleViolation));
+                        if (!isForgiven) {
+                            violation = possibleViolation;
+                        }
                     }
                 }
 
                 if (violation) {
-                    // Check if Admin manually unblocked this user for this EXACT reason before penalizing again
-                    if (!c.isBlocked && c.lastRawSpyViolation === violation) {
-                        // Skip penalizing, admin has consciously pardoned this violation
-                    } else {
-                        applySpyPenalty(c, violation);
-                    }
+                    applySpyPenalty(c, violation);
                 }
             });
         }
@@ -2054,7 +2065,6 @@
             let blockUntil = '';
             let newStrike = strike + 1;
             let penaltyLabel = '';
-            let rawReason = reason;
 
             if (strike === 0) {
                 // 1st offense = 1 Day Block
@@ -2075,8 +2085,7 @@
                     isBlocked: true,
                     blockUntil: blockUntil,
                     blockReason: reason,
-                    spyStrikeCount: newStrike,
-                    lastRawSpyViolation: rawReason
+                    spyStrikeCount: newStrike
                 });
                 
                 // Add to session log
@@ -2099,20 +2108,33 @@
             if(!tbody) return;
             tbody.innerHTML = '';
             if (spySessionLogs.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 25px; color: var(--gray-color);">No violations detected in this session yet.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 25px; color: var(--gray-color);">No violations detected in this session yet.</td></tr>`;
                 return;
             }
-            spySessionLogs.forEach(log => {
+            spySessionLogs.forEach((log, idx) => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td style="font-size: 13px; color: var(--gray-color);">${log.time}</td>
                     <td style="font-weight: 500;">${log.user}</td>
                     <td style="color: var(--danger-color); font-size: 13px;">${log.violation}</td>
                     <td><span class="status status-cancelled">${log.action}</span></td>
+                    <td><button class="btn-action btn-delete" onclick="deleteSpyLog(${idx})" title="Delete Log"><i class="fas fa-trash"></i></button></td>
                 `;
                 tbody.appendChild(tr);
             });
         }
+        
+        window.deleteSpyLog = function(idx) {
+            spySessionLogs.splice(idx, 1);
+            renderSpyLogs();
+        };
+
+        window.clearAllSpyLogs = function() {
+            if(confirm('Are you sure you want to clear all spy session logs?')) {
+                spySessionLogs = [];
+                renderSpyLogs();
+            }
+        };
 
         async function loadSettings() {
             try {
@@ -2819,14 +2841,24 @@
         }
         
         window.unblockUser = async function(userId) {
-            if(confirm("Are you sure you want to unblock this user?")) {
+            if(confirm("Are you sure you want to unblock this user? The spy detector will ignore the current violation for this user in the future.")) {
                 showLoader();
                 try {
-                    await db.collection('users').doc(userId).update({
+                    const userDoc = await db.collection('users').doc(userId).get();
+                    const userData = userDoc.data();
+                    let updates = {
                         isBlocked: false,
                         blockUntil: firebase.firestore.FieldValue.delete(),
                         blockReason: firebase.firestore.FieldValue.delete()
-                    });
+                    };
+                    
+                    if (userData.blockReason && userData.blockReason.includes('Spy Detector')) {
+                        let parts = userData.blockReason.split('): ');
+                        let coreReason = parts.length > 1 ? parts[1] : userData.blockReason;
+                        updates.forgivenSpyReasons = firebase.firestore.FieldValue.arrayUnion(coreReason);
+                    }
+
+                    await db.collection('users').doc(userId).update(updates);
                 } catch(e) {
                     alert(e.message);
                 } finally {
@@ -3842,7 +3874,7 @@
                 <div class="detail-row"><div class="detail-label">Cart Items:</div><div class="detail-value" style="line-height:1.6;">${productsDetailHtml}</div></div>
                 <div class="detail-row"><div class="detail-label">Total Payable:</div><div class="detail-value" style="font-size: 16px; font-weight: 700; color: var(--primary-color);">৳${o.amount}</div></div>
                 <div class="detail-row"><div class="detail-label">Address:</div><div class="detail-value" style="font-weight: 500;">${o.address || 'N/A'}</div></div>
-                <div class="detail-row"><div class="detail-label">Payment Mode:</div><div class="detail-value"><span style="background:var(--light-color); border1px solid var(--border-color); padding: 4px 8px; border-radius: 6px; font-weight: 600;">${o.payment || 'N/A'}</span> ${o.trxId ? `<br><small style="color:var(--success-color);font-weight:600; display:inline-block; margin-top:5px;">TrxID: ${o.trxId}</small>` : ''}</div></div>
+                <div class="detail-row"><div class="detail-label">Payment Mode:</div><div class="detail-value"><span style="background:var(--light-color); border:1px solid var(--border-color); padding: 4px 8px; border-radius: 6px; font-weight: 600;">${o.payment || 'N/A'}</span> ${o.trxId ? `<br><small style="color:var(--success-color);font-weight:600; display:inline-block; margin-top:5px;">TrxID: ${o.trxId}</small>` : ''}</div></div>
                 <div class="detail-row"><div class="detail-label">Customer Name:</div><div class="detail-value" style="font-weight: 600;">${o.customer || 'N/A'}</div></div>
                 <div class="detail-row"><div class="detail-label">Order Date:</div><div class="detail-value" style="color: var(--gray-color);">${o.date || 'N/A'}</div></div>
             `;
