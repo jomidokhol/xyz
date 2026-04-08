@@ -19,6 +19,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <!-- FCM For Push Notifications -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging-compat.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
@@ -2058,6 +2061,26 @@
     </div>
 
     <script>
+            window.formatPrice = function(num) {
+                if (num === undefined || num === null || isNaN(num)) return '0';
+                return Number(num).toLocaleString('en-IN');
+            };
+
+            async function requestNotificationPermission(userId) {
+                try {
+                    const messaging = firebase.messaging();
+                    const permission = await Notification.requestPermission();
+                    if (permission === 'granted') {
+                        const token = await messaging.getToken(); 
+                        if (token) {
+                            await db.collection('users').doc(userId).update({ fcmToken: token });
+                        }
+                    }
+                } catch (error) {
+                    console.log('Notification permission error:', error);
+                }
+            }
+
             const firebaseConfig = {
                 apiKey: "AIzaSyD5p-7Cgep9aGf6omMXDH8LOTy0C76jJaQ",
                 authDomain: "e-commerce-shop-24.firebaseapp.com",
@@ -2115,9 +2138,9 @@
 
             let cancelReasonsData = [];
             let returnReasonsData = [];
-            let restrictedKeywords = []; // স্পাই ডিটেক্টরের জন্য কিওয়ার্ড লিস্ট
-            let userAuthSnapshotUnsubscribe = null; // রিয়েল-টাইম ব্লক চেক করার জন্য
-            let blockTimerInterval = null; // ব্লক টাইমারের জন্য
+            let restrictedKeywords = []; 
+            let userAuthSnapshotUnsubscribe = null; 
+            let blockTimerInterval = null; 
 
             let isProductsLoaded = false;
             let isHomeLoaded = false;
@@ -2225,11 +2248,11 @@
                     let blockUntil;
                     
                     if (blockTier === 1) {
-                        blockUntil = new Date(now + 24 * 60 * 60 * 1000).toISOString(); // ১ দিন
+                        blockUntil = new Date(now + 24 * 60 * 60 * 1000).toISOString(); 
                     } else if (blockTier === 2) {
-                        blockUntil = new Date(now + 48 * 60 * 60 * 1000).toISOString(); // ২ দিন
+                        blockUntil = new Date(now + 48 * 60 * 60 * 1000).toISOString(); 
                     } else {
-                        blockUntil = 'permanent'; // পারমানেন্ট ব্লক
+                        blockUntil = 'permanent'; 
                     }
                     
                     updates.isBlocked = true;
@@ -2417,8 +2440,8 @@
                         <tr>
                             <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.name} ${item.color && item.color !== 'N/A' ? '('+item.color+')' : ''}</td>
                             <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align:center;">${item.qty}</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align:right;">৳${item.price.toFixed(2)}</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align:right;">৳${(item.price * item.qty).toFixed(2)}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align:right;">৳${formatPrice(item.price)}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align:right;">৳${formatPrice(item.price * item.qty)}</td>
                         </tr>
                     `;
                 });
@@ -2477,10 +2500,10 @@
                                 </tbody>
                             </table>
                             <div class="totals">
-                                <p><strong>Subtotal:</strong> ৳${subTotal.toFixed(2)}</p>
-                                <p><strong>VAT (2%):</strong> +৳${vatAmount.toFixed(2)}</p>
-                                <p><strong>Discount:</strong> -৳${discountAmount.toFixed(2)}</p>
-                                <p><strong>Total Amount:</strong> ৳${Number(order.amount).toFixed(2)}</p>
+                                <p><strong>Subtotal:</strong> ৳${formatPrice(subTotal)}</p>
+                                <p><strong>VAT (2%):</strong> +৳${formatPrice(vatAmount)}</p>
+                                <p><strong>Discount:</strong> -৳${formatPrice(discountAmount)}</p>
+                                <p><strong>Total Amount:</strong> ৳${formatPrice(order.amount)}</p>
                             </div>
                             <div class="barcode">
                                 <svg id="printBarcode"></svg>
@@ -2785,8 +2808,8 @@
                                 if (updatedProd) {
                                     currentProduct = updatedProd;
                                     const price = currentProduct.variants && currentProduct.variants.length > 0 ? currentProduct.variants[0].price : (currentProduct.price || 0);
-                                    document.getElementById('detailPrice').textContent = `৳${price.toFixed(2)}`;
-                                    document.getElementById('detailOldPrice').textContent = currentProduct.originalPrice > price ? `৳${currentProduct.originalPrice.toFixed(2)}` : '';
+                                    document.getElementById('detailPrice').textContent = `৳${formatPrice(price)}`;
+                                    document.getElementById('detailOldPrice').textContent = currentProduct.originalPrice > price ? `৳${formatPrice(currentProduct.originalPrice)}` : '';
                                     document.getElementById('detailSoldCount').textContent = `${formatNumberKM(currentProduct.sales || 0)} sold`;
                                     
                                     const totalStock = currentProduct.variants && currentProduct.variants.length > 0 
@@ -3013,7 +3036,7 @@
             function renderOrderSummary() {
                 window.appliedCouponDiscount = 0;
                 document.getElementById('couponCode').value = '';
-                document.getElementById('osDiscount').textContent = `-৳0.00`;
+                document.getElementById('osDiscount').textContent = `-৳0`;
                 
                 const addrDetails = document.getElementById('osAddressDetails');
                 const addrBadge = document.getElementById('osAddressBadge');
@@ -3079,20 +3102,20 @@
                                 ${variantText ? `<div class="summary-item-meta">${variantText}</div>` : ''}
                                 <div class="summary-item-meta">Qty: ${item.quantity}</div>
                                 <div class="summary-item-prices">
-                                    <span class="summary-discount-price">৳${item.price.toFixed(0)}</span>
-                                    ${originalPrice > item.price ? `<span class="summary-real-price">৳${originalPrice.toFixed(0)}</span> <span style="font-size:0.75rem; color:#10b981; font-weight:bold;">(-${discountPct}%)</span>` : ''}
+                                    <span class="summary-discount-price">৳${formatPrice(item.price)}</span>
+                                    ${originalPrice > item.price ? `<span class="summary-real-price">৳${formatPrice(originalPrice)}</span> <span style="font-size:0.75rem; color:#10b981; font-weight:bold;">(-${discountPct}%)</span>` : ''}
                                 </div>
                             </div>
                         </div>
                     `;
                 });
                 
-                document.getElementById('osSubtotal').textContent = `৳${subtotal.toFixed(0)}`;
-                document.getElementById('osShippingFee').textContent = `৳${shippingFee.toFixed(0)}`;
+                document.getElementById('osSubtotal').textContent = `৳${formatPrice(subtotal)}`;
+                document.getElementById('osShippingFee').textContent = `৳${formatPrice(shippingFee)}`;
                 window.currentOrderSubtotal = subtotal;
                 
                 const finalTotal = subtotal + shippingFee; 
-                document.getElementById('osTotal').textContent = `৳${finalTotal.toFixed(0)}`;
+                document.getElementById('osTotal').textContent = `৳${formatPrice(finalTotal)}`;
                 
                 document.getElementById('osProceedBtn').onclick = () => {
                     if(!window.osSelectedAddress) {
@@ -3114,25 +3137,25 @@
                 const discount = window.appliedCouponDiscount || 0;
                 const total = subtotal - discount + shippingFee;
                 
-                document.getElementById('paymentSubtotal').textContent = `৳${subtotal.toFixed(0)}`;
+                document.getElementById('paymentSubtotal').textContent = `৳${formatPrice(subtotal)}`;
                 if(discount > 0) {
                     if(!document.getElementById('paymentDiscount')) {
-                        const discountHTML = `<div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #10b981;"><span>Discount</span><span id="paymentDiscount">-৳${discount.toFixed(0)}</span></div>`;
+                        const discountHTML = `<div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #10b981;"><span>Discount</span><span id="paymentDiscount">-৳${formatPrice(discount)}</span></div>`;
                         document.getElementById('paymentSubtotal').parentElement.insertAdjacentHTML('afterend', discountHTML);
                     } else {
-                        document.getElementById('paymentDiscount').textContent = `-৳${discount.toFixed(0)}`;
+                        document.getElementById('paymentDiscount').textContent = `-৳${formatPrice(discount)}`;
                     }
                 }
                 
                 if(!document.getElementById('paymentShipping')) {
-                    const shippingHTML = `<div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #555;"><span>Shipping Fee Total</span><span id="paymentShipping">৳${shippingFee.toFixed(0)}</span></div>`;
+                    const shippingHTML = `<div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #555;"><span>Shipping Fee Total</span><span id="paymentShipping">৳${formatPrice(shippingFee)}</span></div>`;
                     document.getElementById('paymentTotal').parentElement.insertAdjacentHTML('beforebegin', shippingHTML);
                 } else {
-                    document.getElementById('paymentShipping').textContent = `৳${shippingFee.toFixed(0)}`;
+                    document.getElementById('paymentShipping').textContent = `৳${formatPrice(shippingFee)}`;
                 }
 
-                document.getElementById('paymentTotal').textContent = `৳${total.toFixed(0)}`;
-                document.getElementById('paymentBtnTotal').textContent = `৳${total.toFixed(0)}`;
+                document.getElementById('paymentTotal').textContent = `৳${formatPrice(total)}`;
+                document.getElementById('paymentBtnTotal').textContent = `৳${formatPrice(total)}`;
                 
                 renderPaymentMethods();
             }
@@ -3365,7 +3388,7 @@
                     const oldPrice = p.originalPrice || 0;
                     const discount = oldPrice > price ? Math.round(((oldPrice-price)/oldPrice)*100) : 0;
                     const discountHtml = discount > 0 ? `<div class="rv-discount"><i class="fas fa-arrow-down" style="font-size:0.6rem;"></i> ${discount}%</div>` : '';
-                    const oldPriceHtml = oldPrice > price ? `<span class="rv-old-price">৳${oldPrice}</span>` : '';
+                    const oldPriceHtml = oldPrice > price ? `<span class="rv-old-price">৳${formatPrice(oldPrice)}</span>` : '';
                     
                     let displayImg = 'https://via.placeholder.com/200';
                     if (p.images && p.images.length > 0) {
@@ -3376,7 +3399,7 @@
                         <div class="rv-card" onclick="navigateToProduct('${p.id}')">
                             ${discountHtml}
                             <img src="${displayImg}">
-                            <div class="rv-price">৳${price}<br>${oldPriceHtml}</div>
+                            <div class="rv-price">৳${formatPrice(price)}<br>${oldPriceHtml}</div>
                         </div>
                     `;
                 });
@@ -3528,7 +3551,6 @@
                                 if (item.returnStatus) {
                                     hasReturnable = false;
                                     isReturns = true;
-                                    returnBtnHtml = ''; // 3. রিকুয়েষ্ট করা হলে বাটন মুছে যাবে
                                     
                                     if (item.returnStatus === 'Pending') {
                                         returnMsgHtml = `<div style="margin-top:10px; padding:10px; background:#fffbeb; color:#d97706; border-radius:6px; font-size:0.85rem; border:1px solid #fde68a;">
@@ -3537,16 +3559,12 @@
                                         </div>`;
                                     } else if (item.returnStatus === 'Accepted') {
                                         let agencyLogo = order.deliveryInfo?.agencyLogo ? `<img src="${order.deliveryInfo.agencyLogo}" style="height:16px; vertical-align:middle; margin:0 4px;">` : '';
-                                        let agencyName = order.deliveryInfo?.agencyName || 'আমাদের নিকটতম ডেলিভারি এর্জেন্সি';
-                                        let agencyNameBold = order.deliveryInfo?.agencyName ? `<strong>${order.deliveryInfo.agencyName}</strong>` : 'আমাদের নিকটতম ডেলিভারি এর্জেন্সি';
-                                        
+                                        let agencyName = order.deliveryInfo?.agencyName ? `<strong>${order.deliveryInfo.agencyName}</strong>` : 'আমাদের নিকটতম ডেলিভারি এর্জেন্সি';
                                         let adminMsg = item.adminMessage || item.returnAdminMessage ? `<div style="margin-top:8px; padding-top:8px; border-top:1px solid #bbf7d0; font-size:0.8rem;"><strong>Admin Message:</strong> ${item.adminMessage || item.returnAdminMessage}</div>` : '';
                                         
-                                        // 1. একসেপ্টেড মেসেজ
                                         returnMsgHtml = `<div style="margin-top:10px; padding:12px; background:#dcfce7; color:#166534; border-radius:6px; font-size:0.85rem; border:1px solid #bbf7d0; line-height: 1.5;">
                                             <strong style="font-size: 1rem;">আমরা অত্যান্ত দুঃখিত!</strong><br>
-                                            আপনার পার্সেলটি ${agencyNameBold} ${agencyLogo} এর হাতে হস্তান্তর করার জন্য অনুরোধ করছি।<br>
-                                            <span style="font-weight:600; color:#dc2626;">বিঃদ্রঃ- ${agencyName} এর কোন বিশেষ শর্ত থাকলে তা মানতে হবে।</span><br>
+                                            আপনার পার্সেলটি ${agencyName} ${agencyLogo} এর হাতে হস্তান্তর করার জন্য অনুরোধ করছি।<br>
                                             অর্ডার আইডি: ${order.id}
                                             ${adminMsg}
                                         </div>`;
@@ -3554,11 +3572,10 @@
                                         let reasonStr = item.returnReason || 'নির্দিষ্ট কারণ নেই';
                                         let adminMsg = item.adminMessage || item.returnAdminMessage ? `<div style="margin-top:8px; padding-top:8px; border-top:1px solid #fecaca; font-size:0.8rem;"><strong>Admin Message:</strong> ${item.adminMessage || item.returnAdminMessage}</div>` : '';
 
-                                        // 2. রিজেক্টেড মেসেজ
                                         returnMsgHtml = `<div style="margin-top:10px; padding:12px; background:#fee2e2; color:#b91c1c; border-radius:6px; font-size:0.85rem; border:1px solid #fecaca; line-height: 1.5;">
                                             <strong style="font-size: 1rem;">আপনার রিটার্ন & রিফান্ড রিকুয়েষ্ট রিজেক্ট করা হয়েছে।</strong><br>
                                             অর্ডার আইডি: ${order.id}<br>
-                                            আমরা আপনার রিকুয়েষ্ট বিবেচনা করে দেখেছি কিন্তু অত্যান্ত দুঃখের সাথে বলতে হচ্ছে এখানে আমারা কোন সাহায্য করতে পারবো না।, এবং আপনি যে সমস্যার কথা বলেছেন (<b>${reasonStr}</b>) তা এই পণ্যটির সাথে সমঞ্জস্যপূর্ণ নয়।
+                                            আমরা আপনার রিকুয়েষ্ট বিবেচনা করে দেখেছি কিন্তু এখানে আমাদের করনীয় কিছু নেই, এবং আপনি যে সমস্যার কথা বলেছেন (<b>${reasonStr}</b>) তা এই পণ্যটির সাথে সমঞ্জস্যপূর্ণ নয়।
                                             ${adminMsg}
                                             <div style="margin-top:12px; display:flex; gap:10px;">
                                                 <button class="btn btn-outline" style="padding:6px 12px; font-size:0.85rem; border-color:#b91c1c; color:#b91c1c; flex:1;" onclick="navigateTo('home')">Go Back Home</button>
@@ -3573,7 +3590,7 @@
                                         <img src="${item.image}" style="width:65px; height:65px; object-fit:cover; border-radius:6px; cursor:pointer; border: 1px solid #ddd;" onclick="navigateToProduct('${navId}')">
                                         <div style="flex:1;">
                                             <div style="font-weight:600; font-size:0.95rem; cursor:pointer; color: var(--dark); line-height:1.2;" onclick="navigateToProduct('${navId}')" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--dark)'">${item.name}${vStr}</div>
-                                            <div style="font-size:0.85rem; color:var(--gray); margin-top:4px;">Qty: ${item.qty} | ৳${item.price}</div>
+                                            <div style="font-size:0.85rem; color:var(--gray); margin-top:4px;">Qty: ${item.qty} | ৳${formatPrice(item.price)}</div>
                                             <div>${returnBtnHtml}${reviewBtnHtml}</div>
                                             ${returnMsgHtml}
                                         </div>
@@ -3627,7 +3644,7 @@
                                 </div>
                                 ${itemsHtml}
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px; flex-wrap:wrap; gap:15px;">
-                                    <div style="font-weight:700; color:var(--dark); font-size:1.1rem;">Total: <span style="color:var(--primary);">৳${order.amount}</span></div>
+                                    <div style="font-weight:700; color:var(--dark); font-size:1.1rem;">Total: <span style="color:var(--primary);">৳${formatPrice(order.amount)}</span></div>
                                     <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
                                         ${actionButtonsHtml}
                                     </div>
@@ -3957,7 +3974,7 @@
                                 <h4>${item.name}</h4>
                                 ${variantText ? `<div class="od-item-variant">${variantText}</div>` : ''}
                                 <div class="od-item-price-row">
-                                    <span class="od-item-price">৳ ${item.price}</span>
+                                    <span class="od-item-price">৳ ${formatPrice(item.price)}</span>
                                     <span class="od-item-qty">Qty: ${item.qty}</span>
                                 </div>
                             </div>
@@ -3972,14 +3989,14 @@
                 const discountAmount = order.discount || vatAmount;
                 const subTotal = order.amount - (order.codFee || 0) - (order.shippingFee || 0);
 
-                document.getElementById('odSubtotal').textContent = `৳ ${subTotal.toFixed(2)}`;
-                document.getElementById('odVat').textContent = `+৳ ${vatAmount.toFixed(2)}`;
-                document.getElementById('odCoupon').textContent = `-৳ ${discountAmount.toFixed(2)}`;
-                document.getElementById('odShipping').textContent = `৳ ${order.shippingFee || 0}`;
-                document.getElementById('odCOD').textContent = order.codFee === 0 ? 'Free' : `৳ ${order.codFee}`;
+                document.getElementById('odSubtotal').textContent = `৳ ${formatPrice(subTotal)}`;
+                document.getElementById('odVat').textContent = `+৳ ${formatPrice(vatAmount)}`;
+                document.getElementById('odCoupon').textContent = `-৳ ${formatPrice(discountAmount)}`;
+                document.getElementById('odShipping').textContent = `৳ ${formatPrice(order.shippingFee || 0)}`;
+                document.getElementById('odCOD').textContent = order.codFee === 0 ? 'Free' : `৳ ${formatPrice(order.codFee)}`;
                 
-                document.getElementById('odTotal').textContent = `৳ ${order.amount}`;
-                document.getElementById('odPaidAmount').textContent = `৳ ${order.amount}`;
+                document.getElementById('odTotal').textContent = `৳ ${formatPrice(order.amount)}`;
+                document.getElementById('odPaidAmount').textContent = `৳ ${formatPrice(order.amount)}`;
                 document.getElementById('odPaidMethodName').textContent = order.payment || 'N/A';
                 document.getElementById('odOrderNo').textContent = order.id;
                 document.getElementById('odDate').textContent = order.date;
@@ -4030,7 +4047,7 @@
                                 <h4 style="font-size:0.9rem; margin:0 0 4px 0; color:#333; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${item.name}</h4>
                                 ${variantText ? `<div style="font-size:0.75rem; color:#666; background:#f5f5f5; display:inline-block; padding:2px 6px; border-radius:4px; margin-bottom:4px;">${variantText}</div>` : ''}
                                 <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
-                                    <span style="font-weight:600; color:var(--primary);">৳${item.price}</span>
+                                    <span style="font-weight:600; color:var(--primary);">৳${formatPrice(item.price)}</span>
                                     <span style="color:#666; font-weight: 500;">Qty: ${item.qty}</span>
                                 </div>
                             </div>
@@ -4232,8 +4249,8 @@
                         <div class="card-info">
                             <h3 class="product-title">${product.name}</h3>
                             <div class="price-group">
-                                <span class="new-price">৳${price.toFixed(0)}</span>
-                                ${originalPrice > price ? `<span class="old-price">৳${originalPrice.toFixed(0)}</span>` : ''}
+                                <span class="new-price">৳${formatPrice(price)}</span>
+                                ${originalPrice > price ? `<span class="old-price">৳${formatPrice(originalPrice)}</span>` : ''}
                             </div>
                             <div class="sales-section">
                                 <span>${formattedSalesCount} sold</span>
@@ -4317,8 +4334,8 @@
                         <div class="card-info">
                             <h3 class="product-title">${product.name}</h3>
                             <div class="price-group">
-                                <span class="new-price">৳${price.toFixed(0)}</span>
-                                ${originalPrice > price ? `<span class="old-price">৳${originalPrice.toFixed(0)}</span>` : ''}
+                                <span class="new-price">৳${formatPrice(price)}</span>
+                                ${originalPrice > price ? `<span class="old-price">৳${formatPrice(originalPrice)}</span>` : ''}
                             </div>
                             <div class="sales-section">
                                 <span>${formattedSalesCount} sold</span>
@@ -4439,10 +4456,18 @@
                     }
                 };
 
-                detailName.textContent = currentProduct.name;
+                let prodName = currentProduct.name;
+                let shortenedName = prodName;
+                if(prodName.length > 70) {
+                    shortenedName = prodName.substring(0, 70) + '...';
+                    detailName.innerHTML = `${shortenedName} <i class="fas fa-chevron-down" style="font-size: 1rem; color: var(--primary); cursor: pointer; margin-left: 5px;" onclick="this.parentElement.textContent='${prodName}'"></i>`;
+                } else {
+                    detailName.textContent = prodName;
+                }
+
                 const price = currentProduct.variants && currentProduct.variants.length > 0 ? currentProduct.variants[0].price : (currentProduct.price || 0);
-                detailPrice.textContent = `৳${price.toFixed(2)}`;
-                detailOldPrice.textContent = currentProduct.originalPrice > price ? `৳${currentProduct.originalPrice.toFixed(2)}` : '';
+                detailPrice.textContent = `৳${formatPrice(price)}`;
+                detailOldPrice.textContent = currentProduct.originalPrice > price ? `৳${formatPrice(currentProduct.originalPrice)}` : '';
                 document.getElementById('detailSoldCount').textContent = `${formatNumberKM(currentProduct.sales || 0)} sold`;
 
                 const minDays = currentProduct.deliveryMinDays ? parseInt(currentProduct.deliveryMinDays) : 1;
@@ -4550,8 +4575,8 @@
                     }
                     thumbWrapper.innerHTML = thumbHtml;
 
-                    thumbWrapper.onclick = () => {
-                        if (imageSliderInterval) clearInterval(imageSliderInterval);
+                    thumbWrapper.onclick = (e) => {
+                        if (e && e.isTrusted && imageSliderInterval) clearInterval(imageSliderInterval);
 
                         document.querySelectorAll('.thumbnail-wrapper').forEach(t => t.classList.remove('active'));
                         thumbWrapper.classList.add('active');
@@ -4857,7 +4882,7 @@
 
                 document.getElementById('vlProductName').textContent = currentProduct.name;
                 const defaultPrice = currentProduct.variants && currentProduct.variants.length > 0 ? currentProduct.variants[0].price : currentProduct.price;
-                document.getElementById('vlProductPrice').textContent = `৳${defaultPrice.toFixed(2)}`;
+                document.getElementById('vlProductPrice').textContent = `৳${formatPrice(defaultPrice)}`;
 
                 let displayImg = '';
                 if(currentProduct.images && currentProduct.images.length > 0) {
@@ -4893,7 +4918,7 @@
                         <div class="variant-option color-option ${isOutOfStock ? 'out-of-stock' : ''}" data-index="${index}">
                             ${imgHTML}
                             <span class="var-name">${v.color}</span>
-                            <div class="var-price">৳${v.price}</div>
+                            <div class="var-price">৳${formatPrice(v.price)}</div>
                         </div>
                     `;
                 });
@@ -4914,7 +4939,7 @@
 
                         selectedVariant = { ...selectedVar, size: null }; 
 
-                        document.getElementById('vlProductPrice').textContent = `৳${selectedVar.price.toFixed(2)}`;
+                        document.getElementById('vlProductPrice').textContent = `৳${formatPrice(selectedVar.price)}`;
                         if (selectedVar.image) {
                             document.getElementById('vlProductImg').src = selectedVar.image;
                         }
@@ -5062,7 +5087,7 @@
                 cartItems.innerHTML = '';
                 if (cart.length === 0) {
                     cartItems.innerHTML = `<div class="empty-state" style="padding:20px; box-shadow:none; margin-top:50px;"><i class="fas fa-shopping-cart" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 15px;"></i><p>Your cart is empty.</p></div>`;
-                    cartTotalPrice.textContent = '৳0.00';
+                    cartTotalPrice.textContent = '৳0';
                     checkoutBtn.disabled = true;
                     checkoutBtn.classList.remove('checkout-btn-shake');
                     return;
@@ -5112,7 +5137,7 @@
                         </div>
                         <div class="cart-item-info">
                             <h4 class="cart-item-title-link">${item.name}</h4>
-                            <div class="cart-item-price">Tk ${item.price.toFixed(2)}</div>
+                            <div class="cart-item-price">Tk ${formatPrice(item.price)}</div>
                             <div class="cart-item-controls-row">
                                 <div class="cart-item-qty-wrapper">
                                     <button class="decrease-item">-</button>
@@ -5125,7 +5150,7 @@
                     cartItems.appendChild(cartItem);
                 });
 
-                cartTotalPrice.textContent = `৳${total.toFixed(2)}`;
+                cartTotalPrice.textContent = `৳${formatPrice(total)}`;
                 attachCartItemListeners();
             }
 
@@ -5378,9 +5403,9 @@
                     if (currentProduct) {
                         let insideChg = currentProduct.deliveryInside !== undefined && currentProduct.deliveryInside !== null && currentProduct.deliveryInside !== '' ? parseFloat(currentProduct.deliveryInside) : appDeliveryInside;
                         let outsideChg = currentProduct.deliveryOutside !== undefined && currentProduct.deliveryOutside !== null && currentProduct.deliveryOutside !== '' ? parseFloat(currentProduct.deliveryOutside) : appDeliveryOutside;
-                        chargeSpan.textContent = `৳${defaultAddr.region === 'Outside Dhaka' ? outsideChg : insideChg}`;
+                        chargeSpan.textContent = `৳${formatPrice(defaultAddr.region === 'Outside Dhaka' ? outsideChg : insideChg)}`;
                     } else {
-                        chargeSpan.textContent = `৳${defaultAddr.region === 'Outside Dhaka' ? appDeliveryOutside : appDeliveryInside}`;
+                        chargeSpan.textContent = `৳${formatPrice(defaultAddr.region === 'Outside Dhaka' ? appDeliveryOutside : appDeliveryInside)}`;
                     }
 
                     addrSpan.textContent = `${defaultAddr.address}, ${defaultAddr.postcode}`;
@@ -5402,9 +5427,9 @@
                             if (currentProduct) {
                                 let insideChg = currentProduct.deliveryInside !== undefined && currentProduct.deliveryInside !== null && currentProduct.deliveryInside !== '' ? parseFloat(currentProduct.deliveryInside) : appDeliveryInside;
                                 let outsideChg = currentProduct.deliveryOutside !== undefined && currentProduct.deliveryOutside !== null && currentProduct.deliveryOutside !== '' ? parseFloat(currentProduct.deliveryOutside) : appDeliveryOutside;
-                                chargeSpan.textContent = `৳${isInside ? insideChg : outsideChg}`;
+                                chargeSpan.textContent = `৳${formatPrice(isInside ? insideChg : outsideChg)}`;
                             } else {
-                                chargeSpan.textContent = `৳${isInside ? appDeliveryInside : appDeliveryOutside}`;
+                                chargeSpan.textContent = `৳${formatPrice(isInside ? appDeliveryInside : appDeliveryOutside)}`;
                             }
 
                             regionSpan.style.opacity = 1;
@@ -5440,7 +5465,7 @@
                             <div class="address-box-details">
                                 <h5 style="margin:0;">${addr.title || 'Address'}</h5>
                                 <p style="margin:0; font-size:0.8rem;">${addr.address}</p>
-                                <p style="margin:0; font-size:0.75rem; color:var(--primary); font-weight:600;">Delivery: ৳${addr.region === 'Outside Dhaka' ? appDeliveryOutside : appDeliveryInside}</p>
+                                <p style="margin:0; font-size:0.75rem; color:var(--primary); font-weight:600;">Delivery: ৳${formatPrice(addr.region === 'Outside Dhaka' ? appDeliveryOutside : appDeliveryInside)}</p>
                             </div>
                             ${isDefault ? '<div style="color:#16a34a;"><i class="fas fa-check-circle"></i></div>' : ''}
                         `;
@@ -5621,11 +5646,11 @@
 
                         document.getElementById('promoPopupImg').src = displayImg;
                         document.getElementById('promoPopupName').textContent = prod.name.length > 20 ? prod.name.substring(0,20)+'...' : prod.name;
-                        document.getElementById('promoPopupPrice').textContent = `${price.toFixed(0)} ৳`;
+                        document.getElementById('promoPopupPrice').textContent = `${formatPrice(price)} ৳`;
 
                         const origPrice = prod.originalPrice || 0;
                         if (origPrice > price) {
-                            document.getElementById('promoPopupOldPrice').textContent = `${origPrice.toFixed(0)} ৳`;
+                            document.getElementById('promoPopupOldPrice').textContent = `${formatPrice(origPrice)} ৳`;
                             document.getElementById('promoPopupOldPrice').style.display = 'inline-block';
                             document.getElementById('promoPopupDiscount').innerHTML = `${Math.round(((origPrice-price)/origPrice)*100)}%<br>OFF`;
                             document.getElementById('promoPopupDiscount').style.display = 'block';
@@ -5646,7 +5671,7 @@
                     document.getElementById('promoPopupName').textContent = popupData.name || '';
 
                     if (popupData.price && popupData.price > 0) {
-                        document.getElementById('promoPopupPrice').textContent = `${popupData.price} ৳`;
+                        document.getElementById('promoPopupPrice').textContent = `${formatPrice(popupData.price)} ৳`;
                         document.getElementById('promoPopupPrice').style.display ='inline-block';
                     } else {
                         document.getElementById('promoPopupPrice').style.display = 'none';
@@ -5707,7 +5732,7 @@
                                 <h4>${item.name}</h4>
                                 ${variantText ? `<div class="od-item-variant">${variantText}</div>` : ''}
                                 <div class="od-item-price-row">
-                                    <span class="od-item-price">৳ ${item.price.toFixed(0)}</span>
+                                    <span class="od-item-price">৳ ${formatPrice(item.price)}</span>
                                     <span class="od-item-qty">Qty: ${item.quantity}</span>
                                 </div>
                             </div>
@@ -5748,6 +5773,7 @@
                 if(isLoggedIn && currentUser) {
                     db.collection('orders').doc(orderNo.toString()).set(orderData).then(() => {
                         hideLoader();
+                        requestNotificationPermission(targetUserId); 
                         showOrderSuccessModal(orderData);
                     }).catch(err => {
                         hideLoader();
@@ -5766,14 +5792,14 @@
                     document.getElementById('odShipping').parentNode.style.display = 'flex';
                     document.getElementById('odCOD').parentNode.style.display = 'flex';
 
-                    document.getElementById('odSubtotal').textContent = `৳ ${subtotal.toFixed(2)}`;
-                    document.getElementById('odVat').textContent = `+৳ ${vatAmount.toFixed(2)}`;
-                    document.getElementById('odCoupon').textContent = `-৳ ${finalDiscount.toFixed(2)}`;
-                    document.getElementById('odShipping').textContent = `৳ ${shippingFee}`;
-                    document.getElementById('odCOD').textContent = codFee === 0 ? 'Free' : `৳ ${codFee}`;
+                    document.getElementById('odSubtotal').textContent = `৳ ${formatPrice(subtotal)}`;
+                    document.getElementById('odVat').textContent = `+৳ ${formatPrice(vatAmount)}`;
+                    document.getElementById('odCoupon').textContent = `-৳ ${formatPrice(finalDiscount)}`;
+                    document.getElementById('odShipping').textContent = `৳ ${formatPrice(shippingFee)}`;
+                    document.getElementById('odCOD').textContent = codFee === 0 ? 'Free' : `৳ ${formatPrice(codFee)}`;
 
-                    document.getElementById('odTotal').textContent = `৳ ${total.toFixed(0)}`;
-                    document.getElementById('odPaidAmount').textContent = `৳ ${total.toFixed(0)}`;
+                    document.getElementById('odTotal').textContent = `৳ ${formatPrice(total)}`;
+                    document.getElementById('odPaidAmount').textContent = `৳ ${formatPrice(total)}`;
                     document.getElementById('odPaidMethodName').textContent = paymentMethodText;
                     document.getElementById('odOrderNo').textContent = orderNo;
                     document.getElementById('odDate').textContent = date;
@@ -6111,12 +6137,12 @@
                         window.appliedCouponDiscount = 0;
                         showCustomAlert('Invalid Coupon', 'The coupon code is invalid or expired.');
                     }
-                    document.getElementById('osDiscount').textContent = `-৳${window.appliedCouponDiscount.toFixed(2)}`;
+                    document.getElementById('osDiscount').textContent = `-৳${formatPrice(window.appliedCouponDiscount)}`;
 
                     let defaultAddr = window.osSelectedAddress;
                     let shippingFee = defaultAddr ? getCartShippingFee(defaultAddr.region, cart.filter(i => i.selected)) : 0;
                     const newTotal = window.currentOrderSubtotal - window.appliedCouponDiscount + shippingFee;
-                    document.getElementById('osTotal').textContent = `৳${Math.max(0, newTotal).toFixed(0)}`;
+                    document.getElementById('osTotal').textContent = `৳${formatPrice(Math.max(0, newTotal))}`;
                 });
 
                 checkoutForm.addEventListener('submit', async function(e) {
@@ -6149,9 +6175,9 @@
                         const totalBase = finalSubtotal + shippingFee;
 
                         document.getElementById('codStoreNameSpan').textContent = document.getElementById('pageTitle').textContent;
-                        document.getElementById('codConfirmSubtotal').textContent = `৳ ${totalBase.toFixed(0)}`;
-                        document.getElementById('codConfirmFee').textContent = codFee === 0 ? 'Free' : `৳ ${codFee.toFixed(0)}`;
-                        document.getElementById('codConfirmTotal').textContent = `৳ ${(totalBase + codFee).toFixed(0)}`;
+                        document.getElementById('codConfirmSubtotal').textContent = `৳ ${formatPrice(totalBase)}`;
+                        document.getElementById('codConfirmFee').textContent = codFee === 0 ? 'Free' : `৳ ${formatPrice(codFee)}`;
+                        document.getElementById('codConfirmTotal').textContent = `৳ ${formatPrice(totalBase + codFee)}`;
 
                         pendingOrderParams = { orderAddress, selectedItems, paymentMethodText, subtotal, shippingFee, codFee, couponDiscount: window.appliedCouponDiscount };
                         document.getElementById('codConfirmOverlay').classList.add('active');
@@ -6178,8 +6204,8 @@
 
                             document.getElementById('paymentHeaderTitle').innerText = `${gatewayObj.name} Checkout`;
                             document.getElementById('paymentGwName').innerText = `${gatewayObj.name} Payment`;
-                            document.getElementById('paymentAmountDisplay').innerText = total.toFixed(0);
-                            document.getElementById('paymentInstructionAmount').innerText = total.toFixed(0);
+                            document.getElementById('paymentAmountDisplay').innerText = formatPrice(total);
+                            document.getElementById('paymentInstructionAmount').innerText = formatPrice(total);
                             document.getElementById('paymentAdminNumber').innerText = gatewayObj.mobileNo || 'No Number Provided';
 
                             let gwNameLower = gatewayObj.name.toLowerCase();
@@ -6476,7 +6502,7 @@
                         if (p.keywords) {
                             p.keywords.forEach(k => {
                                 if(k.toLowerCase().includes(term)) {
-                                    matchedSugmatchedSuggestions.add(k);
+                                    matchedSuggestions.add(k);
                                 }
                             });
                         }
