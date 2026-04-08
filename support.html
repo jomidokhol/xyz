@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>সাপোর্ট চ্যাট</title>
+<title>Customer Support</title>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
@@ -64,13 +64,11 @@
     display: flex; align-items: center; justify-content: center;
     cursor: pointer; flex-shrink: 0; transition: var(--transition);
   }
-  .header-back:hover { background: rgba(255,255,255,0.25); }
-
   .header-avatar {
     width: 42px; height: 42px; border-radius: 50%;
     background: rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.5);
     display: flex; align-items: center; justify-content: center; color: #fff;
-    font-size: 18px; flex-shrink: 0;
+    font-size: 18px; flex-shrink: 0; overflow: hidden;
   }
   .header-info { flex: 1; min-width: 0; }
   .header-name { color: #fff; font-size: 16px; font-weight: 700; line-height: 1.2; }
@@ -80,15 +78,6 @@
   .status-dot.offline { background: rgba(255,255,255,0.4); }
   .status-text { color: rgba(255,255,255,0.85); font-size: 12px; }
   @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.7;transform:scale(1.2)} }
-
-  .header-actions { display: flex; gap: 4px; }
-  .hdr-btn {
-    width: 34px; height: 34px; border-radius: 50%; border: none;
-    background: rgba(255,255,255,0.15); color: #fff; font-size: 15px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: var(--transition);
-  }
-  .hdr-btn:hover { background: rgba(255,255,255,0.25); }
 
   /* ── MESSAGES AREA ── */
   #messages-area {
@@ -117,9 +106,7 @@
     padding: 7px 13px; border-radius: 20px; font-size: 13px; font-weight: 500;
     background: var(--white); border: 1.5px solid var(--green-light);
     color: var(--green-deep); cursor: pointer; transition: var(--transition);
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
   }
-  .sq-chip:hover, .sq-chip:active { background: var(--green-pale); border-color: var(--green-main); transform: scale(0.97); }
 
   /* ── DATE DIVIDER ── */
   .date-divider {
@@ -135,7 +122,7 @@
   .msg-avatar {
     width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    font-size: 12px; color: #fff; background: var(--green-deep);
+    font-size: 12px; color: #fff; background: var(--green-deep); overflow: hidden;
   }
 
   .bubble-wrap { display: flex; flex-direction: column; max-width: 80%; }
@@ -158,73 +145,21 @@
   }
   .bubble.deleted { opacity: 0.5; font-style: italic; color: var(--gray-400) !important; background: var(--gray-100) !important; }
   .bubble.edited::after { content: ' (সম্পাদিত)'; font-size: 11px; opacity: 0.65; }
+  .bubble .ai-tag { font-size: 10px; background: var(--green-pale); color: var(--green-deep); padding: 2px 6px; border-radius: 10px; margin-bottom: 4px; display: inline-block;}
 
   .msg-meta { font-size: 10.5px; color: var(--gray-400); margin-top: 3px; padding: 0 3px; display: flex; align-items: center; gap: 4px; }
   .msg-row.from-user .msg-meta { justify-content: flex-end; }
-  .read-tick { font-size: 12px; }
-  .read-tick.read { color: var(--green-main); }
 
   /* ── TYPING BUBBLE ── */
   .typing-row { display: flex; align-items: flex-end; gap: 7px; max-width: 700px; margin: 0 auto; width: 100%; }
   .typing-bubble {
     background: var(--bubble-admin-bg); border-radius: 16px; border-bottom-left-radius: 4px;
-    padding: 12px 16px; display: flex; align-items: center; gap: 5px;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.09);
+    padding: 12px 16px; display: flex; align-items: center; gap: 5px; box-shadow: 0 1px 6px rgba(0,0,0,0.09);
   }
   .t-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gray-400); animation: typBounce 1.2s infinite; }
   .t-dot:nth-child(2) { animation-delay: 0.2s; }
   .t-dot:nth-child(3) { animation-delay: 0.4s; }
   @keyframes typBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
-
-  /* ── CONTEXT MENU ── */
-  .ctx-menu {
-    position: fixed; z-index: 1000;
-    background: var(--white); border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-    overflow: hidden; min-width: 160px;
-    animation: ctxIn 0.15s ease;
-    border: 1px solid var(--gray-200);
-  }
-  @keyframes ctxIn { from{opacity:0;transform:scale(.9)} to{opacity:1;transform:scale(1)} }
-  .ctx-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 11px 16px; cursor: pointer; font-size: 14px;
-    transition: var(--transition); color: var(--gray-700);
-  }
-  .ctx-item:hover { background: var(--green-ghost); color: var(--green-deep); }
-  .ctx-item.danger { color: var(--red); }
-  .ctx-item.danger:hover { background: #fef2f2; }
-  .ctx-divider { height: 1px; background: var(--gray-100); }
-
-  /* ── EDIT OVERLAY ── */
-  .edit-overlay {
-    position: absolute; inset: 0; z-index: 500;
-    background: rgba(0,0,0,0.5); display: flex;
-    align-items: flex-end; justify-content: center;
-    padding-bottom: calc(20px + var(--safe-bottom));
-    backdrop-filter: blur(2px); animation: fadeIn 0.15s ease;
-  }
-  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-  .edit-box {
-    background: var(--white); border-radius: 16px 16px 0 0;
-    padding: 16px; width: 100%; max-width: 500px;
-    box-shadow: 0 -4px 24px rgba(0,0,0,0.14);
-  }
-  .edit-label { font-size: 12px; font-weight: 700; color: var(--gray-500); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .edit-ta {
-    width: 100%; border: 1.5px solid var(--green-main); border-radius: 10px;
-    padding: 10px 12px; font-family: inherit; font-size: 14px;
-    outline: none; resize: none; min-height: 64px; color: var(--gray-800);
-    background: var(--gray-50);
-  }
-  .edit-actions { display: flex; gap: 8px; margin-top: 10px; }
-  .edit-btn {
-    flex: 1; padding: 10px; border-radius: 10px; font-family: inherit;
-    font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: var(--transition);
-  }
-  .edit-btn.confirm { background: var(--green-main); color: #fff; }
-  .edit-btn.confirm:hover { background: var(--green-deep); }
-  .edit-btn.cancel { background: var(--gray-100); color: var(--gray-600); }
 
   /* ── INPUT AREA ── */
   .input-wrapper {
@@ -232,8 +167,7 @@
     border-top: 1px solid var(--gray-200);
     padding: 10px 12px; padding-bottom: calc(10px + var(--safe-bottom));
     display: flex; align-items: flex-end; justify-content: center;
-    position: relative; z-index: 20;
-    box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+    position: relative; z-index: 20; box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
   }
   .input-container { display: flex; align-items: flex-end; gap: 8px; max-width: 700px; width: 100%; }
   
@@ -243,92 +177,51 @@
     font-size: 18px; cursor: pointer; transition: var(--transition);
   }
   .emoji-btn { background: var(--gray-100); color: var(--gray-500); font-size: 20px; }
-  .emoji-btn:hover { background: var(--green-ghost); color: var(--green-deep); }
   .msg-input-wrap { flex: 1; position: relative; }
   .msg-input {
     width: 100%; border: 1.5px solid var(--gray-200); border-radius: 22px;
     padding: 10px 16px; font-family: inherit; font-size: 14.5px;
     outline: none; resize: none; max-height: 100px; min-height: 40px;
     color: var(--gray-800); background: var(--gray-50);
-    transition: var(--transition); line-height: 1.4; display: block;
   }
-  .msg-input:focus { border-color: var(--green-main); background: var(--white); box-shadow: 0 0 0 3px rgba(22,163,74,0.12); }
   .send-btn { background: var(--green-main); color: #fff; font-size: 16px; }
-  .send-btn:hover { background: var(--green-deep); transform: scale(1.06); }
-  .send-btn:disabled { background: var(--gray-300); cursor: not-allowed; transform: none; }
+  .send-btn:disabled { background: var(--gray-300); cursor: not-allowed; }
 
-  /* ── EMOJI PICKER ── */
-  .emoji-picker {
-    position: absolute; bottom: 62px; left: 12px;
-    background: var(--white); border-radius: 14px;
-    padding: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.16);
-    border: 1px solid var(--gray-200); z-index: 100;
-    display: none; flex-wrap: wrap; gap: 6px; max-width: 280px;
-    animation: ctxIn 0.15s ease;
-  }
-  .emoji-picker.open { display: flex; }
-  .e-item { font-size: 22px; cursor: pointer; border-radius: 6px; padding: 3px; transition: var(--transition); }
-  .e-item:hover { background: var(--green-ghost); transform: scale(1.2); }
-
-  /* ── SCROLL BUTTON ── */
-  .scroll-down-btn {
-    position: absolute; bottom: 80px; right: 24px; z-index: 50;
-    width: 38px; height: 38px; border-radius: 50%;
-    background: var(--green-main); color: #fff; border: none;
-    font-size: 16px; cursor: pointer; display: none;
-    align-items: center; justify-content: center;
-    box-shadow: 0 2px 10px rgba(22,163,74,0.3); transition: var(--transition);
-  }
-  .scroll-down-btn.visible { display: flex; }
-
-  /* ── CONNECTION STATUS ── */
-  .conn-banner {
-    background: var(--red); color: #fff; text-align: center;
-    font-size: 13px; font-weight: 600; padding: 6px; display: none;
-  }
-  .conn-banner.show { display: block; }
-  .conn-banner i { margin-right: 5px; }
-
-  /* ── OVERLAY MASK ── */
+  /* CONTEXT MENU & EMOJI (Kept from original) */
+  .ctx-menu { position: fixed; z-index: 1000; background: var(--white); border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); display:none; border: 1px solid var(--gray-200); }
+  .ctx-item { padding: 11px 16px; cursor: pointer; font-size: 14px; display: flex; gap:10px; align-items: center; color: var(--gray-700); }
+  .ctx-item.danger { color: var(--red); }
   #overlay-mask { position: fixed; inset: 0; z-index: 900; display: none; }
   #overlay-mask.show { display: block; }
+
+  .emoji-picker { position: absolute; bottom: 62px; left: 12px; background: var(--white); border-radius: 14px; padding: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.16); border: 1px solid var(--gray-200); z-index: 100; display: none; flex-wrap: wrap; gap: 6px; max-width: 280px; }
+  .emoji-picker.open { display: flex; }
+  .e-item { font-size: 22px; cursor: pointer; border-radius: 6px; padding: 3px; }
 </style>
 </head>
 <body>
 <div class="phone-shell" id="phone-shell">
 
-  <!-- Offline Banner -->
-  <div class="conn-banner" id="conn-banner"><i class="fa-solid fa-triangle-exclamation"></i> ইন্টারনেট সংযোগ নেই</div>
-
   <!-- Header -->
   <div class="chat-header">
-    <button class="header-back"><i class="fa-solid fa-arrow-left"></i></button>
+    <button class="header-back" onclick="window.location.href='home.html'"><i class="fa-solid fa-arrow-left"></i></button>
     <div class="header-avatar"><i class="fa-solid fa-headset"></i></div>
     <div class="header-info">
-      <div class="header-name">XYZ Support</div>
+      <div class="header-name">ShopSupport</div>
       <div class="header-status">
-        <div class="status-dot online" id="admin-dot"></div>
-        <div class="status-text" id="admin-status-text">অনলাইন</div>
+        <div class="status-dot offline" id="admin-dot"></div>
+        <div class="status-text" id="admin-status-text">অফলাইন</div>
       </div>
-    </div>
-    <div class="header-actions">
-      <button class="hdr-btn" title="সার্চ"><i class="fa-solid fa-magnifying-glass"></i></button>
-      <button class="hdr-btn" title="আরও"><i class="fa-solid fa-ellipsis-vertical"></i></button>
     </div>
   </div>
 
   <!-- Messages -->
-  <div id="messages-area">
-    <!-- Injected by JS -->
-  </div>
-
-  <!-- Scroll Down Button -->
-  <button class="scroll-down-btn" id="scroll-down-btn" onclick="scrollToBottom()"><i class="fa-solid fa-arrow-down"></i></button>
+  <div id="messages-area"></div>
 
   <!-- Input -->
   <div class="input-wrapper" id="input-wrapper">
     <div class="input-container">
-      <button class="emoji-btn" id="emoji-btn" onclick="toggleEmoji()"><i class="fa-regular fa-face-smile"></i></button>
+      <button class="emoji-btn" onclick="toggleEmoji()"><i class="fa-regular fa-face-smile"></i></button>
       <div class="msg-input-wrap">
         <textarea class="msg-input" id="msg-input" placeholder="বার্তা লিখুন…" rows="1" onkeydown="handleKey(event)" oninput="onInputChange(this)"></textarea>
       </div>
@@ -336,221 +229,213 @@
     </div>
   </div>
 
-  <!-- Emoji Picker -->
   <div class="emoji-picker" id="emoji-picker"></div>
-
-  <!-- Edit Overlay -->
-  <div class="edit-overlay" id="edit-overlay" style="display:none" onclick="cancelEdit(event)">
-    <div class="edit-box" onclick="e=>e.stopPropagation()">
-      <div class="edit-label">বার্তা সম্পাদনা করুন</div>
-      <textarea class="edit-ta" id="edit-ta" rows="3"></textarea>
-      <div class="edit-actions">
-        <button class="edit-btn cancel" onclick="cancelEdit()">বাতিল</button>
-        <button class="edit-btn confirm" onclick="confirmEdit()">আপডেট করুন</button>
-      </div>
-    </div>
-  </div>
 </div>
 
-<!-- Context Menu -->
-<div class="ctx-menu" id="ctx-menu" style="display:none">
+<div class="ctx-menu" id="ctx-menu">
   <div class="ctx-item" onclick="ctxCopy()"><i class="fa-regular fa-clipboard"></i> কপি করুন</div>
-  <div class="ctx-divider"></div>
   <div class="ctx-item" id="ctx-edit-btn" onclick="ctxEdit()"><i class="fa-solid fa-pen-to-square"></i> সম্পাদনা করুন</div>
-  <div class="ctx-divider"></div>
   <div class="ctx-item danger" onclick="ctxDelete()"><i class="fa-solid fa-trash-can"></i> মুছুন</div>
 </div>
 <div id="overlay-mask" onclick="closeCtxMenu()"></div>
 
-<!-- Firebase SDKs -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, collection, doc, setDoc, getDoc, addDoc, onSnapshot, updateDoc, deleteDoc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, collection, doc, setDoc, getDoc, addDoc, onSnapshot, updateDoc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 🔥 FIREBASE CONFIG (Here provide your actual keys)
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   const firebaseConfig = {
     apiKey: "AIzaSyD5p-7Cgep9aGf6omMXDH8LOTy0C76jJaQ",
-  authDomain: "e-commerce-shop-24.firebaseapp.com",
-  databaseURL: "https://e-commerce-shop-24-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "e-commerce-shop-24",
-  storageBucket: "e-commerce-shop-24.firebasestorage.app",
-  messagingSenderId: "1000897291264",
-  appId: "1:1000897291264:web:4f1e78554c3e69d310a4e5",
-  measurementId: "G-MCFXRFDFT5"
+    authDomain: "e-commerce-shop-24.firebaseapp.com",
+    projectId: "e-commerce-shop-24",
+    storageBucket: "e-commerce-shop-24.firebasestorage.app",
+    messagingSenderId: "1000897291264",
+    appId: "1:1000897291264:web:4f1e78554c3e69d310a4e5",
+    measurementId: "G-MCFXRFDFT5"
   };
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+  const auth = getAuth(app);
+  
   window._db = db;
-  window._fs = { collection, doc, setDoc, getDoc, addDoc, onSnapshot, updateDoc, deleteDoc, serverTimestamp, query, orderBy };
-  window._firebaseReady = true;
+  window._fs = { collection, doc, setDoc, getDoc, addDoc, onSnapshot, updateDoc, serverTimestamp, query, orderBy };
 
-  const USER_ID = 'user_' + (localStorage.getItem('chatUserId') || (() => {
-    const id = Math.random().toString(36).slice(2,10);
-    localStorage.setItem('chatUserId', id);
-    return id;
-  })());
-  window._userId = USER_ID;
+  // Rule 1 & 2: Auth Check & User Data Load
+  onAuthStateChanged(auth, async (user) => {
+    if(!user) {
+        window.location.href = 'login';
+    } else {
+        window.USER_ID = user.uid;
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if(userDoc.exists()){
+            const data = userDoc.data();
+            window._userName = data.name || user.displayName || 'User';
+            window._userPhoto = user.photoURL || '';
+        }
+        initApp();
+    }
+  });
 
+  // Track Online Presence
   window.setUserPresence = async function(online) {
-    const { doc, setDoc, serverTimestamp } = window._fs;
-    await setDoc(doc(db,'userStatus',USER_ID), { online, lastSeen: serverTimestamp(), userId: USER_ID }, {merge:true});
+    if(!window.USER_ID) return;
+    await setDoc(doc(db,'userStatus',window.USER_ID), { online, lastSeen: serverTimestamp(), userId: window.USER_ID }, {merge:true});
   };
-  window.setUserPresence(true);
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") window.setUserPresence(true);
+    else window.setUserPresence(false);
+  });
   window.addEventListener('beforeunload', () => window.setUserPresence(false));
 
+  function formatLastSeen(date) {
+    if(!date) return 'অফলাইন';
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return 'এইমাত্র';
+    if (diffMins < 60) return `${diffMins} মিনিট আগে`;
+    if (diffHours < 24) return `${diffHours} ঘন্টা আগে`;
+    if (diffDays < 7) {
+        const days = ['রবিবার','সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার'];
+        const time = date.toLocaleTimeString('bn-BD', {hour:'numeric', minute:'numeric', hour12:true});
+        return `${days[date.getDay()]} ${time}`;
+    }
+    return date.toLocaleDateString('bn-BD');
+  }
+
+  // Admin Status Tracking
   window.listenAdminStatus = function() {
-    const { onSnapshot, doc } = window._fs;
     onSnapshot(doc(db,'adminStatus','admin'), (snap) => {
-      const online = snap.exists() && snap.data().online;
+      const data = snap.exists() ? snap.data() : null;
+      const online = data && data.online;
+      window._adminOnline = online;
+
       document.getElementById('admin-dot').className = 'status-dot '+(online?'online':'offline');
-      document.getElementById('admin-status-text').textContent = online ? 'অনলাইন' : 'অফলাইন';
+      if(online) {
+         document.getElementById('admin-status-text').textContent = 'অনলাইন';
+      } else if(data && data.lastSeen) {
+         document.getElementById('admin-status-text').textContent = 'লাস্ট সিন: ' + formatLastSeen(data.lastSeen.toDate());
+      } else {
+         document.getElementById('admin-status-text').textContent = 'অফলাইন';
+      }
     });
   };
 
   window.loadUserSettings = async function() {
-    const { getDoc, doc } = window._fs;
     const snap = await getDoc(doc(db,'settings','config'));
-    window._settings = snap.exists() ? {...defaultSettings(), ...snap.data()} : defaultSettings();
+    window._settings = snap.exists() ? snap.data() : {};
   };
 
   window.listenMessages = function() {
-    const { onSnapshot, collection, query, orderBy } = window._fs;
-    const q = query(collection(db,'chats',USER_ID,'messages'), orderBy('timestamp'));
-    window._msgUnsub = onSnapshot(q, (snap) => {
+    const q = query(collection(db,'chats',window.USER_ID,'messages'), orderBy('timestamp'));
+    onSnapshot(q, (snap) => {
       window._messages = snap.docs.map(d => ({id:d.id,...d.data()}));
       renderMessages();
     });
   };
 
   window.sendToFirestore = async function(text) {
-    const { addDoc, doc, collection, serverTimestamp, setDoc } = window._fs;
-    const msgRef = await addDoc(collection(db,'chats',USER_ID,'messages'), {
+    const msgRef = await addDoc(collection(db,'chats',window.USER_ID,'messages'), {
       text, sender:'user', timestamp: serverTimestamp(), read:false, deleted:false, edited:false
     });
-    await setDoc(doc(db,'chats',USER_ID), {
-      name: window._userName||'ইউজার',
-      lastMessage:text, lastMessageTime:serverTimestamp(), lastSender:'user',
-      unreadAdmin: (window._users?.find(u=>u.id===USER_ID)?.unreadAdmin||0)+1,
-      online: true, userId: USER_ID
+    await setDoc(doc(db,'chats',window.USER_ID), {
+      name: window._userName,
+      photoURL: window._userPhoto || '',
+      lastMessage: text, lastMessageTime: serverTimestamp(), lastSender: 'user',
+      unreadAdmin: 1, online: true, userId: window.USER_ID
     },{merge:true});
-    return msgRef.id;
+
+    // Rule 3: Gemini AI Auto-Reply if Admin is offline
+    if (!window._adminOnline && window._settings && window._settings.geminiApiKey) {
+        triggerAIAutoReply(text);
+    }
   };
 
-  window.updateMsgFirestore = async function(msgId, data) {
-    const { updateDoc, doc } = window._fs;
-    await updateDoc(doc(db,'chats',USER_ID,'messages',msgId), data);
-  };
+  async function triggerAIAutoReply(userText) {
+    try {
+        const apiKey = window._settings.geminiApiKey;
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: `You are a polite customer support agent for a Bengali e-commerce shop. Keep the reply short and very helpful in Bengali language. Customer says: ${userText}` }] }]
+            })
+        });
+        const data = await response.json();
+        const aiText = data.candidates[0].content.parts[0].text;
 
-  window.setTypingFirestore = async function(typing) {
-    const { setDoc, doc } = window._fs;
-    await setDoc(doc(db,'chats',USER_ID), {userTyping: typing}, {merge:true});
-  };
+        await addDoc(collection(db,'chats',window.USER_ID,'messages'), {
+            text: aiText, sender:'admin', timestamp: serverTimestamp(), read:false, deleted:false, edited:false, isAI: true
+        });
+        await setDoc(doc(db,'chats',window.USER_ID), {
+            lastMessage: aiText, lastMessageTime: serverTimestamp(), lastSender: 'admin', unreadAdmin: 0
+        },{merge:true});
 
-  window.listenAdminTyping = function() {
-    const { onSnapshot, doc } = window._fs;
-    onSnapshot(doc(db,'chats',USER_ID), (snap) => {
-      const d = snap.data()||{};
-      setAdminTyping(d.adminTyping||false);
-    });
-  };
+    } catch (e) { console.log('AI Failed', e); }
+  }
+
+  function initApp(){
+    window.setUserPresence(true);
+    window.loadUserSettings();
+    window.listenAdminStatus();
+    window.listenMessages();
+  }
 </script>
 
 <script>
-// STATE
 window._messages = [];
-window._settings = null;
-window._userName = localStorage.getItem('userName') || 'আমি';
-
-let ctxMsgId = null;
-let editMsgId = null;
-let typingTimer = null;
-let isAtBottom = true;
-
 const EMOJIS = ['😊','😂','❤️','👍','🎉','😍','🙏','✅','🔥','💯','😢','😮','🤔','👋','💬','🛒','📦','✨','⭐','💚'];
 
-function defaultSettings(){
-  return {
-    welcomeMsg: 'স্বাগতম! আমাদের সাপোর্ট টিমে আপনাকে স্বাগতম। কীভাবে সাহায্য করতে পারি?',
-    autoReply: true,
-    keywords: [],
-    suggestedQueries: ['অর্ডার স্ট্যাটাস', 'ডেলিভারি চার্জ কত?', 'পণ্য ফেরত কীভাবে?', 'পেমেন্ট পদ্ধতি']
-  };
-}
-
-// RENDER
 function renderMessages(){
   const area = document.getElementById('messages-area');
-  const s = window._settings || defaultSettings();
-  let html = '';
+  const s = window._settings || { welcomeMsg: 'কীভাবে সাহায্য করতে পারি?', suggestedQueries: ['অর্ডার স্ট্যাটাস', 'ডেলিভারি চার্জ'] };
+  let html = `<div class="welcome-banner"><div class="wb-icon"><i class="fa-solid fa-headset"></i></div><div class="wb-title">ShopSupport</div><div class="wb-text">${s.welcomeMsg}</div></div>`;
 
-  html += `
-    <div class="welcome-banner">
-      <div class="wb-icon"><i class="fa-solid fa-headset"></i></div>
-      <div class="wb-title">ShopSupport</div>
-      <div class="wb-text">${escHtml(s.welcomeMsg)}</div>
-    </div>`;
-
-  const userMsgs = window._messages.filter(m=>m.sender==='user'&&!m.deleted);
-  if(userMsgs.length === 0 && s.suggestedQueries?.length){
-    html += `
-      <div class="suggested-section">
-        <div class="sq-label"><i class="fa-solid fa-lightbulb"></i> প্রায়শই জিজ্ঞাসিত</div>
-        <div class="sq-chips">
-          ${s.suggestedQueries.map(q=>`<div class="sq-chip" onclick="selectSuggested('${escAttr(q)}')">${escHtml(q)}</div>`).join('')}
-        </div>
-      </div>`;
+  const userMsgs = window._messages.filter(m=>m.sender==='user');
+  if(userMsgs.length === 0 && s.suggestedQueries){
+    html += `<div class="suggested-section"><div class="sq-label"><i class="fa-solid fa-lightbulb"></i> প্রায়শই জিজ্ঞাসিত</div><div class="sq-chips">
+          ${s.suggestedQueries.map(q=>`<div class="sq-chip" onclick="selectSuggested('${q}')">${q}</div>`).join('')}
+        </div></div>`;
   }
 
   let lastDate = '';
   window._messages.forEach(m => {
-    const d = m.timestamp?.toDate ? m.timestamp.toDate() : (m.timestamp ? new Date(m.timestamp) : new Date());
+    const d = m.timestamp?.toDate ? m.timestamp.toDate() : new Date();
     const dateLabel = d.toLocaleDateString('bn-BD',{weekday:'long',day:'numeric',month:'long'});
-    if(dateLabel !== lastDate){
-      html += `<div class="date-divider">${dateLabel}</div>`;
-      lastDate = dateLabel;
-    }
+    if(dateLabel !== lastDate){ html += `<div class="date-divider">${dateLabel}</div>`; lastDate = dateLabel; }
+    
     const isUser = m.sender==='user';
     const t = d.toLocaleTimeString('bn-BD',{hour:'2-digit',minute:'2-digit'});
-    const deletedCls = m.deleted ? 'deleted' : '';
-    const editedCls = m.edited && !m.deleted ? 'edited' : '';
+    let avatarHTML = '';
+
+    if(isUser) {
+        if(window._userPhoto) avatarHTML = `<div class="msg-avatar"><img src="${window._userPhoto}" style="width:100%;height:100%;border-radius:50%"></div>`;
+        else avatarHTML = `<div class="msg-avatar">${window._userName.charAt(0)}</div>`;
+    } else {
+        avatarHTML = `<div class="msg-avatar"><i class="fa-solid fa-headset"></i></div>`;
+    }
+
+    const aiTag = m.isAI ? '<span class="ai-tag">AI Generated</span><br>' : '';
 
     html += `
-      <div class="msg-row ${isUser?'from-user':'from-admin'}" data-id="${m.id}">
-        ${!isUser?`<div class="msg-avatar"><i class="fa-solid fa-headset"></i></div>`:''}
+      <div class="msg-row ${isUser?'from-user':'from-admin'}">
+        ${avatarHTML}
         <div class="bubble-wrap">
-          <div class="bubble ${isUser?'from-user':'from-admin'} ${deletedCls} ${editedCls}"
-            data-id="${m.id}" data-sender="${m.sender}"
-            oncontextmenu="onBubbleContextMenu(event,'${m.id}','${m.sender}')"
-            ontouchstart="onBubbleTouchStart(event,'${m.id}','${m.sender}')"
-            ontouchend="onBubbleTouchEnd()"
-            ontouchmove="onBubbleTouchEnd()">
-            ${m.deleted ? '<i>এই বার্তাটি মুছে ফেলা হয়েছে</i>' : escHtml(m.text||'')}
+          <div class="bubble ${isUser?'from-user':'from-admin'}">
+            ${aiTag} ${m.deleted ? '<i>মুছে ফেলা হয়েছে</i>' : m.text}
           </div>
-          <div class="msg-meta">
-            ${t}
-            ${isUser && !m.deleted ? `<span class="read-tick ${m.read?'read':''}">✓✓</span>` : ''}
-          </div>
+          <div class="msg-meta">${t}</div>
         </div>
       </div>`;
   });
-
-  html += `<div class="typing-row" id="typing-row" style="display:none">
-    <div class="msg-avatar"><i class="fa-solid fa-headset"></i></div>
-    <div class="typing-bubble">
-      <div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div>
-    </div>
-  </div>`;
-
   area.innerHTML = html;
-  if(isAtBottom) scrollToBottom();
-  updateScrollBtn();
+  area.scrollTo({top:area.scrollHeight, behavior:'smooth'});
 }
-
-function escHtml(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
-function escAttr(t){ return String(t).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
 async function sendMessage(){
   const ta = document.getElementById('msg-input');
@@ -558,95 +443,32 @@ async function sendMessage(){
   if(!text) return;
   ta.value=''; ta.style.height='';
   document.getElementById('send-btn').disabled = true;
-  closeEmojiPicker();
-
+  document.getElementById('emoji-picker').classList.remove('open');
   if(window.sendToFirestore) await window.sendToFirestore(text);
-  checkAutoReply(text);
-  if(window.setTypingFirestore) window.setTypingFirestore(false);
 }
 window.sendMessage = sendMessage;
 
-function checkAutoReply(text){
-  const s = window._settings || defaultSettings();
-  if(!s.autoReply) return;
-  const lower = text.toLowerCase();
-  const matched = s.keywords?.find(k => lower.includes(k.kw.toLowerCase()));
-  if(matched){
-    setTimeout(()=>{
-      if(window.setTypingFirestore) window.setTypingFirestore(true);
-    }, 500);
-  }
-}
-
-function handleKey(e){
-  if(e.key==='Enter'&&!e.shiftKey&&!isMobile()){
-    e.preventDefault(); sendMessage();
-  }
-}
+function handleKey(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMessage(); } }
 window.handleKey = handleKey;
 
 function onInputChange(el){
-  el.style.height='auto';
-  el.style.height=Math.min(el.scrollHeight,100)+'px';
+  el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,100)+'px';
   document.getElementById('send-btn').disabled = !el.value.trim();
-  if(window.setTypingFirestore){
-    window.setTypingFirestore(true);
-    clearTimeout(typingTimer);
-    typingTimer = setTimeout(()=>window.setTypingFirestore(false), 2000);
-  }
 }
 window.onInputChange = onInputChange;
 
-function isMobile(){ return /Mobi|Android|iPhone/i.test(navigator.userAgent); }
-
-function showTypingIndicator(){
-  const row = document.getElementById('typing-row');
-  if(row){ row.style.display='flex'; scrollToBottom(); }
-}
-function hideTypingIndicator(){
-  const row = document.getElementById('typing-row');
-  if(row) row.style.display='none';
-}
-function setAdminTyping(typing){
-  typing ? showTypingIndicator() : hideTypingIndicator();
-}
-window.setAdminTyping = setAdminTyping;
-
-function scrollToBottom(){
-  const area = document.getElementById('messages-area');
-  area.scrollTo({top:area.scrollHeight, behavior:'smooth'});
-}
-window.scrollToBottom = scrollToBottom;
-
-function updateScrollBtn(){
-  const area = document.getElementById('messages-area');
-  const btn = document.getElementById('scroll-down-btn');
-  const atBottom = area.scrollHeight - area.scrollTop - area.clientHeight < 80;
-  isAtBottom = atBottom;
-  btn.classList.toggle('visible', !atBottom);
-}
-document.getElementById('messages-area').addEventListener('scroll', updateScrollBtn);
-
-function buildEmojiPicker(){
-  const picker = document.getElementById('emoji-picker');
-  picker.innerHTML = EMOJIS.map(e=>`<span class="e-item" onclick="insertEmoji('${e}')">${e}</span>`).join('');
-}
 function toggleEmoji(){
   const p = document.getElementById('emoji-picker');
+  if(p.innerHTML === '') p.innerHTML = EMOJIS.map(e=>`<span class="e-item" onclick="insertEmoji('${e}')">${e}</span>`).join('');
   p.classList.toggle('open');
 }
 window.toggleEmoji = toggleEmoji;
-function closeEmojiPicker(){
-  document.getElementById('emoji-picker').classList.remove('open');
-}
+
 function insertEmoji(em){
   const ta = document.getElementById('msg-input');
-  const pos = ta.selectionStart;
-  ta.value = ta.value.slice(0,pos)+em+ta.value.slice(pos);
-  ta.selectionStart = ta.selectionEnd = pos+em.length;
-  ta.focus();
-  document.getElementById('send-btn').disabled = !ta.value.trim();
-  closeEmojiPicker();
+  ta.value += em; ta.focus();
+  document.getElementById('send-btn').disabled = false;
+  document.getElementById('emoji-picker').classList.remove('open');
 }
 window.insertEmoji = insertEmoji;
 
@@ -656,106 +478,9 @@ window.selectSuggested = function(text){
   sendMessage();
 };
 
-let holdTimer = null;
-let activeMsgText = '';
-
-function onBubbleContextMenu(e, msgId, sender){
-  e.preventDefault(); openCtxMenu(e.clientX, e.clientY, msgId, sender);
-}
-window.onBubbleContextMenu = onBubbleContextMenu;
-
-function onBubbleTouchStart(e, msgId, sender){
-  const touch = e.touches[0];
-  holdTimer = setTimeout(()=>{
-    openCtxMenu(touch.clientX, touch.clientY, msgId, sender);
-  }, 500);
-}
-window.onBubbleTouchStart = onBubbleTouchStart;
-
-function onBubbleTouchEnd(){ clearTimeout(holdTimer); }
-window.onBubbleTouchEnd = onBubbleTouchEnd;
-
-function openCtxMenu(x, y, msgId, sender){
-  ctxMsgId = msgId;
-  const menu = document.getElementById('ctx-menu');
-  const editBtn = document.getElementById('ctx-edit-btn');
-  const msg = window._messages.find(m=>m.id===msgId);
-  if(!msg || msg.deleted) return;
-
-  activeMsgText = msg.text||'';
-  editBtn.style.display = sender==='user' ? 'flex' : 'none';
-  document.querySelector('.ctx-item.danger').style.display = sender==='user' ? 'flex' : 'none';
-
-  menu.style.display = 'block';
-  const mw=160, mh=120;
-  const shell = document.getElementById('phone-shell').getBoundingClientRect();
-  let lx = x - shell.left, ly = y - shell.top;
-  if(lx+mw > shell.width) lx = shell.width - mw - 8;
-  if(ly+mh > shell.height) ly = ly - mh;
-  menu.style.left = (shell.left+lx)+'px';
-  menu.style.top = (shell.top+ly)+'px';
-  document.getElementById('overlay-mask').classList.add('show');
-}
-
-function closeCtxMenu(){
-  document.getElementById('ctx-menu').style.display='none';
-  document.getElementById('overlay-mask').classList.remove('show');
-}
-window.closeCtxMenu = closeCtxMenu;
-
-window.ctxCopy = function(){
-  const msg = window._messages.find(m=>m.id===ctxMsgId);
-  if(msg?.text) navigator.clipboard?.writeText(msg.text).catch(()=>{});
-  closeCtxMenu();
-};
-
-window.ctxEdit = function(){
-  closeCtxMenu();
-  const msg = window._messages.find(m=>m.id===ctxMsgId);
-  if(!msg) return;
-  editMsgId = ctxMsgId;
-  document.getElementById('edit-ta').value = msg.text||'';
-  document.getElementById('edit-overlay').style.display='flex';
-  setTimeout(()=>document.getElementById('edit-ta').focus(),100);
-};
-
-window.cancelEdit = function(e){
-  if(e && e.target!==document.getElementById('edit-overlay')) return;
-  document.getElementById('edit-overlay').style.display='none';
-  editMsgId = null;
-};
-
-window.confirmEdit = async function(){
-  const newText = document.getElementById('edit-ta').value.trim();
-  if(!newText || !editMsgId) return;
-  const msg = window._messages.find(m=>m.id===editMsgId);
-  document.getElementById('edit-overlay').style.display='none';
-  editMsgId=null;
-  if(window.updateMsgFirestore) await window.updateMsgFirestore(msg.id, {text:newText, edited:true});
-};
-
-window.ctxDelete = async function(){
-  closeCtxMenu();
-  const msg = window._messages.find(m=>m.id===ctxMsgId);
-  if(!msg) return;
-  if(window.updateMsgFirestore) await window.updateMsgFirestore(msg.id, {deleted:true, text:''});
-};
-
-window.addEventListener('online', ()=>document.getElementById('conn-banner').classList.remove('show'));
-window.addEventListener('offline', ()=>document.getElementById('conn-banner').classList.add('show'));
-
-async function init(){
-  buildEmojiPicker();
-  document.addEventListener('click', (e)=>{
-    if(!e.target.closest('#emoji-picker') && !e.target.closest('#emoji-btn')) closeEmojiPicker();
-  });
-  if(window.loadUserSettings) await window.loadUserSettings();
-  if(window.listenMessages) window.listenMessages();
-  if(window.listenAdminStatus) window.listenAdminStatus();
-  if(window.listenAdminTyping) window.listenAdminTyping();
-}
-
-window.addEventListener('load', init);
+document.addEventListener('click', (e)=>{
+    if(!e.target.closest('#emoji-picker') && !e.target.closest('.emoji-btn')) document.getElementById('emoji-picker').classList.remove('open');
+});
 </script>
 </body>
 </html>
