@@ -109,7 +109,7 @@
   .wb-title { font-size: 15px; font-weight: 700; color: var(--green-deep); margin-bottom: 4px; }
   .wb-text { font-size: 13px; color: var(--gray-600); line-height: 1.5; }
 
-  /* ── SUGGESTED QUERIES ── */
+  /* ── SUGGESTED & FAQ QUERIES ── */
   .suggested-section { display: flex; flex-direction: column; gap: 6px; max-width: 500px; margin: 0 auto; width: 100%; }
   .sq-label { font-size: 11px; font-weight: 600; color: var(--gray-400); letter-spacing: 0.5px; padding: 0 2px; }
   .sq-chips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -162,8 +162,6 @@
 
   .msg-meta { font-size: 10.5px; color: var(--gray-400); margin-top: 3px; padding: 0 3px; display: flex; align-items: center; gap: 4px; }
   .msg-row.from-user .msg-meta { justify-content: flex-end; }
-  .read-tick { font-size: 12px; }
-  .read-tick.read { color: var(--green-main); }
 
   /* ── TYPING BUBBLE ── */
   .typing-row { display: flex; align-items: flex-end; gap: 7px; max-width: 700px; margin: 0 auto; width: 100%; }
@@ -403,15 +401,19 @@
     initApp();
   });
 
-  // ── Smart Presence Logic ──
+  // ── Strict Presence Logic (Change 4) ──
   window.setUserPresence = async function(isOnline) {
     if(!window.USER_ID) return;
     await setDoc(doc(db,'userStatus',window.USER_ID), { online: isOnline, lastSeen: serverTimestamp(), userId: window.USER_ID }, {merge:true});
   };
 
-  document.addEventListener("visibilitychange", () => window.setUserPresence(document.visibilityState === "visible"));
-  window.addEventListener("focus", () => window.setUserPresence(true));
-  window.addEventListener("blur", () => window.setUserPresence(false));
+  const handlePresence = () => { 
+    window.setUserPresence(document.hasFocus() && document.visibilityState === "visible"); 
+  };
+  
+  document.addEventListener("visibilitychange", handlePresence);
+  window.addEventListener("focus", handlePresence);
+  window.addEventListener("blur", handlePresence);
   window.addEventListener('pagehide', () => window.setUserPresence(false));
   window.addEventListener('beforeunload', () => window.setUserPresence(false));
 
@@ -543,7 +545,8 @@ const EMOJIS = ['😊','😂','❤️','👍','🎉','😍','🙏','✅','🔥',
 
 function defaultSettings(){
   return {
-    welcomeMsg: 'স্বাগতম! আমাদের সাপোর্ট টিমে আপনাকে স্বাগতম। কীভাবে সাহায্য করতে পারি?',
+    welcomeMsg: 'স্বাগতম <user_name>! আমাদের সাপোর্ট টিমে আপনাকে স্বাগতম। কীভাবে সাহায্য করতে পারি?',
+    faqs: [],
     autoReply: true,
     keywords: [],
     suggestedQueries: ['অর্ডার স্ট্যাটাস', 'ডেলিভারি চার্জ কত?', 'পণ্য ফেরত কীভাবে?', 'পেমেন্ট পদ্ধতি']
@@ -556,14 +559,30 @@ function renderMessages(){
   const s = window._settings || defaultSettings();
   let html = '';
 
+  // Change 1: <user_name> replacement
+  let rawWelcomeMsg = s.welcomeMsg || 'স্বাগতম! আমাদের সাপোর্ট টিমে আপনাকে স্বাগতম। কীভাবে সাহায্য করতে পারি?';
+  let parsedWelcomeMsg = rawWelcomeMsg.replace(/<user_name>/g, window._userName || 'গ্রাহক');
+
   html += `
     <div class="welcome-banner">
       <div class="wb-icon"><i class="fa-solid fa-headset"></i></div>
       <div class="wb-title">ShopSupport</div>
-      <div class="wb-text">${escHtml(s.welcomeMsg)}</div>
+      <div class="wb-text">${escHtml(parsedWelcomeMsg)}</div>
     </div>`;
 
+  // Change 2: FAQ Buttons
+  if(s.faqs && s.faqs.length > 0){
+    html += `
+      <div class="suggested-section">
+        <div class="sq-label"><i class="fa-solid fa-circle-question"></i> সাধারণ জিজ্ঞাসা (FAQ)</div>
+        <div class="sq-chips">
+          ${s.faqs.map((faq, i) => `<div class="sq-chip" onclick="triggerFaq(${i})">${escHtml(faq.q)}</div>`).join('')}
+        </div>
+      </div>`;
+  }
+
   const userMsgs = window._messages.filter(m=>m.sender==='user'&&!m.deleted);
+  
   if(userMsgs.length === 0 && s.suggestedQueries?.length){
     html += `
       <div class="suggested-section">
@@ -608,7 +627,7 @@ function renderMessages(){
           </div>
           <div class="msg-meta">
             ${t}
-            ${isUser && !m.deleted ? `<span class="read-tick ${m.read?'read':''}">✓✓</span>` : ''}
+            ${isUser && !m.deleted ? `<span style="font-size:11px; margin-left:4px; font-weight:600; color:${m.read?'var(--green-main)':'var(--gray-400)'}">${m.read?'Read':'Unread'}</span>` : ''}
           </div>
         </div>
       </div>`;
@@ -628,6 +647,29 @@ function renderMessages(){
 
 function escHtml(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
 function escAttr(t){ return String(t).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+// ── FAQ Trigger Logic (Change 2) ──
+window.triggerFaq = async function(index) {
+    const s = window._settings;
+    if(!s || !s.faqs || !s.faqs[index]) return;
+    const faq = s.faqs[index];
+    
+    if(window.sendToFirestore) await window.sendToFirestore(faq.q);
+    if(window.setTypingFirestore) window.setTypingFirestore(true);
+    
+    setTimeout(async () => {
+        if(window._fs && window._db) {
+            const { addDoc, doc, collection, serverTimestamp, setDoc } = window._fs;
+            await addDoc(collection(window._db, 'chats', window.USER_ID, 'messages'), {
+                text: faq.a, sender:'admin', timestamp: serverTimestamp(), read:false, deleted:false, edited:false, isAI: true
+            });
+            await setDoc(doc(window._db, 'chats', window.USER_ID), {
+                lastMessage: faq.a, lastMessageTime: serverTimestamp(), lastSender: 'admin', unreadAdmin: 0
+            }, {merge:true});
+        }
+        if(window.setTypingFirestore) window.setTypingFirestore(false);
+    }, 1000);
+};
 
 async function sendMessage(){
   const ta = document.getElementById('msg-input');
