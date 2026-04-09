@@ -1119,7 +1119,11 @@
 
                         <div class="details-description">
                             <h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 10px; color: var(--dark);">Description</h3>
-                            <div id="detailDesc">Description goes here...</div>
+                            <div id="detailDescWrapper" style="position: relative; max-height: 250px; overflow: hidden; transition: max-height 0.3s ease;">
+                                <div id="detailDesc">Description goes here...</div>
+                                <div id="detailDescFade" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1)); pointer-events: none; z-index: 3;"></div>
+                            </div>
+                            <button id="readMoreDescBtn" class="btn-see-more" style="display: none; margin-top: 5px;">Read More <i class="fas fa-chevron-down" style="font-size: 0.8rem; margin-top:2px;"></i></button>
                         </div>
 
                         <div class="details-actions">
@@ -1717,15 +1721,12 @@
             </div>
         </div>
 
-        <div id="profile-returns-page" class="page-section">
-            <div class="container" style="padding-top: 20px;">
-                <div class="back-btn" onclick="goBack()"><i class="fas fa-arrow-left"></i> Back</div>
-                <div class="content-section active" style="margin-top: 15px;">
-                    <div class="section-header">
-                        <h2 class="section-title">Returns & Cancellations</h2>
-                    </div>
-                    <div id="ordersReturnsList"></div>
-                </div>
+        <div id="404-page" class="page-section">
+            <div class="container" style="min-height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 5rem; color: #cbd5e1; margin-bottom: 20px;"></i>
+                <h2 style="font-size: 2rem; color: var(--dark); margin-bottom: 10px;">Oops! Page not found</h2>
+                <p style="color: var(--gray); margin-bottom: 20px;">The page you are looking for does not exist or has been moved.</p>
+                <button class="btn btn-primary" onclick="navigateTo('home')">Go to Home</button>
             </div>
         </div>
 
@@ -3179,6 +3180,7 @@
 
                     if(finalPageId === 'home') {
                         await loadHomeData();
+                        currentlyDisplayedProducts = [...products];
                         applyFilterAndRender(currentlyDisplayedProducts, 'default', productGrid);
                     } else if (finalPageId === 'search') {
                         renderSearchHistory();
@@ -3195,7 +3197,7 @@
                     if (targetPage) {
                         targetPage.classList.add('active');
                     } else {
-                        document.getElementById('home-page').classList.add('active');
+                        document.getElementById('404-page').classList.add('active');
                     }
                     window.scrollTo(0, 0);
                     handleHeaderScroll(); 
@@ -4483,6 +4485,38 @@
 
                 detailDesc.innerHTML = currentProduct.description || '';
                 detailDesc.querySelectorAll('a').forEach(a => a.setAttribute('target', '_blank'));
+
+                // Read More Logic for Description
+                const descWrapper = document.getElementById('detailDescWrapper');
+                const descFade = document.getElementById('detailDescFade');
+                const readMoreBtn = document.getElementById('readMoreDescBtn');
+                
+                descWrapper.style.maxHeight = '250px';
+                descFade.style.display = 'block';
+                readMoreBtn.style.display = 'none';
+                readMoreBtn.innerHTML = 'Read More <i class="fas fa-chevron-down" style="font-size: 0.8rem; margin-top:2px;"></i>';
+                
+                setTimeout(() => {
+                    if (detailDesc.offsetHeight > 250) {
+                        readMoreBtn.style.display = 'flex';
+                        readMoreBtn.onclick = function() {
+                            if (descWrapper.style.maxHeight === '250px') {
+                                descWrapper.style.maxHeight = detailDesc.offsetHeight + 'px';
+                                descFade.style.display = 'none';
+                                this.innerHTML = 'Show Less <i class="fas fa-chevron-up" style="font-size: 0.8rem; margin-top:2px;"></i>';
+                            } else {
+                                descWrapper.style.maxHeight = '250px';
+                                descFade.style.display = 'block';
+                                this.innerHTML = 'Read More <i class="fas fa-chevron-down" style="font-size: 0.8rem; margin-top:2px;"></i>';
+                                setTimeout(() => {
+                                    descWrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                }, 300);
+                            }
+                        };
+                    } else {
+                        descFade.style.display = 'none';
+                    }
+                }, 100);
 
                 detailRating.innerHTML = `<div class="review-stars" style="margin:0; font-size:1.1rem;">${getStarRating(currentProduct.rating || 0)}</div> <span style="font-size: 0.9rem; color: var(--gray); margin-left: 5px;">(${formatNumberKM(currentProduct.reviewCount || 0)} Reviews)</span>`;
                 detailQty.value = 1;
