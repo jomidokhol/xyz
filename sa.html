@@ -34,10 +34,11 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; height: 100dvh; font-family: 'Hind Siliguri', sans-serif; background: var(--gray-100); color: var(--gray-800); overflow: hidden; }
+  html, body { height: 100%; font-family: 'Hind Siliguri', sans-serif; background: var(--gray-100); color: var(--gray-800); overflow: hidden; }
 
   /* ── LAYOUT ── */
-  #app { display: flex; height: 100%; height: 100dvh; width: 100%; max-width: 100vw; }
+  /* পরিবর্তন ২: 100vh এর পরিবর্তে 100% ব্যবহার করা হয়েছে যাতে মোবাইল ব্রাউজারে ইনপুট হাইড না হয় */
+  #app { display: flex; height: 100%; width: 100%; }
 
   /* ── LOGIN OVERLAY ── */
   #login-overlay {
@@ -119,12 +120,12 @@
   .view { display: none; flex: 1; overflow: hidden; flex-direction: column; }
   .view.active { display: flex; }
 
-  /* ── CHAT LIST VIEW ── */
-  #view-chatlist { flex-direction: row; }
+  /* ── CHAT LIST & WINDOW (SEPARATE PAGES) ── */
+  #view-chatlist { position: relative; }
 
   .chat-list-panel {
-    width: 320px; flex-shrink: 0; background: var(--white);
-    border-right: 1px solid var(--gray-200); display: flex; flex-direction: column;
+    width: 100%; height: 100%; flex-shrink: 0; background: var(--white);
+    display: flex; flex-direction: column; transition: var(--transition);
   }
   .panel-header {
     padding: 16px 18px; border-bottom: 1px solid var(--gray-200);
@@ -151,7 +152,6 @@
     transition: var(--transition); margin-bottom: 4px; position: relative;
   }
   .user-card:hover { background: var(--green-ghost); }
-  .user-card.active { background: var(--green-pale); border-left: 3px solid var(--green-main); }
   .user-card.unread .user-name { font-weight: 700; }
   .user-card.unread .user-preview { color: var(--gray-700); font-weight: 500; }
 
@@ -186,20 +186,21 @@
   }
   .filter-tab.active { background: var(--green-main); border-color: var(--green-main); color: #fff; }
 
-  /* ── CHAT WINDOW ── */
+  /* ── CHAT WINDOW (FULL OVERLAY) ── */
   #chat-window {
-    flex: 1; display: flex; flex-direction: column;
-    background: var(--gray-50); overflow: hidden;
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    display: none; flex-direction: column;
+    background: var(--gray-50); overflow: hidden; z-index: 10;
   }
-  #chat-window.empty { align-items: center; justify-content: center; }
-  .chat-empty-state { text-align: center; color: var(--gray-400); }
-  .chat-empty-state .empty-icon { font-size: 56px; margin-bottom: 12px; }
-  .chat-empty-state p { font-size: 15px; }
 
   .chat-header {
     background: var(--white); border-bottom: 1px solid var(--gray-200);
     padding: 12px 20px; display: flex; align-items: center; gap: 12px;
     box-shadow: var(--shadow-sm);
+  }
+  .back-btn {
+    font-size: 20px; color: var(--gray-700); cursor: pointer;
+    background: transparent; border: none; margin-right: 5px;
   }
   .chat-header-avatar {
     width: 40px; height: 40px; border-radius: 50%;
@@ -257,9 +258,10 @@
   .date-divider::before, .date-divider::after { content:''; flex:1; height:1px; background:var(--gray-200); }
 
   /* ── ADMIN INPUT AREA ── */
+  /* পরিবর্তন ২: safe-area-inset-bottom যুক্ত করা হয়েছে যাতে নিচের অংশ হাইড না হয় */
   .admin-input-area {
     background: var(--white); border-top: 1px solid var(--gray-200);
-    padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px)) 16px; /* Adjusted padding at bottom for mobile browser */
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)) 16px;
     display: flex; flex-direction: column; gap: 8px; z-index: 10;
   }
   .quick-replies-bar { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
@@ -367,13 +369,6 @@
   .toast.show { transform: translateY(0); opacity: 1; }
   .toast.success { background: var(--green-deep); }
 
-  .config-code {
-    background: var(--gray-900); color: #86efac; border-radius: 8px;
-    padding: 14px; font-family: 'JetBrains Mono', monospace; font-size: 12px;
-    line-height: 1.6; overflow-x: auto; margin-top: 8px;
-  }
-
-  /* Responsive sidebar mobile behavior */
   @media(max-width:900px){
     #sidebar { position: fixed; left: 0; top: 0; bottom: 0; transform: translateX(-100%); }
     #sidebar.mobile-open { transform: translateX(0); }
@@ -449,10 +444,9 @@
   <!-- MAIN -->
   <main id="main">
 
-    <!-- ── CHAT LIST VIEW ── -->
+    <!-- ── CHAT LIST VIEW (SEPARATE PAGE 1) ── -->
     <div class="view active" id="view-chatlist">
-      <!-- Left: User List -->
-      <div class="chat-list-panel">
+      <div class="chat-list-panel" id="chat-list-panel">
         <div class="panel-header">
           <div class="panel-header-top">
             <button class="mobile-menu-btn" onclick="toggleSidebar(true)"><i class="fa-solid fa-bars"></i></button>
@@ -471,14 +465,11 @@
         <div class="user-list" id="user-list"></div>
       </div>
 
-      <!-- Right: Chat Window -->
-      <div id="chat-window" class="empty">
-        <div class="chat-empty-state" id="chat-empty">
-          <div class="empty-icon"><i class="fa-regular fa-comments"></i></div>
-          <p>একটি কথোপকথন বেছে নিন</p>
-        </div>
-        <div id="chat-content" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
+      <!-- ── CHAT WINDOW (SEPARATE PAGE 2) ── -->
+      <div id="chat-window">
+        <div id="chat-content" style="display:flex;flex:1;flex-direction:column;overflow:hidden;">
           <div class="chat-header">
+            <button class="back-btn" onclick="closeChat()"><i class="fa-solid fa-arrow-left"></i></button>
             <div class="chat-header-avatar" id="ch-avatar"></div>
             <div class="chat-header-info">
               <div class="chat-header-name" id="ch-name"></div>
@@ -517,13 +508,27 @@
 
         <div class="settings-grid">
           <!-- Welcome Message -->
-          <div class="settings-card">
+          <div class="settings-card full">
             <div class="card-title"><span class="card-icon"><i class="fa-solid fa-hand-holding-heart"></i></span> ওয়েলকাম মেসেজ</div>
             <div class="form-group">
               <label class="form-label">প্রাথমিক ওয়েলকাম বার্তা</label>
               <textarea class="form-input" id="welcome-msg" placeholder="স্বাগতম! আমাদের সাপোর্ট টিমে আপনাকে স্বাগতম…">স্বাগতম! আমাদের সাপোর্ট টিমে আপনাকে স্বাগতম। কীভাবে সাহায্য করতে পারি?</textarea>
             </div>
             <button class="btn-primary" onclick="saveSettings('welcome')"><i class="fa-solid fa-floppy-disk"></i> সেভ করুন</button>
+          </div>
+
+          <!-- FAQ Buttons Section (Change 4) -->
+          <div class="settings-card full">
+            <div class="card-title"><span class="card-icon"><i class="fa-solid fa-circle-question"></i></span> FAQ বাটন (Q & A)</div>
+            <p style="font-size:12px;color:var(--gray-500);margin-bottom:14px">ওয়েলকাম বার্তার সাথে ব্যবহারকারীকে এই প্রশ্নগুলোর বাটন দেখানো হবে。</p>
+            <div id="faq-list"></div>
+            <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+              <input type="text" class="form-input" id="new-faq-q" placeholder="প্রশ্ন (যেমন: ডেলিভারি চার্জ কত?)" style="flex:0 0 200px">
+              <input type="text" class="form-input" id="new-faq-a" placeholder="উত্তর (যেমন: ঢাকার ভেতর ৬০ টাকা)" style="flex:1;min-width:180px">
+              <button class="btn-secondary" onclick="addFaq()"><i class="fa-solid fa-plus"></i> যোগ করুন</button>
+            </div>
+            <br>
+            <button class="btn-primary" onclick="saveSettings('faqs')"><i class="fa-solid fa-floppy-disk"></i> FAQ সেভ করুন</button>
           </div>
 
           <!-- Auto Reply & Gemini AI -->
@@ -535,7 +540,7 @@
             </div>
             <div class="toggle-row">
               <span class="toggle-label">অটো রিপ্লাই চালু</span>
-              <label class="toggle"><input type="checkbox" id="auto-reply-toggle" checked><span class="toggle-slider"></span></label>
+              <label class="toggle"><input type="checkbox" id="auto-reply-toggle" checked onchange="settings.autoReply = this.checked"><span class="toggle-slider"></span></label>
             </div>
             <div class="toggle-row">
               <span class="toggle-label">অফলাইনে অটো রিপ্লাই</span>
@@ -578,28 +583,6 @@
               <button class="btn-secondary" onclick="addSuggestedQuery()"><i class="fa-solid fa-plus"></i></button>
             </div>
             <button class="btn-primary" style="margin-top:15px" onclick="saveSettings('suggestedqueries')"><i class="fa-solid fa-floppy-disk"></i> সেভ করুন</button>
-          </div>
-
-          <!-- Firebase Config -->
-          <div class="settings-card full">
-            <div class="card-title"><span class="card-icon"><i class="fa-solid fa-fire"></i></span> Firebase কনফিগারেশন</div>
-            <p style="font-size:12px;color:var(--gray-500);margin-bottom:8px">নিচের কোড ফাইলে আপনার Firebase প্রজেক্টের তথ্য প্রতিস্থাপন করুন।</p>
-            <div class="config-code" id="firebase-config-display"></div>
-            <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-              <div style="flex:1;min-width:200px">
-                <label class="form-label">API Key</label>
-                <input type="text" class="form-input" id="cfg-apikey" placeholder="AIzaSy...">
-              </div>
-              <div style="flex:1;min-width:200px">
-                <label class="form-label">Project ID</label>
-                <input type="text" class="form-input" id="cfg-projectid" placeholder="my-shop-support">
-              </div>
-              <div style="flex:1;min-width:200px">
-                <label class="form-label">App ID</label>
-                <input type="text" class="form-input" id="cfg-appid" placeholder="1:123:web:abc">
-              </div>
-            </div>
-            <button class="btn-primary" style="margin-top:12px" onclick="saveFirebaseConfig()"><i class="fa-solid fa-fire"></i> কনফিগ আপডেট করুন</button>
           </div>
         </div>
       </div>
@@ -673,11 +656,18 @@
     await setDoc(adminRef, { online: isOnline, lastSeen: serverTimestamp() }, {merge:true});
   };
 
-  document.addEventListener("visibilitychange", () => window.setAdminPresence(document.visibilityState === "visible"));
-  window.addEventListener("focus", () => window.setAdminPresence(true));
-  window.addEventListener("blur", () => window.setAdminPresence(false));
+  const handlePresence = () => { window.setAdminPresence(document.hasFocus() && document.visibilityState === "visible"); };
+  document.addEventListener("visibilitychange", handlePresence);
+  window.addEventListener("focus", handlePresence);
+  window.addEventListener("blur", handlePresence);
   window.addEventListener('pagehide', () => window.setAdminPresence(false));
-  window.addEventListener('beforeunload', () => window.setAdminPresence(false));
+  
+  // Reload Alert
+  window.addEventListener('beforeunload', (e) => { 
+      window.setAdminPresence(false);
+      e.preventDefault();
+      e.returnValue = ''; 
+  });
 
   function formatLastSeen(date) {
     if(!date) return 'অফলাইন';
@@ -698,26 +688,59 @@
     return date.toLocaleDateString('bn-BD');
   }
 
-  let isInitialChatLoad = true;
+  // Request Notification Permission
+  if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+      Notification.requestPermission();
+  }
+  function playNotification(title, body) {
+      if ("Notification" in window && Notification.permission === "granted") {
+          new Notification(title, { body: body, icon: "https://cdn-icons-png.flaticon.com/512/1041/1041916.png" });
+      }
+  }
+
+  let processedMessages = {}; 
+
   window.loadChatList = function() {
     const { onSnapshot, collection, orderBy, query } = window._firestore;
     const q = query(collection(db, 'chats'), orderBy('lastMessageTime', 'desc'));
+    let isInitialLoad = true;
+
     onSnapshot(q, (snap) => {
-      if (!isInitialChatLoad) {
-          snap.docChanges().forEach(change => {
-              if (change.type === 'added' || change.type === 'modified') {
-                  const docData = change.doc.data();
-                  if (docData.lastSender === 'user' && docData.unreadAdmin > 0 && docData.lastMessage) {
-                      if(window.checkAndSendAutoReply) {
-                          window.checkAndSendAutoReply(change.doc.id, docData.lastMessage, docData.lastMessageTime?.toMillis?.() || docData.lastMessageTime);
+      window._users = snap.docs.map(d => ({id:d.id, ...d.data()}));
+      renderUserList(window._users);
+
+      snap.docChanges().forEach(change => {
+          if (!isInitialLoad && (change.type === 'added' || change.type === 'modified')) {
+              const data = change.doc.data();
+              const userId = change.doc.id;
+              
+              if (data.lastSender === 'user' && data.unreadAdmin > 0) {
+                  const msgId = data.lastMessageTime?.toMillis() || 0;
+                  
+                  if (processedMessages[userId] !== msgId) {
+                      processedMessages[userId] = msgId;
+
+                      playNotification(data.name || "নতুন ম্যাসেজ", data.lastMessage);
+
+                      // পরিবর্তন ১: অটো রিপ্লাই লজিক আপডেট করা হলো (শব্দের অংশ বা লাইন ম্যাচ করার জন্য)
+                      if (settings.autoReply && settings.keywords && settings.keywords.length > 0) {
+                          const lowerMsg = (data.lastMessage || "").toLowerCase();
+                          const matchedRule = settings.keywords.find(k => {
+                              const keyword = (k.kw || "").toLowerCase().trim();
+                              return keyword !== "" && lowerMsg.includes(keyword);
+                          });
+                          
+                          if (matchedRule) {
+                              setTimeout(() => {
+                                  window.sendMessage(userId, matchedRule.reply, true); 
+                              }, 1500); 
+                          }
                       }
                   }
               }
-          });
-      }
-      isInitialChatLoad = false;
-      window._users = snap.docs.map(d => ({id:d.id, ...d.data()}));
-      renderUserList(window._users);
+          }
+      });
+      isInitialLoad = false;
     });
   };
 
@@ -732,7 +755,6 @@
     window._msgUnsub = onSnapshot(q, (snap) => {
       renderMessages(snap.docs.map(d => ({id:d.id, ...d.data()})));
       
-      // Update read status for user messages
       snap.docs.forEach(docSnap => {
           const m = docSnap.data();
           if (m.sender === 'user' && !m.read) {
@@ -745,7 +767,6 @@
     window._userStatusUnsub = onSnapshot(doc(db, 'userStatus', userId), (d) => {
       const snapData = d.exists() ? d.data() : null;
       const userObj = window._users.find(u=>u.id===userId)||{};
-      // Update the user obj locally to affect UI instantly
       if (snapData) {
           userObj.online = snapData.online;
           userObj.lastSeen = snapData.lastSeen;
@@ -792,30 +813,12 @@ const timeStr = (ts) => {
 
 let settings = {
   welcomeMsg: 'স্বাগতম! আমাদের সাপোর্ট টিমে আপনাকে স্বাগতম। কীভাবে সাহায্য করতে পারি?',
+  faqs: [],
   geminiApiKey: '',
   autoReply: true,
   keywords: [],
   quickReplies: ['ধন্যবাদ', 'আমরা দেখছি', '১-২ দিনের মধ্যে সমাধান হবে'],
   suggestedQueries: ['অর্ডার স্ট্যাটাস', 'ডেলিভারি চার্জ কত?']
-};
-
-const repliedMsgs = new Set();
-window.checkAndSendAutoReply = async function(userId, text, timestamp) {
-    if(!settings.autoReply || !text || !settings.keywords || settings.keywords.length === 0) return;
-    const tsStr = timestamp ? timestamp.toString() : '';
-    const key = userId + '_' + tsStr;
-    if(repliedMsgs.has(key)) return;
-
-    const lowerText = text.toLowerCase();
-    for(let k of settings.keywords) {
-        if(k.kw && lowerText.includes(k.kw.toLowerCase())) {
-            repliedMsgs.add(key);
-            setTimeout(() => {
-                if(window.sendMessage) window.sendMessage(userId, k.reply, true);
-            }, 500);
-            break; // send only one matched reply
-        }
-    }
 };
 
 window._users = [];
@@ -842,6 +845,8 @@ function showView(name) {
   if(view) view.classList.add('active');
   const nav = document.getElementById('nav-'+name);
   if(nav) nav.classList.add('active');
+  
+  if (name === 'chatlist' && currentUserId) closeChat();
   if(name === 'settings') renderSettingsPage();
 }
 window.showView = showView;
@@ -899,9 +904,10 @@ window.searchUsers = function(val) {
 
 window.selectUser = function(userId) {
   currentUserId = userId;
-  document.getElementById('chat-empty').style.display = 'none';
-  document.getElementById('chat-content').style.display = 'flex';
-  document.getElementById('chat-window').classList.remove('empty');
+  document.getElementById('chat-list-panel').style.display = 'none';
+  document.getElementById('chat-window').style.display = 'flex';
+  
+  history.pushState({chatOpen: true}, "", "#chat");
 
   const user = window._users.find(u=>u.id===userId);
   updateChatHeader(userId, user||{});
@@ -910,6 +916,24 @@ window.selectUser = function(userId) {
   if(window.openChat) window.openChat(userId);
   loadQuickRepliesBar();
 };
+
+window.closeChat = function() {
+  document.getElementById('chat-window').style.display = 'none';
+  document.getElementById('chat-list-panel').style.display = 'flex';
+  currentUserId = null;
+  if(window._msgUnsub) { window._msgUnsub(); window._msgUnsub = null; }
+  if(window._userStatusUnsub) { window._userStatusUnsub(); window._userStatusUnsub = null; }
+  renderUserList(window._users);
+  if(window.location.hash === "#chat") {
+     history.replaceState(null, "", window.location.pathname);
+  }
+};
+
+window.addEventListener('popstate', function(e) {
+  if (currentUserId) {
+      window.closeChat();
+  }
+});
 
 function updateChatHeader(userId, data) {
   const user = window._users.find(u=>u.id===userId)||{name:'ইউজার'};
@@ -936,6 +960,21 @@ function updateChatHeader(userId, data) {
   `;
 }
 
+// ── Admin Message Edit Events (Change 2) ──
+let holdTimeout;
+window.startHold = function(id, text) {
+  holdTimeout = setTimeout(() => {
+    const newText = prompt('ম্যাসেজ এডিট করুন:', text);
+    if (newText !== null && newText.trim() !== '' && newText !== text) {
+      const { updateDoc, doc } = window._firestore;
+      updateDoc(doc(window._db, 'chats', currentUserId, 'messages', id), { text: newText.trim() });
+    }
+  }, 500);
+};
+window.clearHold = function() {
+  clearTimeout(holdTimeout);
+};
+
 function renderMessages(msgs) {
   const area = document.getElementById('messages-area');
   if(!msgs.length){
@@ -958,17 +997,20 @@ function renderMessages(msgs) {
     let avatarHTML = `<div class="msg-avatar-small" style="background:${user.color||'#16a34a'}">${initials(user.name||'U')}</div>`;
     if (user.photoURL) avatarHTML = `<img src="${user.photoURL}" class="msg-avatar-small" style="object-fit:cover;">`;
 
+    const safeText = encodeURIComponent(m.text || '');
+    const holdEvents = isAdmin ? `onmousedown="startHold('${m.id}', decodeURIComponent('${safeText}'))" onmouseup="clearHold()" onmouseleave="clearHold()" ontouchstart="startHold('${m.id}', decodeURIComponent('${safeText}'))" ontouchend="clearHold()" ontouchmove="clearHold()"` : '';
+
     html += `
       <div class="msg-row ${isAdmin?'from-admin':''}">
         ${!isAdmin ? avatarHTML : ''}
         <div>
-          <div class="bubble ${isAdmin?'from-admin':'from-user'}">
-            ${m.isAI ? '<span style="font-size:10px; background:var(--green-pale); color:var(--green-deep); padding:2px 6px; border-radius:10px; margin-bottom:4px; display:inline-block; font-weight: bold;"><i class="fa-solid fa-robot"></i> Auto Reply</span><br>' : ''}
+          <div class="bubble ${isAdmin?'from-admin':'from-user'}" ${holdEvents} style="${isAdmin?'cursor:pointer; -webkit-user-select:none; user-select:none;':''}">
+            ${m.isAI ? '<span style="font-size:10px; background:var(--green-pale); color:var(--green-deep); padding:2px 6px; border-radius:10px; margin-bottom:4px; display:inline-block;">AI Auto Reply</span><br>' : ''}
             ${escHtml(m.text||'')}
           </div>
           <div class="msg-meta">
             ${t}
-            ${isAdmin ? `<span style="font-size:11px; margin-left:4px; color:${m.read?'var(--green-main)':'var(--gray-400)'}">✓✓</span>` : ''}
+            ${isAdmin ? `<span style="font-size:11px; margin-left:4px; font-weight:600; color:${m.read?'var(--green-main)':'var(--gray-400)'}">${m.read?'Read':'Unread'}</span>` : ''}
           </div>
         </div>
       </div>`;
@@ -984,7 +1026,7 @@ window.sendAdminMsg = function() {
   const text = ta.value.trim();
   if(!text || !currentUserId) return;
   ta.value=''; ta.style.height='';
-  if(window.sendMessage) window.sendMessage(currentUserId, text);
+  if(window.sendMessage) window.sendMessage(currentUserId, text, false);
 };
 
 window.handleAdminKey = function(e) {
@@ -1009,8 +1051,32 @@ window.insertQuickReply = function(text){
 function renderSettingsPage(){
   document.getElementById('gemini-api').value = settings.geminiApiKey || '';
   document.getElementById('welcome-msg').value = settings.welcomeMsg || '';
-  renderKwList(); renderQrTags(); renderSqTags(); updateConfigDisplay();
+  document.getElementById('auto-reply-toggle').checked = settings.autoReply !== false;
+  renderFaqList(); renderKwList(); renderQrTags(); renderSqTags();
 }
+
+// ── FAQ Logic (Change 4) ──
+function renderFaqList(){
+  const list = document.getElementById('faq-list');
+  if(!settings.faqs || !settings.faqs.length){ list.innerHTML='<p style="color:var(--gray-400);font-size:13px">কোনো FAQ নেই।</p>'; return; }
+  list.innerHTML = settings.faqs.map((f,i)=>`
+    <div class="kw-row">
+      <input class="form-input kw-keyword" value="${escHtml(f.q)}" onchange="settings.faqs[${i}].q=this.value" style="flex:0 0 200px">
+      <span class="kw-arrow"><i class="fa-solid fa-arrow-right-long"></i></span>
+      <input class="form-input kw-reply" value="${escHtml(f.a)}" onchange="settings.faqs[${i}].a=this.value">
+      <span class="kw-del" onclick="removeFaq(${i})"><i class="fa-solid fa-trash-can"></i></span>
+    </div>
+  `).join('');
+}
+window.addFaq = function(){
+  const q = document.getElementById('new-faq-q').value.trim();
+  const a = document.getElementById('new-faq-a').value.trim();
+  if(!q||!a) return showToast('প্রশ্ন ও উত্তর উভয়ই দিন', false);
+  if(!settings.faqs) settings.faqs = [];
+  settings.faqs.push({q,a});
+  document.getElementById('new-faq-q').value=''; document.getElementById('new-faq-a').value=''; renderFaqList();
+};
+window.removeFaq = function(i){ settings.faqs.splice(i,1); renderFaqList(); };
 
 function renderKwList(){
   const list = document.getElementById('kw-list');
@@ -1024,7 +1090,6 @@ function renderKwList(){
     </div>
   `).join('');
 }
-
 window.addKeyword = function(){
   const kw = document.getElementById('new-kw').value.trim();
   const reply = document.getElementById('new-kw-reply').value.trim();
@@ -1065,31 +1130,13 @@ window.saveSettings = async function(type){
   showToast('সেটিংস সেভ হয়েছে', true);
 };
 
-window.saveFirebaseConfig = function(){
-  const apiKey = document.getElementById('cfg-apikey').value;
-  const projectId = document.getElementById('cfg-projectid').value;
-  const appId = document.getElementById('cfg-appid').value;
-  if(!apiKey||!projectId) return showToast('API Key ও Project ID দিন', false);
-  updateConfigDisplay(apiKey, projectId, appId);
-  showToast('কনফিগ আপডেট হয়েছে। পেজ রিলোড করুন।', true);
-};
-
-function updateConfigDisplay(apiKey, projectId, appId){
-  document.getElementById('firebase-config-display').innerHTML =
-`<span style="color:#7dd3fc">const</span> firebaseConfig = {
-  apiKey: <span style="color:#fde68a">"${apiKey||'YOUR_API_KEY'}"</span>,
-  authDomain: <span style="color:#fde68a">"${projectId||'YOUR_PROJECT_ID'}.firebaseapp.com"</span>,
-  projectId: <span style="color:#fde68a">"${projectId||'YOUR_PROJECT_ID'}"</span>,
-  storageBucket: <span style="color:#fde68a">"${projectId||'YOUR_PROJECT_ID'}.appspot.com"</span>,
-  appId: <span style="color:#fde68a">"${appId||'YOUR_APP_ID'}"</span>
-};`;
-}
-
 function applySettings(data){ 
   Object.assign(settings, data); 
   document.getElementById('gemini-api').value = settings.geminiApiKey || '';
   document.getElementById('welcome-msg').value = settings.welcomeMsg || '';
-  renderKwList(); renderQrTags(); renderSqTags(); 
+  document.getElementById('auto-reply-toggle').checked = settings.autoReply !== false;
+  if(!settings.faqs) settings.faqs = [];
+  renderFaqList(); renderKwList(); renderQrTags(); renderSqTags(); 
 }
 
 function showToast(msg, success=true){
@@ -1099,8 +1146,6 @@ function showToast(msg, success=true){
   setTimeout(()=>t.classList.remove('show'), 3000);
 }
 window.showToast = showToast;
-
-window.addEventListener('load', () => { updateConfigDisplay(); });
 </script>
 </body>
 </html>
