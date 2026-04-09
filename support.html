@@ -401,7 +401,7 @@
     initApp();
   });
 
-  // ── Strict Presence Logic (Change 4) ──
+  // ── Strict Presence Logic ──
   window.setUserPresence = async function(isOnline) {
     if(!window.USER_ID) return;
     await setDoc(doc(db,'userStatus',window.USER_ID), { online: isOnline, lastSeen: serverTimestamp(), userId: window.USER_ID }, {merge:true});
@@ -460,12 +460,30 @@
     window._settings = snap.exists() ? {...defaultSettings(), ...snap.data()} : defaultSettings();
   };
 
+  let isInitialLoad = true;
+  let processedNotifications = {};
+
   window.listenMessages = function() {
     const { onSnapshot, collection, query, orderBy } = window._fs;
     const q = query(collection(db,'chats',window.USER_ID,'messages'), orderBy('timestamp'));
+    
     window._msgUnsub = onSnapshot(q, (snap) => {
       window._messages = snap.docs.map(d => ({id:d.id,...d.data()}));
       renderMessages();
+
+      // Notifications logic (Change 1)
+      snap.docChanges().forEach(change => {
+          if (!isInitialLoad && change.type === 'added') {
+              const data = change.doc.data();
+              if (data.sender === 'admin' && document.visibilityState === 'hidden' && navigator.onLine) {
+                  if (!processedNotifications[change.doc.id]) {
+                      processedNotifications[change.doc.id] = true;
+                      playNotification("ShopSupport", data.text);
+                  }
+              }
+          }
+      });
+      isInitialLoad = false;
     });
   };
 
@@ -482,7 +500,6 @@
       online: true, userId: window.USER_ID
     },{merge:true});
 
-    // Gemini AI Auto-Reply if Admin is offline
     if (!window._adminOnline && window._settings && window._settings.geminiApiKey) {
         triggerAIAutoReply(text);
     }
@@ -526,7 +543,8 @@
     const { onSnapshot, doc } = window._fs;
     onSnapshot(doc(db,'chats',window.USER_ID), (snap) => {
       const d = snap.data()||{};
-      setAdminTyping(d.adminTyping||false);
+      window._adminIsTyping = d.adminTyping || false;
+      setAdminTyping(window._adminIsTyping);
     });
   };
 </script>
@@ -535,6 +553,7 @@
 // STATE
 window._messages = [];
 window._settings = null;
+window._adminIsTyping = false; // Added for Change 2
 
 let ctxMsgId = null;
 let editMsgId = null;
@@ -542,6 +561,16 @@ let typingTimer = null;
 let isAtBottom = true;
 
 const EMOJIS = ['😊','😂','❤️','👍','🎉','😍','🙏','✅','🔥','💯','😢','😮','🤔','👋','💬','🛒','📦','✨','⭐','💚'];
+
+// Request Notification Permission
+if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+    Notification.requestPermission();
+}
+function playNotification(title, body) {
+    if ("Notification" in window && Notification.permission === "granted") {
+        new Notification(title, { body: body, icon: "https://cdn-icons-png.flaticon.com/512/1041/1041916.png" });
+    }
+}
 
 function defaultSettings(){
   return {
@@ -559,7 +588,6 @@ function renderMessages(){
   const s = window._settings || defaultSettings();
   let html = '';
 
-  // Change 1: <user_name> replacement
   let rawWelcomeMsg = s.welcomeMsg || 'স্বাগতম! আমাদের সাপোর্ট টিমে আপনাকে স্বাগতম। কীভাবে সাহায্য করতে পারি?';
   let parsedWelcomeMsg = rawWelcomeMsg.replace(/<user_name>/g, window._userName || 'গ্রাহক');
 
@@ -570,7 +598,6 @@ function renderMessages(){
       <div class="wb-text">${escHtml(parsedWelcomeMsg)}</div>
     </div>`;
 
-  // Change 2: FAQ Buttons
   if(s.faqs && s.faqs.length > 0){
     html += `
       <div class="suggested-section">
@@ -633,7 +660,8 @@ function renderMessages(){
       </div>`;
   });
 
-  html += `<div class="typing-row" id="typing-row" style="display:none">
+  // Change 2: Preserve Typing indicator state during rerenders
+  html += `<div class="typing-row" id="typing-row" style="display:${window._adminIsTyping ? 'flex' : 'none'}">
     <div class="msg-avatar"><i class="fa-solid fa-headset"></i></div>
     <div class="typing-bubble">
       <div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div>
@@ -648,7 +676,6 @@ function renderMessages(){
 function escHtml(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
 function escAttr(t){ return String(t).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
-// ── FAQ Trigger Logic (Change 2) ──
 window.triggerFaq = async function(index) {
     const s = window._settings;
     if(!s || !s.faqs || !s.faqs[index]) return;
@@ -718,16 +745,14 @@ window.onInputChange = onInputChange;
 
 function isMobile(){ return /Mobi|Android|iPhone/i.test(navigator.userAgent); }
 
-function showTypingIndicator(){
-  const row = document.getElementById('typing-row');
-  if(row){ row.style.display='flex'; scrollToBottom(); }
-}
-function hideTypingIndicator(){
-  const row = document.getElementById('typing-row');
-  if(row) row.style.display='none';
-}
+// Change 2: Handle typing visibility with global state
 function setAdminTyping(typing){
-  typing ? showTypingIndicator() : hideTypingIndicator();
+  window._adminIsTyping = typing;
+  const row = document.getElementById('typing-row');
+  if(row){
+      row.style.display = typing ? 'flex' : 'none';
+      if(typing) scrollToBottom();
+  }
 }
 window.setAdminTyping = setAdminTyping;
 
