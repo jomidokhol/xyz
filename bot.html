@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Auto Bot Support - e-Commerce</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root {
+    --green-deep: #0a5c36;
+    --green-main: #16a34a;
+    --green-mid: #22c55e;
+    --green-light: #86efac;
+    --green-pale: #dcfce7;
+    --green-ghost: #f0fdf4;
+    --white: #ffffff;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --bubble-user-bg: #16a34a;
+    --bubble-user-text: #fff;
+    --bubble-admin-bg: #fff;
+    --bubble-admin-text: #1f2937;
+    --transition: all 0.2s cubic-bezier(.4,0,.2,1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; height: 100dvh; width: 100%; overflow: hidden; }
+  body { font-family: 'Hind Siliguri', sans-serif; background: var(--gray-100); color: var(--gray-800); display: flex; flex-direction: column; }
+
+  .phone-shell { width: 100%; height: 100%; flex: 1; background: var(--white); overflow: hidden; display: flex; flex-direction: column; position: relative; }
+
+  /* ── HEADER ── */
+  .chat-header {
+    background: linear-gradient(135deg, var(--green-deep) 0%, var(--green-main) 100%);
+    padding: 14px 16px 12px; display: flex; align-items: center; gap: 12px;
+    flex-shrink: 0; position: relative; z-index: 10; box-shadow: 0 2px 12px rgba(10,92,54,0.25);
+  }
+  .header-back {
+    width: 34px; height: 34px; border-radius: 50%; border: none; background: rgba(255,255,255,0.15); color: #fff; font-size: 14px;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: var(--transition);
+  }
+  .header-avatar {
+    width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.25);
+    border: 2px solid rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 18px; flex-shrink: 0;
+  }
+  .header-info { flex: 1; min-width: 0; }
+  .header-name { color: #fff; font-size: 16px; font-weight: 700; line-height: 1.2; }
+  .header-status { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: #86efac; animation: pulse 2s infinite;}
+  .status-text { color: rgba(255,255,255,0.85); font-size: 12px; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.7;transform:scale(1.2)} }
+
+  /* ── MESSAGES AREA ── */
+  #messages-area {
+    flex: 1; overflow-y: auto; padding: 16px 14px; display: flex; flex-direction: column; gap: 10px;
+    background: var(--gray-50); scroll-behavior: smooth; position: relative;
+  }
+  #messages-area::-webkit-scrollbar { width: 4px; }
+  #messages-area::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 4px; }
+
+  .msg-row { display: flex; align-items: flex-end; gap: 7px; max-width: 700px; width: 100%; margin: 0 auto; }
+  .msg-row.from-user { flex-direction: row-reverse; }
+  .msg-avatar { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; background: var(--green-deep); overflow: hidden; }
+  .msg-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .bubble-wrap { display: flex; flex-direction: column; max-width: 80%; }
+  .msg-row.from-user .bubble-wrap { align-items: flex-end; }
+  
+  .bubble {
+    padding: 10px 13px; border-radius: 16px; font-size: 14.5px; line-height: 1.55;
+    word-break: break-word; position: relative; animation: bubbleIn 0.3s ease;
+  }
+  @keyframes bubbleIn { from{opacity:0;transform:scale(.92) translateY(6px)} to{opacity:1;transform:scale(1) translateY(0)} }
+  .bubble.from-user { background: var(--bubble-user-bg); color: var(--bubble-user-text); border-bottom-right-radius: 4px; box-shadow: 0 2px 8px rgba(22,163,74,0.22); }
+  .bubble.from-admin { background: var(--bubble-admin-bg); color: var(--bubble-admin-text); border-bottom-left-radius: 4px; box-shadow: 0 1px 6px rgba(0,0,0,0.09); }
+  
+  .bot-tag { font-size: 10px; background: var(--green-pale); color: var(--green-deep); padding: 2px 6px; border-radius: 10px; margin-bottom: 4px; display: inline-block; font-weight: bold;}
+
+  /* ── TYPING BUBBLE ── */
+  .typing-row { display: flex; align-items: flex-end; gap: 7px; max-width: 700px; margin: 0 auto; width: 100%; }
+  .typing-bubble {
+    background: var(--bubble-admin-bg); border-radius: 16px; border-bottom-left-radius: 4px;
+    padding: 12px 16px; display: flex; align-items: center; gap: 5px; box-shadow: 0 1px 6px rgba(0,0,0,0.09);
+  }
+  .t-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green-main); animation: typBounce 1.2s infinite; }
+  .t-dot:nth-child(2) { animation-delay: 0.2s; }
+  .t-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+
+  /* ── TELEGRAM STYLE OPTIONS ── */
+  .inline-options { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; width: 100%; max-width: 250px;}
+  .inline-btn {
+    background: var(--white); border: 1.5px solid var(--green-main); color: var(--green-deep);
+    padding: 10px 14px; border-radius: 20px; font-size: 14px; font-weight: 600; cursor: pointer;
+    text-align: center; transition: var(--transition); box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-family: inherit;
+  }
+  .inline-btn:hover, .inline-btn:active { background: var(--green-main); color: #fff; transform: translateY(-2px); }
+
+  /* ── INPUT AREA & SLASH COMMAND ── */
+  /* পরিবর্তন ১: padding-bottom এ env(safe-area-inset-bottom) যুক্ত করা হয়েছে ব্রাউজার বা নেভিগেশন বারের সমস্যা সমাধানের জন্য */
+  .input-wrapper { flex-shrink: 0; background: var(--white); border-top: 1px solid var(--gray-200); padding: 10px 12px; padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); display: flex; align-items: flex-end; justify-content: center; box-shadow: 0 -2px 12px rgba(0,0,0,0.06); transition: var(--transition); position: relative; z-index: 20;}
+  .input-container { display: flex; align-items: flex-end; gap: 8px; max-width: 700px; width: 100%; }
+  
+  .slash-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--gray-100); color: var(--gray-600); font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition); flex-shrink: 0;}
+  .slash-btn:hover, .slash-btn.active { background: var(--green-ghost); color: var(--green-deep); }
+  
+  .msg-input-wrap { flex: 1; }
+  .msg-input { width: 100%; border: 1.5px solid var(--gray-200); border-radius: 22px; padding: 10px 16px; font-family: inherit; font-size: 14.5px; outline: none; resize: none; color: var(--gray-800); background: var(--gray-50); display: block; }
+  .msg-input:focus { border-color: var(--green-main); background: var(--white); }
+  
+  .send-btn { width: 40px; height: 40px; border-radius: 50%; border: none; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; background: var(--green-main); color: #fff; font-size: 16px; transition: var(--transition); }
+  .send-btn:hover { background: var(--green-deep); }
+
+  /* ── COMMAND MENU POPUP ── */
+  .command-menu {
+    position: absolute; bottom: 65px; left: 12px; background: white; border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15); border: 1px solid var(--gray-200); width: 220px;
+    display: none; flex-direction: column; overflow: hidden; z-index: 100;
+  }
+  .command-menu.show { display: flex; animation: bubbleIn 0.2s ease; }
+  .cmd-item { padding: 12px 15px; border-bottom: 1px solid var(--gray-100); cursor: pointer; font-size: 14px; font-weight: 600; color: var(--gray-800); transition: background 0.2s; display: flex; flex-direction: column;}
+  .cmd-item:hover { background: var(--green-ghost); color: var(--green-main); }
+  .cmd-item:last-child { border-bottom: none; }
+  .cmd-desc { font-size: 11px; color: var(--gray-400); font-weight: 400; margin-top: 2px; }
+
+  /* ── FULL PAGE LOADER ── */
+  #auth-loader { position: fixed; inset: 0; background: var(--white); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .spinner { width: 40px; height: 40px; border: 4px solid var(--green-pale); border-top: 4px solid var(--green-main); border-radius: 50%; animation: spin 1s linear infinite; }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- Authentication Loader -->
+<div id="auth-loader">
+  <div class="spinner"></div>
+  <p style="margin-top: 15px; color: var(--green-deep); font-weight: 600;">অ্যাকাউন্ট ভেরিফাই হচ্ছে...</p>
+</div>
+
+<div class="phone-shell">
+  <!-- Header -->
+  <div class="chat-header">
+    <button class="header-back" onclick="window.location.href='home.html'"><i class="fa-solid fa-arrow-left"></i></button>
+    <div class="header-avatar"><i class="fa-solid fa-robot"></i></div>
+    <div class="header-info">
+      <div class="header-name">AutoBot Support</div>
+      <div class="header-status">
+        <div class="status-dot"></div>
+        <div class="status-text">Online & Ready</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div id="messages-area">
+      <!-- Chat bubbles injected here -->
+  </div>
+
+  <!-- Typing Indicator (Hidden by default) -->
+  <div class="typing-row" id="typing-row" style="display:none; padding-left:14px; margin-bottom: 15px;">
+    <div class="msg-avatar" style="background:#fff; color:var(--green-main); border:1px solid var(--green-main)"><i class="fa-solid fa-robot"></i></div>
+    <div class="typing-bubble">
+      <div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div>
+    </div>
+  </div>
+
+  <!-- Command Menu Popup -->
+  <div class="command-menu" id="cmd-menu">
+      <div class="cmd-item" onclick="execCommand('ACTION_MENU')">/menu <span class="cmd-desc">মেইন মেনুতে ফিরে যান</span></div>
+      <div class="cmd-item" onclick="execCommand('ACTION_TRACK')">/track <span class="cmd-desc">অর্ডার ট্র্যাকিং করুন</span></div>
+      <div class="cmd-item" onclick="execCommand('ACTION_CANCEL')">/cancel <span class="cmd-desc">অর্ডার ক্যানসেল করুন</span></div>
+      <div class="cmd-item" onclick="execCommand('ACTION_RETURN')">/return <span class="cmd-desc">পণ্য রিটার্ন/রিফান্ড</span></div>
+      <div class="cmd-item" onclick="execCommand('ACTION_LOCATION')">/location <span class="cmd-desc">লোকেশন পরিবর্তন</span></div>
+  </div>
+
+  <!-- Input Area -->
+  <div class="input-wrapper" id="input-wrapper">
+    <div class="input-container">
+      <button class="slash-btn" id="slash-btn" onclick="toggleCmdMenu()"><i class="fa-solid fa-slash"></i></button>
+      <div class="msg-input-wrap">
+        <textarea class="msg-input" id="msg-input" placeholder="বার্তা লিখুন…" rows="1" onkeydown="handleKey(event)"></textarea>
+      </div>
+      <button class="send-btn" id="send-btn" onclick="sendUserMsg()"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDKs (আপনার home.html থেকে কনফিগারেশন) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyD5p-7Cgep9aGf6omMXDH8LOTy0C76jJaQ",
+    authDomain: "e-commerce-shop-24.firebaseapp.com",
+    projectId: "e-commerce-shop-24",
+    storageBucket: "e-commerce-shop-24.firebasestorage.app",
+    messagingSenderId: "1000897291264",
+    appId: "1:1000897291264:web:4f1e78554c3e69d310a4e5",
+    measurementId: "G-MCFXRFDFT5"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  window._db = getFirestore(app);
+  window._auth = getAuth(app);
+  window._getDoc = getDoc;
+  window._doc = doc;
+
+  // ── Auth Guard ──
+  onAuthStateChanged(window._auth, async (user) => {
+    if (!user) {
+        // লগ ইন না থাকলে home এ পাঠিয়ে দিবে
+        window.location.href = 'home.html';
+        return;
+    }
+    
+    // ইউজারের ডাটা সেট করা
+    window.currentUser = {
+        uid: user.uid,
+        name: user.displayName || 'সম্মানিত গ্রাহক',
+        photoURL: user.photoURL || '',
+        email: user.email
+    };
+
+    // ফায়ারস্টোর থেকে ইউজারের অরিজিনাল নাম আনা
+    try {
+        const userDoc = await window._getDoc(window._doc(window._db, 'users', user.uid));
+        if (userDoc.exists() && userDoc.data().name) {
+            window.currentUser.name = userDoc.data().name;
+        }
+    } catch(e) {}
+
+    // লোডার হাইড করে বট স্টার্ট করা
+    document.getElementById('auth-loader').style.display = 'none';
+    showMainMenu(true);
+  });
+</script>
+
+<script>
+/* ── BOT STATE MANAGEMENT ── */
+let botState = "MAIN_MENU";
+let tempData = {};
+let isBotTyping = false;
+
+/* ── DOM ELEMENTS ── */
+const msgArea = document.getElementById('messages-area');
+const inputWrap = document.getElementById('input-wrapper');
+const typingRow = document.getElementById('typing-row');
+const msgInput = document.getElementById('msg-input');
+const cmdMenu = document.getElementById('cmd-menu');
+
+/* ── HUMANIZED PHRASES (Temporary) ── */
+const WAIT_PHRASES = [
+    "একটু অপেক্ষা করুন, আমি চেক করছি...",
+    "তথ্যটি যাচাই করা হচ্ছে, জাস্ট এ সেকেন্ড...",
+    "দয়া করে একটু সময় দিন...",
+    "অপেক্ষা করার জন্য ধন্যবাদ, আমি দেখছি..."
+];
+
+/* ── CORE UI FUNCTIONS ── */
+function scrollToBottom() {
+    setTimeout(() => { msgArea.scrollTop = msgArea.scrollHeight; }, 50);
+}
+
+// কমান্ড মেনু টগল
+function toggleCmdMenu() {
+    cmdMenu.classList.toggle('show');
+    document.getElementById('slash-btn').classList.toggle('active');
+}
+
+// কমান্ড সিলেক্ট করা (যেকোনো অবস্থায় টাস্ক ব্রেক করে নতুন টাস্ক শুরু হবে)
+function execCommand(cmd) {
+    toggleCmdMenu();
+    inputWrap.style.display = 'flex'; // ইনপুট বক্স রিস্টোর করা
+    
+    // UI তে কমান্ড প্রিন্ট করা
+    let cmdText = '';
+    if(cmd==='ACTION_MENU') cmdText = '/menu';
+    if(cmd==='ACTION_TRACK') cmdText = '/track';
+    if(cmd==='ACTION_CANCEL') cmdText = '/cancel';
+    if(cmd==='ACTION_RETURN') cmdText = '/return';
+    if(cmd==='ACTION_LOCATION') cmdText = '/location';
+    renderUserMsg(cmdText);
+
+    // স্টেট রিসেট করে নির্দিষ্ট টাস্ক এ পাঠানো
+    botState = "MAIN_MENU";
+    tempData = {};
+    
+    // পপআপ অপশন থাকলে রিমুভ করা
+    const activeOptions = document.querySelectorAll('.inline-options');
+    activeOptions.forEach(opt => opt.remove());
+
+    processBotLogic(cmd);
+}
+
+// স্ক্রিনের অন্য কোথাও ক্লিক করলে কমান্ড মেনু হাইড হবে
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('#cmd-menu') && !e.target.closest('#slash-btn')) {
+        cmdMenu.classList.remove('show');
+        document.getElementById('slash-btn').classList.remove('active');
+    }
+});
+
+// ইউজারের মেসেজ UI তে অ্যাড করা
+function renderUserMsg(text) {
+    let avatarHTML = '';
+    if(window.currentUser && window.currentUser.photoURL) {
+        avatarHTML = `<img src="${window.currentUser.photoURL}">`;
+    } else {
+        avatarHTML = `${(window.currentUser?.name || 'U').charAt(0).toUpperCase()}`;
+    }
+
+    const html = `
+      <div class="msg-row from-user">
+        <div class="msg-avatar">${avatarHTML}</div>
+        <div class="bubble-wrap">
+          <div class="bubble from-user">${text}</div>
+        </div>
+      </div>`;
+    msgArea.insertAdjacentHTML('beforeend', html);
+    scrollToBottom();
+}
+
+// বটের মেসেজ UI তে অ্যাড করা 
+function renderBotMsg(text, options = null) {
+    let optionsHtml = '';
+    let hideInput = false;
+    
+    if (options && options.length > 0) {
+        optionsHtml = `<div class="inline-options">`;
+        options.forEach(opt => {
+            optionsHtml += `<button class="inline-btn" onclick="handleOptionClick('${opt.value}', '${opt.label}')">${opt.label}</button>`;
+        });
+        optionsHtml += `</div>`;
+        
+        /* পরিবর্তন ২: যদি অপশনে শুধুমাত্র "মেনুতে ফিরে যান" থাকে, তাহলে ইনপুট হাইড হবে না। 
+           অন্যথায় (যেমন হ্যাঁ/না বা কারণ সিলেক্ট করতে বললে) ইনপুট হাইড হবে। */
+        if (options.length === 1 && options[0].value === 'ACTION_MENU') {
+            hideInput = false;
+        } else {
+            hideInput = true;
+        }
+    }
+    
+    if (hideInput) {
+        inputWrap.style.display = 'none'; 
+    } else {
+        inputWrap.style.display = 'flex'; 
+    }
+
+    const html = `
+      <div class="msg-row from-admin">
+        <div class="msg-avatar" style="background:#fff; color:var(--green-main); border:1px solid var(--green-main)"><i class="fa-solid fa-robot"></i></div>
+        <div class="bubble-wrap" style="width:100%">
+          <div class="bubble from-admin">
+            <span class="bot-tag"><i class="fa-solid fa-bolt"></i> AutoBot</span><br>
+            ${text}
+            ${optionsHtml}
+          </div>
+        </div>
+      </div>`;
+    
+    msgArea.insertAdjacentHTML('beforeend', html);
+    scrollToBottom();
+}
+
+window.handleOptionClick = function(value, label) {
+    renderUserMsg(label);
+    const activeOptions = document.querySelectorAll('.inline-options');
+    activeOptions.forEach(opt => opt.remove());
+    inputWrap.style.display = 'flex';
+    processBotLogic(value);
+};
+
+// হিউম্যানাইজড রিপ্লাই (টেম্পোরারি)
+function simulateBotThinking(finalReplyCallback, requiresWaitMsg = false) {
+    if (isBotTyping) return;
+    isBotTyping = true;
+    
+    typingRow.style.display = 'flex';
+    msgArea.appendChild(typingRow); 
+    scrollToBottom();
+
+    if (requiresWaitMsg) {
+        const randomWait = WAIT_PHRASES[Math.floor(Math.random() * WAIT_PHRASES.length)];
+        
+        setTimeout(() => {
+            typingRow.style.display = 'none';
+            
+            // টেম্পোরারি মেসেজ জেনারেট করা
+            const tempId = 'temp_msg_' + Date.now();
+            const tempHtml = `
+              <div class="msg-row from-admin" id="${tempId}">
+                <div class="msg-avatar" style="background:#fff; color:var(--green-main); border:1px solid var(--green-main)"><i class="fa-solid fa-robot"></i></div>
+                <div class="bubble-wrap" style="width:100%">
+                  <div class="bubble from-admin" style="color: var(--gray-500); font-style: italic;">
+                    ${randomWait}
+                  </div>
+                </div>
+              </div>`;
+            msgArea.insertAdjacentHTML('beforeend', tempHtml);
+            scrollToBottom();
+            
+            // ডাটা ফেচিং এর সময় সিমুলেট করা
+            setTimeout(() => {
+                // আসল মেসেজ দেওয়ার আগে টেম্পোরারি মেসেজ ডিলিট করা
+                const tempEl = document.getElementById(tempId);
+                if(tempEl) tempEl.remove();
+
+                typingRow.style.display = 'flex';
+                msgArea.appendChild(typingRow);
+                scrollToBottom();
+                
+                setTimeout(() => {
+                    typingRow.style.display = 'none';
+                    isBotTyping = false;
+                    finalReplyCallback();
+                }, 1000);
+            }, 1200);
+
+        }, 800);
+    } else {
+        setTimeout(() => {
+            typingRow.style.display = 'none';
+            isBotTyping = false;
+            finalReplyCallback();
+        }, 1000);
+    }
+}
+
+/* ── FIRESTORE DATA FETCHING ── */
+// শুধুমাত্র বর্তমান ইউজারের অর্ডার ফেচ করবে
+async function fetchUserOrder(orderId) {
+    try {
+        const docRef = window._doc(window._db, 'orders', orderId);
+        const docSnap = await window._getDoc(docRef);
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            // প্রাইভেসী চেক: অর্ডারটি এই ইউজারের কি না
+            if (data.userId === window.currentUser.uid) {
+                return data;
+            }
+        }
+        return null; // না পেলে বা অন্য ইউজারের হলে null
+    } catch(e) {
+        return null;
+    }
+}
+
+/* ── BOT LOGIC & STATE MACHINE ── */
+function showMainMenu(isWelcome = false) {
+    botState = "MAIN_MENU";
+    tempData = {};
+    
+    let msg = isWelcome 
+        ? `হ্যালো <b>${window.currentUser?.name}</b>! আমি AutoBot 🤖। আপনাকে কীভাবে সাহায্য করতে পারি?` 
+        : `মেইন মেনু: আপনাকে কীভাবে সাহায্য করতে পারি?`;
+
+    simulateBotThinking(() => {
+        renderBotMsg(msg, [
+            { label: "📦 অর্ডার ট্র্যাক করুন", value: "ACTION_TRACK" },
+            { label: "❌ অর্ডার ক্যানসেল করুন", value: "ACTION_CANCEL" },
+            { label: "🔄 পণ্য রিটার্ন/রিফান্ড", value: "ACTION_RETURN" },
+            { label: "📍 লোকেশন পরিবর্তন", value: "ACTION_LOCATION" }
+        ]);
+    });
+}
+
+function returnToMenuOptions() {
+    return [
+        { label: "মেনুতে ফিরে যান", value: "ACTION_MENU" }
+    ];
+}
+
+async function processBotLogic(input) {
+    input = input.trim();
+
+    // মেইন মেনু রিডাইরেক্ট
+    if (input === "ACTION_MENU") {
+        showMainMenu();
+        return;
+    }
+
+    // ── MAIN MENU HANDLING ──
+    if (botState === "MAIN_MENU") {
+        if (input === "ACTION_TRACK") {
+            botState = "AWAIT_TRACK_ID";
+            simulateBotThinking(() => { renderBotMsg("অনুগ্রহ করে আপনার <b>অর্ডার আইডি</b> টি লিখুন:", returnToMenuOptions()); });
+        } 
+        else if (input === "ACTION_CANCEL") {
+            botState = "AWAIT_CANCEL_ID";
+            simulateBotThinking(() => { renderBotMsg("অর্ডার ক্যানসেল করতে আপনার <b>অর্ডার আইডি</b> টি দিন:", returnToMenuOptions()); });
+        }
+        else if (input === "ACTION_RETURN") {
+            botState = "AWAIT_RETURN_ID";
+            simulateBotThinking(() => { renderBotMsg("রিটার্ন/রিফান্ডের জন্য আপনার <b>অর্ডার আইডি</b> টি দিন:", returnToMenuOptions()); });
+        }
+        else if (input === "ACTION_LOCATION") {
+            botState = "AWAIT_LOC_ID";
+            simulateBotThinking(() => { renderBotMsg("লোকেশন পরিবর্তনের জন্য <b>অর্ডার আইডি</b> টি দিন:", returnToMenuOptions()); });
+        }
+        else {
+            simulateBotThinking(() => { showMainMenu(); });
+        }
+        return;
+    }
+
+    // ── ORDER TRACKING ──
+    if (botState === "AWAIT_TRACK_ID") {
+        simulateBotThinking(async () => {
+            const order = await fetchUserOrder(input);
+            if (order) {
+                let itemsStr = order.cartItems?.map(i => i.name).join(', ') || 'N/A';
+                renderBotMsg(`আপনার অর্ডার <b>#${input}</b> এর স্ট্যাটাস:<br><br><b>বর্তমান অবস্থা:</b> ${order.status}<br><b>ডেলিভারি ঠিকানা:</b> ${order.address}<br><b>আইটেম:</b> ${itemsStr}`, returnToMenuOptions());
+                botState = "MAIN_MENU";
+            } else {
+                renderBotMsg("দুঃখিত, এই অর্ডার আইডি টি আপনার অ্যাকাউন্টে পাওয়া যায়নি। সঠিক আইডি দিন বা মেনুতে ফিরে যান।", returnToMenuOptions());
+            }
+        }, true); 
+        return;
+    }
+
+    // ── ORDER CANCEL ──
+    if (botState === "AWAIT_CANCEL_ID") {
+        simulateBotThinking(async () => {
+            const order = await fetchUserOrder(input);
+            if (order) {
+                // চেক: অর্ডার অলরেডি শিপড বা ডেলিভারড কি না
+                if(order.status === 'Shipped' || order.status === 'Delivered' || order.status === 'Cancelled') {
+                    renderBotMsg(`দুঃখিত, আপনার অর্ডারটি বর্তমানে <b>${order.status}</b> অবস্থায় আছে, তাই এটি এখন ক্যানসেল করা সম্ভব নয়।`, returnToMenuOptions());
+                    botState = "MAIN_MENU";
+                } else {
+                    tempData.cancelId = input;
+                    botState = "AWAIT_CANCEL_REASON";
+                    renderBotMsg("আপনি কি কারণে অর্ডারটি ক্যানসেল করতে চাচ্ছেন?", [
+                        { label: "ডেলিভারিতে দেরি হচ্ছে", value: "Late Delivery" },
+                        { label: "ভুল অর্ডার করে ফেলেছি", value: "Mistake Order" },
+                        { label: "পণ্যটি আর প্রয়োজন নেই", value: "No longer needed" },
+                        { label: "মেনুতে ফিরে যান", value: "ACTION_MENU" }
+                    ]);
+                }
+            } else {
+                renderBotMsg("অর্ডারটি খুঁজে পাওয়া যায়নি। সঠিক আইডি দিন।", returnToMenuOptions());
+            }
+        }, true);
+        return;
+    }
+
+    if (botState === "AWAIT_CANCEL_REASON") {
+        tempData.cancelReason = input;
+        botState = "AWAIT_CANCEL_CONFIRM";
+        simulateBotThinking(() => {
+            renderBotMsg(`আপনি কারণ হিসেবে বলেছেন: "${input}"। <br><br>আপনি কি নিশ্চিত যে অর্ডার <b>#${tempData.cancelId}</b> ক্যানসেল করতে চান?`, [
+                { label: "হ্যাঁ, ক্যানসেল করুন", value: "CONFIRM_YES" },
+                { label: "না, বাতিল করুন", value: "ACTION_MENU" }
+            ]);
+        });
+        return;
+    }
+
+    if (botState === "AWAIT_CANCEL_CONFIRM") {
+        simulateBotThinking(() => {
+            if(input === "CONFIRM_YES") {
+                // রিকোয়ারমেন্ট অনুযায়ী ডাটাবেইজ পরিবর্তন অফ রাখা হয়েছে। শুধু মেসেজ শো করবে।
+                renderBotMsg(`✅ ধন্যবাদ! আপনার অর্ডার <b>#${tempData.cancelId}</b> ক্যানসেল করার রিকুয়েস্ট সাবমিট হয়েছে। (ডাটাবেইজ রাইট অফ আছে)`, returnToMenuOptions());
+            }
+            botState = "MAIN_MENU";
+        });
+        return;
+    }
+
+    // ── RETURN / REFUND ──
+    if (botState === "AWAIT_RETURN_ID") {
+        simulateBotThinking(async () => {
+            const order = await fetchUserOrder(input);
+            if (order) {
+                if(order.status === 'Delivered') {
+                    botState = "AWAIT_RETURN_ISSUE";
+                    renderBotMsg("পণ্যটি রিটার্ন করার মূল কারণ কী?", [
+                        { label: "পণ্যটি ভাঙা/ক্ষতিগ্রস্ত", value: "Damaged" },
+                        { label: "ভুল সাইজ/কালার পেয়েছি", value: "Wrong Item" },
+                        { label: "ছবির সাথে মিল নেই", value: "Not as described" },
+                        { label: "মেনুতে ফিরে যান", value: "ACTION_MENU" }
+                    ]);
+                } else {
+                    renderBotMsg(`পণ্যটি এখনো ডেলিভারি হয়নি (বর্তমান স্ট্যাটাস: <b>${order.status}</b>)। ডেলিভারি পাওয়ার পর রিটার্ন আবেদন করুন।`, returnToMenuOptions());
+                    botState = "MAIN_MENU";
+                }
+            } else {
+                renderBotMsg("অর্ডার আইডি পাওয়া যায়নি।", returnToMenuOptions()); 
+            }
+        }, true);
+        return;
+    }
+
+    if (botState === "AWAIT_RETURN_ISSUE") {
+        simulateBotThinking(() => {
+            renderBotMsg("আপনার রিটার্ন রিকোয়েস্ট জমা নেওয়া হয়েছে। আমাদের একজন এজেন্ট খুব দ্রুত আপনার সাথে যোগাযোগ করবেন। (ডাটাবেইজ রাইট অফ আছে)", returnToMenuOptions());
+            botState = "MAIN_MENU";
+        });
+        return;
+    }
+
+    // ── LOCATION CHANGE ──
+    if (botState === "AWAIT_LOC_ID") {
+        simulateBotThinking(async () => {
+            const order = await fetchUserOrder(input);
+            if (order) {
+                if(order.status === 'Shipped' || order.status === 'Delivered' || order.status === 'Cancelled') {
+                    renderBotMsg(`অর্ডারটি অলরেডি <b>${order.status}</b>। এখন লোকেশন পরিবর্তন সম্ভব নয়।`, returnToMenuOptions());
+                    botState = "MAIN_MENU";
+                } else {
+                    tempData.locId = input;
+                    botState = "AWAIT_NEW_LOC";
+                    renderBotMsg(`আপনার বর্তমান ঠিকানা: <b>${order.address}</b><br><br>অনুগ্রহ করে আপনার <b>নতুন ডেলিভারি এড্রেসটি</b> লিখে পাঠান:`, returnToMenuOptions());
+                }
+            } else {
+                renderBotMsg("অর্ডার আইডি পাওয়া যায়নি।", returnToMenuOptions()); 
+            }
+        }, true);
+        return;
+    }
+
+    if (botState === "AWAIT_NEW_LOC") {
+        simulateBotThinking(() => {
+            renderBotMsg(`সফল হয়েছে! আপনার অর্ডার <b>#${tempData.locId}</b> এর নতুন ঠিকানা হিসেবে <b>"${input}"</b> আপডেট করার রিকুয়েস্ট নেওয়া হয়েছে। (ডাটাবেইজ রাইট অফ আছে)`, returnToMenuOptions());
+            botState = "MAIN_MENU";
+        });
+        return;
+    }
+}
+
+/* ── EVENT LISTENERS ── */
+window.sendUserMsg = function() {
+    const text = msgInput.value.trim();
+    if (!text) return;
+    
+    msgInput.value = '';
+    renderUserMsg(text);
+    processBotLogic(text);
+};
+
+window.handleKey = function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendUserMsg();
+    }
+};
+
+</script>
+</body>
+</html>
