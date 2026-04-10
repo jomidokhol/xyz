@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">Loading...</title>
+    <title id="pageTitle">wait...</title>
     
     <meta property="og:title" id="ogTitle" content="Online Shop">
     <meta property="og:description" id="ogDesc" content="Welcome to our online store. Discover amazing products!">
@@ -2960,7 +2960,6 @@
                                 updateDeliveryDisplay();
                                 await fetchUserReviewedProducts();
                                 updateAuthStateUI();
-                                
                                 // রাউটিং লজিক 
                                 if (!isAuthResolved) {
                                     isAuthResolved = true;
@@ -3518,11 +3517,7 @@
                                             }
                                         } catch(e){ isReturnValid = false; }
 
-                                        if(item.returnStatus) {
-                                            isReturnValid = false; // একবার রিকুয়েস্ট করা হয়ে গেলে বাটন মুছে যাবে
-                                        }
-
-                                        if(isReturnValid) {
+                                        if(isReturnValid && !item.returnStatus) {
                                             hasReturnable = true;
                                             returnBtnHtml = `<div style="margin-top: 8px; display: inline-block; margin-right: 10px;"><button class="btn btn-outline" style="padding: 4px 12px; font-size: 0.75rem; color: #10b981; border-color: #10b981; border-radius: 4px;" onclick="requestReturn('${order.id}', '${navId}')"><i class="fas fa-undo"></i> Return</button></div>`;
                                         }
@@ -3565,14 +3560,15 @@
                                         </div>`;
                                     } else if (item.returnStatus === 'Accepted') {
                                         let agencyLogo = order.deliveryInfo?.agencyLogo ? `<img src="${order.deliveryInfo.agencyLogo}" style="height:16px; vertical-align:middle; margin:0 4px;">` : '';
-                                        let agencyNameRaw = order.deliveryInfo?.agencyName || 'আমাদের নিকটতম ডেলিভারি এর্জেন্সি';
-                                        let agencyName = order.deliveryInfo?.agencyName ? `<strong>${order.deliveryInfo.agencyName}</strong>` : 'আমাদের নিকটতম ডেলিভারি এর্জেন্সি';
+                                        let agencyNameStr = order.deliveryInfo?.agencyName || 'আমাদের নিকটতম ডেলিভারি এর্জেন্সি';
+                                        let agencyNameDisplay = order.deliveryInfo?.agencyName ? `<strong>${order.deliveryInfo.agencyName}</strong>` : 'আমাদের নিকটতম ডেলিভারি এর্জেন্সি';
+                                        
                                         let adminMsg = item.adminMessage || item.returnAdminMessage ? `<div style="margin-top:8px; padding-top:8px; border-top:1px solid #bbf7d0; font-size:0.8rem;"><strong>Admin Message:</strong> ${item.adminMessage || item.returnAdminMessage}</div>` : '';
                                         
                                         returnMsgHtml = `<div style="margin-top:10px; padding:12px; background:#dcfce7; color:#166534; border-radius:6px; font-size:0.85rem; border:1px solid #bbf7d0; line-height: 1.5;">
                                             <strong style="font-size: 1rem;">আমরা অত্যান্ত দুঃখিত!</strong><br>
-                                            আপনার পার্সেলটি ${agencyName} ${agencyLogo} এর হাতে হস্তান্তর করার জন্য অনুরোধ করছি।<br>
-                                            বিঃদ্রঃ- ${agencyNameRaw} এর কোন বিশেষ শর্ত থাকলে তা মানতে হবে।<br>
+                                            আপনার পার্সেলটি ${agencyNameDisplay} ${agencyLogo} এর হাতে হস্তান্তর করার জন্য অনুরোধ করছি।<br>
+                                            বিঃদ্রঃ- ${agencyNameStr} এর কোন বিশেষ শর্ত থাকলে তা মানতে হবে।<br>
                                             অর্ডার আইডি: ${order.id}
                                             ${adminMsg}
                                         </div>`;
