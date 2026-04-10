@@ -535,8 +535,11 @@
                     </div>
                     
                     <div class="order-tabs">
-                        <button class="tab-btn active" onclick="switchOrderTab('Pending', this)">Active Orders</button>
-                        <button class="tab-btn" onclick="switchOrderTab('Delivered', this)">Completed</button>
+                        <button class="tab-btn active" onclick="switchOrderTab('Pending', this)">Pending</button>
+                        <button class="tab-btn" onclick="switchOrderTab('Received', this)">Received</button>
+                        <button class="tab-btn" onclick="switchOrderTab('Packing', this)">Packing</button>
+                        <button class="tab-btn" onclick="switchOrderTab('Handover', this)">Handover</button>
+                        <button class="tab-btn" onclick="switchOrderTab('Delivered', this)">Delivered</button>
                         <button class="tab-btn" onclick="switchOrderTab('Cancelled', this)">Cancelled</button>
                     </div>
 
@@ -883,8 +886,8 @@
                     <input type="text" id="hoAgencyName" class="form-control" placeholder="e.g. RedX / Pathao">
                 </div>
                 <div class="form-group">
-                    <label>Agency Logo (URL)</label>
-                    <input type="url" id="hoAgencyLogo" class="form-control" placeholder="https://...">
+                    <label>Agency Logo (URL/Text)</label>
+                    <input type="text" id="hoAgencyLogo" class="form-control" placeholder="Logo info or https://...">
                 </div>
                 <div class="form-group">
                     <label>Delivery Boy Name</label>
@@ -895,8 +898,8 @@
                     <input type="text" id="hoBoyMobile" class="form-control" placeholder="Optional">
                 </div>
                 <div class="form-group">
-                    <label>Live Tracking Link</label>
-                    <input type="url" id="hoTrackingLink" class="form-control" placeholder="https://...">
+                    <label>Live Tracking Link/Text</label>
+                    <input type="text" id="hoTrackingLink" class="form-control" placeholder="Tracking info or https://...">
                 </div>
                 <button type="submit" class="btn btn-primary" style="margin-top:10px; width: 100%;">Save & Update Status</button>
             </form>
@@ -1165,8 +1168,8 @@
                 </div>
                 
                 <div class="form-group hidden" id="catImageGroup">
-                    <label for="categoryImage">Category Image URL</label>
-                    <input type="url" id="categoryImage" class="form-control" placeholder="https://example.com/icon.png">
+                    <label for="categoryImage">Category Image URL/Text</label>
+                    <input type="text" id="categoryImage" class="form-control" placeholder="Image info or https://...">
                 </div>
 
                 <div class="form-row" style="margin-top: 30px;">
@@ -1237,8 +1240,8 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="popUpBannerLogo">Visual Media (Image URL)</label>
-                        <input type="text" id="popUpBannerLogo" class="form-control" required>
+                        <label for="popUpBannerLogo">Visual Media (Image URL/Text)</label>
+                        <input type="text" id="popUpBannerLogo" class="form-control">
                     </div>
                     
                     <div class="form-row" id="popUpAdPrices" style="margin-top: 15px;">
@@ -1286,9 +1289,9 @@
             <button class="close-modal-btn" onclick="closeModal('gatewayModal')"><i class="fas fa-times"></i></button>
             <h3 id="gatewayModalTitle" style="font-size: 22px; margin-bottom: 25px;">Payment Gateway Integration</h3>
             <form id="gatewayForm">
-                <div class="form-group"><label for="gatewayLogo">Gateway Logo (URL)</label><input type="url" id="gatewayLogo" class="form-control" required></div>
+                <div class="form-group"><label for="gatewayLogo">Gateway Logo (URL/Text)</label><input type="text" id="gatewayLogo" class="form-control"></div>
                 <div class="form-group"><label for="gatewayMobileNo">Mobile Banking Number</label><input type="text" id="gatewayMobileNo" class="form-control" placeholder="e.g. +8801..."></div>
-                <div class="form-group"><label for="gatewayBanner">Banner (Image URL)</label><input type="url" id="gatewayBanner" class="form-control" placeholder="https://..."></div>
+                <div class="form-group"><label for="gatewayBanner">Banner (Image URL/Text)</label><input type="text" id="gatewayBanner" class="form-control" placeholder="Image info or https://..."></div>
                 
                 <div class="form-group"><label for="gatewayName">Service Name</label><input type="text" id="gatewayName" class="form-control" required></div>
                 
@@ -1316,8 +1319,8 @@
                 </div>
                 
                 <div class="form-group hidden" id="gatewayPluginGroup">
-                    <label for="gatewayPlugin">External API/Plugin URL</label>
-                    <input type="url" id="gatewayPlugin" class="form-control" placeholder="https://...">
+                    <label for="gatewayPlugin">External API/Plugin URL or Text</label>
+                    <input type="text" id="gatewayPlugin" class="form-control" placeholder="URL or text...">
                 </div>
                 
                 <div class="form-row" style="margin-top: 30px;">
@@ -1580,7 +1583,7 @@
             } else {
                 adFields.classList.remove('hidden');
                 productField.classList.add('hidden');
-                bannerInput.required = true;
+                bannerInput.required = false;
                 popUpProductSelect.required = false;
                 
                 const nameField = document.getElementById('popUpNameField');
@@ -1634,20 +1637,20 @@
             if (val === 'icon') {
                 document.getElementById('catIconGroup').classList.remove('hidden');
                 document.getElementById('catImageGroup').classList.add('hidden');
-                document.getElementById('categoryIcon').required = true;
+                document.getElementById('categoryIcon').required = false;
                 document.getElementById('categoryImage').required = false;
             } else {
                 document.getElementById('catIconGroup').classList.add('hidden');
                 document.getElementById('catImageGroup').classList.remove('hidden');
                 document.getElementById('categoryIcon').required = false;
-                document.getElementById('categoryImage').required = true;
+                document.getElementById('categoryImage').required = false;
             }
         };
 
         window.toggleGatewayPlugin = function() {
             if (document.getElementById('gatewayPluginToggle').checked) {
                 document.getElementById('gatewayPluginGroup').classList.remove('hidden');
-                document.getElementById('gatewayPlugin').required = true;
+                document.getElementById('gatewayPlugin').required = false;
             } else {
                 document.getElementById('gatewayPluginGroup').classList.add('hidden');
                 document.getElementById('gatewayPlugin').required = false;
@@ -2432,7 +2435,10 @@
 
             const filteredOrders = adminOrders.filter(order => {
                 let statusMatch = false;
-                if (currentOrderFilter === 'Pending') statusMatch = ['Pending', 'Received', 'Packing', 'Handover', 'Processing'].includes(order.status) || !order.status;
+                if (currentOrderFilter === 'Pending') statusMatch = order.status === 'Pending' || !order.status;
+                else if (currentOrderFilter === 'Received') statusMatch = order.status === 'Received';
+                else if (currentOrderFilter === 'Packing') statusMatch = order.status === 'Packing';
+                else if (currentOrderFilter === 'Handover') statusMatch = order.status === 'Handover';
                 else if (currentOrderFilter === 'Delivered') statusMatch = order.status === 'Delivered';
                 else if (currentOrderFilter === 'Cancelled') statusMatch = order.status === 'Cancelled';
                 
