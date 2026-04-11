@@ -58,7 +58,7 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root { --primary: #166534; --secondary: #f97316; --dark: #1f2937; --gray: #6b7280; --light: #f9fafb; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --transition: all 0.3s ease; --payment-theme-color: #d12053; }
-        html, body { overflow-x: hidden; }
+        html, body { overflow-x: clip; }
         body { font-family: 'Poppins', sans-serif; color: var(--dark); background-color: var(--light); line-height: 1.6; }
         .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
         .page-section { display: none; animation: fadeIn 0.5s ease; }
@@ -3114,7 +3114,7 @@
                 document.getElementById('osShippingFee').textContent = `৳${formatPrice(shippingFee)}`;
                 window.currentOrderSubtotal = subtotal;
                 
-                const finalTotal = subtotal + shippingFee; 
+                constfinalTotal = subtotal + shippingFee; 
                 document.getElementById('osTotal').textContent = `৳${formatPrice(finalTotal)}`;
                 
                 document.getElementById('osProceedBtn').onclick = () => {
@@ -3406,13 +3406,19 @@
                 });
             }
             
-            async function fetchUserOrders() {
+            // Overriding fetchUserOrders to handle returnRequests collection & admin message
+            window.fetchUserOrders = async function() {
                 if (!isLoggedIn || !currentUser) return;
                 const ordersContainer = document.getElementById('userOrdersList');
                 if(ordersContainer) ordersContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--gray);"><i class="fas fa-spinner fa-spin fa-3x"></i><p style="margin-top: 15px;">Loading your orders...</p></div>';
                 
                 try {
                     const snap = await db.collection('orders').where('userId', '==', auth.currentUser.uid).get();
+                    
+                    // Fetch return requests for this user
+                    const returnSnap = await db.collection('returnRequests').where('userId', '==', auth.currentUser.uid).get();
+                    const userReturnRequests = returnSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
                     if (snap.empty) {
                         let emptyHtml = `
                             <div style="text-align: center; padding: 40px; color: var(--gray);">
@@ -3549,21 +3555,25 @@
                                 }
 
                                 let returnMsgHtml = '';
-                                if (item.returnStatus) {
+                                
+                                // New Logic: Check returnRequests collection
+                                let matchedReturnReq = userReturnRequests.find(req => req.orderId === order.id && req.productId === navId);
+
+                                if (matchedReturnReq) {
                                     hasReturnable = false;
                                     isReturns = true;
                                     
-                                    if (item.returnStatus === 'Pending') {
+                                    if (matchedReturnReq.status === 'Pending') {
                                         returnMsgHtml = `<div style="margin-top:10px; padding:10px; background:#fffbeb; color:#d97706; border-radius:6px; font-size:0.85rem; border:1px solid #fde68a;">
                                             <i class="fas fa-clock"></i> <strong>আপনার রিফান্ড & রিটার্ন রিকুয়েষ্ট পেন্ডিং অবস্থায় আছে।</strong><br>
                                             অর্ডার আইডি: ${order.id}
                                         </div>`;
-                                    } else if (item.returnStatus === 'Accepted') {
+                                    } else if (matchedReturnReq.status === 'Accepted') {
                                         let agencyLogo = order.deliveryInfo?.agencyLogo ? `<img src="${order.deliveryInfo.agencyLogo}" style="height:16px; vertical-align:middle; margin:0 4px;">` : '';
                                         let agencyNameStr = order.deliveryInfo?.agencyName || 'আমাদের নিকটতম ডেলিভারি এর্জেন্সি';
                                         let agencyNameDisplay = order.deliveryInfo?.agencyName ? `<strong>${order.deliveryInfo.agencyName}</strong>` : 'আমাদের নিকটতম ডেলিভারি এর্জেন্সি';
                                         
-                                        let adminMsg = item.adminMessage || item.returnAdminMessage ? `<div style="margin-top:8px; padding-top:8px; border-top:1px solid #bbf7d0; font-size:0.8rem;"><strong>Admin Message:</strong> ${item.adminMessage || item.returnAdminMessage}</div>` : '';
+                                        let adminMsg = matchedReturnReq.adminMessage ? `<div style="margin-top:8px; padding-top:8px; border-top:1px solid #bbf7d0; font-size:0.8rem;"><strong>Admin Message:</strong> ${matchedReturnReq.adminMessage}</div>` : '';
                                         
                                         returnMsgHtml = `<div style="margin-top:10px; padding:12px; background:#dcfce7; color:#166534; border-radius:6px; font-size:0.85rem; border:1px solid #bbf7d0; line-height: 1.5;">
                                             <strong style="font-size: 1rem;">আমরা অত্যান্ত দুঃখিত!</strong><br>
@@ -3572,9 +3582,9 @@
                                             অর্ডার আইডি: ${order.id}
                                             ${adminMsg}
                                         </div>`;
-                                    } else if (item.returnStatus === 'Rejected') {
-                                        let reasonStr = item.returnReason || 'নির্দিষ্ট কারণ নেই';
-                                        let adminMsg = item.adminMessage || item.returnAdminMessage ? `<div style="margin-top:8px; padding-top:8px; border-top:1px solid #fecaca; font-size:0.8rem;"><strong>Admin Message:</strong> ${item.adminMessage || item.returnAdminMessage}</div>` : '';
+                                    } else if (matchedReturnReq.status === 'Rejected') {
+                                        let reasonStr = matchedReturnReq.reason || 'নির্দিষ্ট কারণ নেই';
+                                        let adminMsg = matchedReturnReq.adminMessage ? `<div style="margin-top:8px; padding-top:8px; border-top:1px solid #fecaca; font-size:0.8rem;"><strong>Admin Message:</strong> ${matchedReturnReq.adminMessage}</div>` : '';
 
                                         returnMsgHtml = `<div style="margin-top:10px; padding:12px; background:#fee2e2; color:#b91c1c; border-radius:6px; font-size:0.85rem; border:1px solid #fecaca; line-height: 1.5;">
                                             <strong style="font-size: 1rem;">আপনার রিটার্ন & রিফান্ড রিকুয়েষ্ট রিজেক্ট করা হয়েছে।</strong><br>
@@ -3586,6 +3596,17 @@
                                                 <button class="btn btn-primary" style="padding:6px 12px; font-size:0.85rem; background:#b91c1c; border:none; flex:1;" onclick="window.location.href='support.html'">Support Chat</button>
                                             </div>
                                         </div>`;
+                                    }
+                                } else if (item.returnStatus) {
+                                    // Fallback for older orders without returnRequests collection doc
+                                    hasReturnable = false;
+                                    isReturns = true;
+                                    if (item.returnStatus === 'Pending') {
+                                        returnMsgHtml = `<div style="margin-top:10px; padding:10px; background:#fffbeb; color:#d97706; border-radius:6px; font-size:0.85rem; border:1px solid #fde68a;"><i class="fas fa-clock"></i> <strong>আপনার রিফান্ড & রিটার্ন রিকুয়েষ্ট পেন্ডিং অবস্থায় আছে।</strong></div>`;
+                                    } else if (item.returnStatus === 'Accepted') {
+                                        returnMsgHtml = `<div style="margin-top:10px; padding:12px; background:#dcfce7; color:#166534; border-radius:6px; font-size:0.85rem; border:1px solid #bbf7d0;"><strong>আমরা অত্যান্ত দুঃখিত!</strong><br>আপনার পার্সেলটি নিকটতম ডেলিভারি এর্জেন্সির হাতে হস্তান্তর করার জন্য অনুরোধ করছি।</div>`;
+                                    } else if (item.returnStatus === 'Rejected') {
+                                        returnMsgHtml = `<div style="margin-top:10px; padding:12px; background:#fee2e2; color:#b91c1c; border-radius:6px; font-size:0.85rem; border:1px solid #fecaca;"><strong>আপনার রিটার্ন & রিফান্ড রিকুয়েষ্ট রিজেক্ট করা হয়েছে।</strong></div>`;
                                     }
                                 }
 
@@ -3725,7 +3746,86 @@
                     }
 
                 } catch (e) {}
-            }
+            };
+
+            // CSS Override for Sticky Filter and Layout
+            document.head.insertAdjacentHTML('beforeend', `
+                <style>
+                    #shop, .products, #search-results-page, .search-results-container { overflow: visible !important; }
+                    .filter-controls { position: sticky; top: 70px; z-index: 95; background: #f3f4f6; padding: 15px 0; border-bottom: 1px solid rgba(0,0,0,0.05); margin-bottom: 20px;}
+                </style>
+            `);
+
+            // Overriding applyFilterAndRender to support Category Grouping on Home Page
+            window.applyFilterAndRender = function(productsList, filter, targetGrid) {
+                let sortedProducts = [...productsList];
+                const getPrice = p => (p.variants && p.variants.length > 0) ? p.variants[0].price : (p.price || 0);
+
+                switch(filter) {
+                    case 'price-asc': sortedProducts.sort((a, b) => getPrice(a) - getPrice(b)); break;
+                    case 'price-desc': sortedProducts.sort((a, b) => getPrice(b) - getPrice(a)); break;
+                    case 'top-selling': sortedProducts.sort((a, b) => (b.sales || 0) - (a.sales || 0)); break;
+                    case 'most-discount': sortedProducts.sort((a, b) => (b.discount || 0) - (a.discount || 0)); break;
+                    case 'default': default: break;
+                }
+
+                // Feature: Group products by category on Home page
+                if (filter === 'default' && targetGrid.id === 'productGrid' && !document.getElementById('shopTitle').textContent.includes('Products in:')) {
+                    targetGrid.innerHTML = '';
+                    targetGrid.style.display = 'block'; 
+                    
+                    if (sortedProducts.length === 0) {
+                        targetGrid.innerHTML = `<div class="empty-state"><i class="fas fa-box-open"></i><h3>No Products Found</h3></div>`;
+                        return;
+                    }
+
+                    const categoriesSet = new Set(sortedProducts.map(p => p.category).filter(c => c));
+                    categoriesSet.forEach(cat => {
+                        const catProducts = sortedProducts.filter(p => p.category === cat);
+                        if (catProducts.length > 0) {
+                            const sectionDiv = document.createElement('div');
+                            sectionDiv.style.marginBottom = '30px';
+                            sectionDiv.style.width = '100%';
+                            
+                            const title = document.createElement('h3');
+                            title.style.cssText = 'font-size:1.2rem; margin-bottom:15px; color:var(--dark); border-bottom:2px solid var(--primary); display:inline-block; padding-bottom:5px; text-transform:capitalize;';
+                            title.textContent = cat;
+                            sectionDiv.appendChild(title);
+
+                            const innerGrid = document.createElement('div');
+                            innerGrid.className = 'product-grid';
+                            innerGrid.style.display = 'grid'; 
+                            renderProducts(catProducts, innerGrid);
+                            
+                            sectionDiv.appendChild(innerGrid);
+                            targetGrid.appendChild(sectionDiv);
+                        }
+                    });
+
+                    const otherProducts = sortedProducts.filter(p => !p.category);
+                    if (otherProducts.length > 0) {
+                        const sectionDiv = document.createElement('div');
+                        sectionDiv.style.marginBottom = '30px';
+                        sectionDiv.style.width = '100%';
+                        
+                        const title = document.createElement('h3');
+                        title.style.cssText = 'font-size:1.2rem; margin-bottom:15px; color:var(--dark); border-bottom:2px solid var(--primary); display:inline-block; padding-bottom:5px;';
+                        title.textContent = 'Others';
+                        sectionDiv.appendChild(title);
+
+                        const innerGrid = document.createElement('div');
+                        innerGrid.className = 'product-grid';
+                        innerGrid.style.display = 'grid';
+                        renderProducts(otherProducts, innerGrid);
+                        
+                        sectionDiv.appendChild(innerGrid);
+                        targetGrid.appendChild(sectionDiv);
+                    }
+                } else {
+                    targetGrid.style.display = 'grid'; 
+                    renderProducts(sortedProducts, targetGrid);
+                }
+            };
 
             window.navigateToProduct = function(productId) {
                 let prod = products.find(p => p.id === productId || p.pid === productId);
@@ -5616,20 +5716,6 @@
             function selectPaymentMethod(element) {
                 document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('active'));
                 element.classList.add('active');
-            }
-
-            function applyFilterAndRender(productsList, filter, targetGrid) {
-                let sortedProducts = [...productsList];
-                const getPrice = p => (p.variants && p.variants.length > 0) ? p.variants[0].price : (p.price || 0);
-
-                switch(filter) {
-                    case 'price-asc': sortedProducts.sort((a, b) => getPrice(a) - getPrice(b)); break;
-                    case 'price-desc': sortedProducts.sort((a, b) => getPrice(b) - getPrice(a)); break;
-                    case 'top-selling': sortedProducts.sort((a, b) => (b.sales || 0) - (a.sales || 0)); break;
-                    case 'most-discount': sortedProducts.sort((a, b) => (b.discount || 0) - (a.discount || 0)); break;
-                    case 'default': default: break;
-                }
-                renderProducts(sortedProducts, targetGrid);
             }
 
             function showPromoPopup() {
