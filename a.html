@@ -100,7 +100,6 @@
         
         .status-select { min-width: 130px; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background-color: var(--light-color); color: var(--dark-color); font-size: 13px; cursor: pointer; }
         .password-toggle { position: absolute; right: 15px; top: 40px; color: var(--gray-color); cursor: pointer; z-index: 10; font-size: 16px;}
-        .bypass-login { display: block; text-align: right; margin-top: -10px; margin-bottom: 20px; font-size: 13px; color: var(--primary-color); font-weight: 500; }
         
         /* Buttons */
         .btn { display: inline-block; width: 100%; padding: 12px 15px; border-radius: 8px; font-size: 15px; font-weight: 600; text-align: center; color: #fff; border: 1px solid transparent; }
@@ -171,7 +170,7 @@
             max-height: 75vh; 
             width: 100%; 
             position: relative;
-            margin-top: 40px; /* Adjusted to prevent overlap */
+            margin-top: 40px;
             margin-bottom: 20px;
         }
         table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 800px; text-align: left; }
@@ -232,34 +231,11 @@
         input:checked + .slider:before { transform: translateX(24px); }
         
         /* Tags */
-        .tag-container { 
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background-color: var(--light-color);
-            cursor: text;
-        }
-        .tag { 
-            background-color: rgba(59, 130, 246, 0.15); 
-            color: var(--primary-color); 
-            padding: 5px 10px; 
-            border-radius: 6px; 
-            display: inline-flex; 
-            align-items: center; 
-            gap: 6px; 
-            font-size: 13px; 
-            font-weight: 500; 
-        }
+        .tag-container { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--light-color); cursor: text; }
+        .tag { background-color: rgba(59, 130, 246, 0.15); color: var(--primary-color); padding: 5px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; }
         .tag i { font-size: 11px; cursor: pointer; color: var(--danger-color); opacity: 0.7; transition: 0.2s; }
         .tag i:hover { opacity: 1; }
-        .tag-container input { 
-            border: none; outline: none; background: transparent; 
-            color: var(--dark-color); min-width: 120px; flex: 1; padding: 4px;
-        }
+        .tag-container input { border: none; outline: none; background: transparent; color: var(--dark-color); min-width: 120px; flex: 1; padding: 4px; }
         
         .hidden { display: none !important; }
         
@@ -277,7 +253,7 @@
         .toggle-sidebar.notification-dot::after { top: 0; right: 0; }
         .stat-card.notification-dot::after { top: 20px; right: 20px; width: 12px; height: 12px; }
 
-        /* Loader Striped Progress Bar */
+        /* Loader */
         .global-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); backdrop-filter: blur(5px); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; }
         .dark-mode .global-loader { background: rgba(15,23,42,0.8); }
         .loader-bar-container { width: 250px; height: 15px; border: 2px solid var(--dark-color); border-radius: 4px; overflow: hidden; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -286,25 +262,32 @@
         .dark-mode .loader-bar { background: repeating-linear-gradient(45deg, #fff, #fff 10px, transparent 10px, transparent 20px); }
         @keyframes progress { 0% { background-position: 0 0; } 100% { background-position: 28px 0; } }
 
-        /* Summernote UI Fixes for Admin Panel */
+        /* Summernote UI Fixes */
         .note-editor .note-editing-area { background: #fff; color: #000; }
         .dark-mode .note-editor .note-editing-area { background: var(--light-color); color: var(--dark-color); }
         .note-editor.note-frame { border-color: var(--border-color); border-radius: 8px; overflow: hidden; }
         .note-toolbar { background: var(--light-gray); border-bottom: 1px solid var(--border-color); }
         .note-modal-content { background: var(--light-color); color: var(--dark-color); }
-        
-        /* FIX: Summernote Modals and Dropdowns hiding behind global z-indexes */
         .note-modal { z-index: 100060 !important; }
         .note-modal-backdrop { z-index: 100050 !important; }
         .note-popover { z-index: 100060 !important; }
 
-        /* Invoice Print Area */
+        /* Invoice Print Area Fixes - A4 Size */
+        #invoicePrintArea {
+            background: #fff;
+            padding: 40px;
+            max-width: 210mm;
+            margin: 0 auto;
+            color: #000;
+            box-sizing: border-box;
+        }
         @media print { 
             body * { visibility: hidden; } 
             #invoicePrintArea, #invoicePrintArea * { visibility: visible; } 
-            #invoicePrintArea { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; background: white; color: black; box-shadow: none; border: none;} 
-            .modal { position: absolute; left: 0; top: 0; margin: 0; padding: 0; min-height: 550px; visibility: visible; background: transparent; backdrop-filter: none;}
+            #invoicePrintArea { position: absolute; left: 0; top: 0; width: 210mm; padding: 20mm; background: white; color: black; box-shadow: none; border: none;} 
+            .modal { position: absolute; left: 0; top: 0; margin: 0; padding: 0; visibility: visible; background: transparent; backdrop-filter: none;}
             .close-modal-btn, .print-hide { display: none !important; }
+            @page { size: A4; margin: 0; }
         }
 
         @media (max-width: 1024px) { .stats-cards { grid-template-columns: repeat(2, 1fr); } }
@@ -317,20 +300,16 @@
             .topbar { padding: 0 20px; } 
             .form-row { grid-template-columns: 1fr; }
             .order-tabs { position: static; overflow-x: auto; white-space: nowrap; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; padding-bottom: 10px; margin-bottom: 15px; }
-            /* Mobile fixes for table headers and specific forms */
             .page-content .table-header { position: static; flex-direction: column; align-items: flex-start; gap: 15px; height: auto; padding: 15px 0; margin-bottom: 15px; border-bottom: none;}
             .page-content .table-header > div { width: 100%; flex-wrap: wrap; }
             .page-content .table-header input { width: 100% !important; }
             #addCancelReasonForm, #addReturnReasonForm { flex-direction: column !important; align-items: stretch !important; }
             #addCancelReasonForm button, #addReturnReasonForm button { width: 100% !important; height: auto !important; padding: 12px; margin-top: 10px; }
             #returnsPage .table-header button, #cancelReasonsPage .table-header button { width: 100%; margin-top: 5px !important; }
-            
-            /* Spy Detector Mobile Fixes */
             #spyDetectorPage .form-section { flex-direction: column !important; align-items: flex-start !important; gap: 15px; }
             #spyDetectorPage .form-section .switch { margin-top: 10px; margin-left: 0; transform: scale(1.1) !important; flex-shrink: 0; }
         }
 
-        /* Custom scrollbar for wheel picker */
         .wheel-picker-scroll::-webkit-scrollbar { display: none; }
         .wheel-picker-scroll { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
@@ -749,13 +728,36 @@
                 </div>
 
                 <div id="settingsPage" class="page-content hidden">
+                    <!-- Added API Upload Settings -->
+                    <div class="form-section">
+                        <h3 class="table-title" style="margin-bottom: 25px;">Storage / Upload API Settings</h3>
+                        <form id="apiSettingsForm" onsubmit="event.preventDefault(); alert('Please Save General Settings to store these API details.');">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Upload API Key (e.g., ImgBB)</label>
+                                    <input type="text" id="uploadApiKey" class="form-control" placeholder="Enter API Key">
+                                </div>
+                                <div class="form-group">
+                                    <label>Folder Name (Optional)</label>
+                                    <input type="text" id="uploadFolder" class="form-control" placeholder="e.g. store_images">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
                     <div class="form-section">
                         <h3 class="table-title" style="margin-bottom: 25px;">General Settings</h3>
                         <form id="generalSettingsForm">
                             <div class="form-row">
                                 <div class="form-group"><label>Site/Store Name</label><input type="text" id="siteName" class="form-control" required></div>
                                 <div class="form-group"><label>Domain Name</label><input type="text" id="domainName" class="form-control" placeholder="https://example.com" required></div>
-                                <div class="form-group"><label>Site Logo URL</label><input type="text" id="logoUrl" class="form-control"></div>
+                                <div class="form-group">
+                                    <label>Site Logo URL</label>
+                                    <div style="display:flex; gap:5px;">
+                                        <input type="text" id="logoUrl" class="form-control">
+                                        <button type="button" class="btn btn-secondary" style="margin:0; width:auto; padding:0 15px; border-radius: 6px;" onclick="triggerUpload(this)"><i class="fas fa-upload"></i></button>
+                                    </div>
+                                </div>
                             </div>
                             
                             <h4 style="margin: 25px 0 15px; color: var(--primary-color); font-size: 15px;">Hero Section Elements</h4>
@@ -840,7 +842,7 @@
     </div>
 
     <!-- Modals -->
-    <!-- Return Action Modal (Approve/Disapprove) -->
+    <!-- Return Action Modal -->
     <div id="returnActionModal" class="modal">
         <div class="modal-content" style="max-width: 450px;">
             <button class="close-modal-btn" onclick="closeModal('returnActionModal')"><i class="fas fa-times"></i></button>
@@ -974,10 +976,10 @@
                 
                 <div class="form-full dynamic-list-wrapper">
                     <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; color: var(--dark-color); font-weight: 600;">
-                        Product Images / Videos
+                        Product Media (Images/Videos/Embeds)
                         <button type="button" class="btn-icon-add" onclick="addMediaField()"><i class="fas fa-plus"></i></button>
                     </label>
-                    <div class="dynamic-list-header"><span style="width:80px;">Type</span><span style="flex:1;">Media URL</span><span style="width:32px; text-align:center;"></span></div>
+                    <div class="dynamic-list-header"><span style="width:100px;">Type</span><span style="flex:1;">Media URL / Code</span><span style="width:32px; text-align:center;"></span></div>
                     <div id="mediaContainer" class="dynamic-list"></div>
                 </div>
 
@@ -1169,7 +1171,10 @@
                 
                 <div class="form-group hidden" id="catImageGroup">
                     <label for="categoryImage">Category Image URL/Text</label>
-                    <input type="text" id="categoryImage" class="form-control" placeholder="Image info or https://...">
+                    <div style="display:flex; gap:5px;">
+                        <input type="text" id="categoryImage" class="form-control" placeholder="Image info or https://...">
+                        <button type="button" class="btn btn-secondary" style="margin:0; width:auto; padding:0 15px; border-radius: 6px;" onclick="triggerUpload(this)"><i class="fas fa-upload"></i></button>
+                    </div>
                 </div>
 
                 <div class="form-row" style="margin-top: 30px;">
@@ -1241,7 +1246,10 @@
                     
                     <div class="form-group">
                         <label for="popUpBannerLogo">Visual Media (Image URL/Text)</label>
-                        <input type="text" id="popUpBannerLogo" class="form-control">
+                        <div style="display:flex; gap:5px;">
+                            <input type="text" id="popUpBannerLogo" class="form-control">
+                            <button type="button" class="btn btn-secondary" style="margin:0; width:auto; padding:0 15px; border-radius: 6px;" onclick="triggerUpload(this)"><i class="fas fa-upload"></i></button>
+                        </div>
                     </div>
                     
                     <div class="form-row" id="popUpAdPrices" style="margin-top: 15px;">
@@ -1289,9 +1297,21 @@
             <button class="close-modal-btn" onclick="closeModal('gatewayModal')"><i class="fas fa-times"></i></button>
             <h3 id="gatewayModalTitle" style="font-size: 22px; margin-bottom: 25px;">Payment Gateway Integration</h3>
             <form id="gatewayForm">
-                <div class="form-group"><label for="gatewayLogo">Gateway Logo (URL/Text)</label><input type="text" id="gatewayLogo" class="form-control"></div>
+                <div class="form-group">
+                    <label for="gatewayLogo">Gateway Logo (URL/Text)</label>
+                    <div style="display:flex; gap:5px;">
+                        <input type="text" id="gatewayLogo" class="form-control">
+                        <button type="button" class="btn btn-secondary" style="margin:0; width:auto; padding:0 15px; border-radius: 6px;" onclick="triggerUpload(this)"><i class="fas fa-upload"></i></button>
+                    </div>
+                </div>
                 <div class="form-group"><label for="gatewayMobileNo">Mobile Banking Number</label><input type="text" id="gatewayMobileNo" class="form-control" placeholder="e.g. +8801..."></div>
-                <div class="form-group"><label for="gatewayBanner">Banner (Image URL/Text)</label><input type="text" id="gatewayBanner" class="form-control" placeholder="Image info or https://..."></div>
+                <div class="form-group">
+                    <label for="gatewayBanner">Banner (Image URL/Text)</label>
+                    <div style="display:flex; gap:5px;">
+                        <input type="text" id="gatewayBanner" class="form-control" placeholder="Image info or https://...">
+                        <button type="button" class="btn btn-secondary" style="margin:0; width:auto; padding:0 15px; border-radius: 6px;" onclick="triggerUpload(this)"><i class="fas fa-upload"></i></button>
+                    </div>
+                </div>
                 
                 <div class="form-group"><label for="gatewayName">Service Name</label><input type="text" id="gatewayName" class="form-control" required></div>
                 
@@ -1375,16 +1395,17 @@
 
     <!-- Invoice Modal -->
     <div id="invoiceModal" class="modal">
-        <div class="modal-content" style="max-width: 650px; border-radius: 8px;">
-            <button class="close-modal-btn print-hide" onclick="closeModal('invoiceModal')"><i class="fas fa-times"></i></button>
-            <div class="print-hide" style="display:flex; justify-content:space-between; align-items: center; margin-bottom: 20px;">
-                <h3 style="font-size: 22px;">Billing Paper</h3>
+        <div class="modal-content" style="max-width: 850px; padding: 0; background: transparent; box-shadow: none; border: none;">
+            <div class="print-hide" style="background: var(--light-color); padding: 20px; border-radius: 8px; margin-bottom: 20px; display:flex; justify-content:space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <h3 style="font-size: 22px; margin: 0;">Billing Paper</h3>
                 <div style="display:flex; gap: 10px;">
                     <button class="btn btn-secondary" onclick="printInvoice()" style="margin-top:0; padding: 10px 15px; border-radius: 6px;"><i class="fas fa-print"></i> Print</button>
-                    <button class="btn btn-primary" onclick="downloadInvoice()" style="padding: 10px 15px; border-radius: 6px;"><i class="fas fa-download"></i> Download</button>
+                    <button class="btn btn-primary" onclick="downloadInvoice()" style="padding: 10px 15px; border-radius: 6px; margin-top:0;"><i class="fas fa-download"></i> Download</button>
+                    <button class="btn btn-danger" onclick="closeModal('invoiceModal')" style="padding: 10px 15px; border-radius: 6px; margin-top:0;"><i class="fas fa-times"></i> Close</button>
                 </div>
             </div>
             
+            <!-- Exact A4 Sized wrapper for Print & Download -->
             <div id="invoicePrintArea">
                 <!-- Data will be populated by JS -->
             </div>
@@ -1426,7 +1447,7 @@
         let adminSeoKeywords = [];
         let adminRestrictedKeywords = [];
         
-        let dashChart = null; // Variable for ChartJS instance
+        let dashChart = null; 
 
         let isEditingProduct = false;
         let editingProductId = null;
@@ -1542,7 +1563,6 @@
                 dashboard.classList.remove('hidden');
                 loadAllFirebaseData();
                 
-                // History Management on load
                 const initialPage = location.hash.replace('#', '') || localStorage.getItem('adminCurrentPage') || 'dashboard';
                 navigateToPage(initialPage, false);
                 history.replaceState({ page: initialPage }, '', `#${initialPage}`);
@@ -1614,7 +1634,14 @@
             activeProds.forEach(p => {
                 const imgData = p.images && p.images.length ? p.images[0] : '';
                 const imgUrl = typeof imgData === 'string' ? imgData : (imgData.url || '');
-                const imgTag = (typeof imgData === 'object' && imgData.type === 'video') ? `<video src="${imgUrl}" style="width: 100%; height: 80px; object-fit: cover; border-radius: 6px; margin-bottom: 8px;" muted></video>` : `<img src="${imgUrl}" style="width: 100%; height: 80px; object-fit: cover; border-radius: 6px; margin-bottom: 8px;">`;
+                let imgTag = '';
+                if(typeof imgData === 'object' && imgData.type === 'video') {
+                     imgTag = `<video src="${imgUrl}" style="width: 100%; height: 80px; object-fit: cover; border-radius: 6px; margin-bottom: 8px;" muted></video>`;
+                } else if(typeof imgData === 'object' && imgData.type === 'embed') {
+                     imgTag = `<div style="width: 100%; height: 80px; display:flex; align-items:center; justify-content:center; background:var(--light-gray); border-radius: 6px; margin-bottom: 8px;"><i class="fas fa-code"></i></div>`;
+                } else {
+                     imgTag = `<img src="${imgUrl}" style="width: 100%; height: 80px; object-fit: cover; border-radius: 6px; margin-bottom: 8px;">`;
+                }
                 
                 const isSelected = p.id === currentVal ? 'border-color: var(--primary-color); background: rgba(59,130,246,0.1);' : 'border-color: #e2e8f0; background: #fff;';
                 grid.innerHTML += `
@@ -1673,7 +1700,6 @@
 
         // Initialize UI Events and Editor
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Summernote Rich Text Editors with full functionality
             $('#heroDesc, #footerAddress, #footerAbout, #productDescription').summernote({
                 placeholder: 'Type here...',
                 tabsize: 2,
@@ -1699,7 +1725,6 @@
                 }
             });
 
-            // Populate Return Refund Select Options dynamically
             const rrSelect = document.getElementById('returnRefundTime');
             if (rrSelect) {
                 let optionsHTML = '<optgroup label="Hours">';
@@ -1710,7 +1735,6 @@
                 rrSelect.innerHTML = optionsHTML;
             }
 
-            // Populate Order Cancellation Number Options dynamically
             const ocSelect = document.getElementById('orderCancelTimeValue');
             if (ocSelect) {
                 let optionsHTML = '';
@@ -1718,7 +1742,6 @@
                 ocSelect.innerHTML = optionsHTML;
             }
 
-            // Populate Delivery Days Wheels dynamically
             const minDaysSelect = document.getElementById('deliveryMinDays');
             const maxDaysSelect = document.getElementById('deliveryMaxDays');
             if (minDaysSelect && maxDaysSelect) {
@@ -1805,7 +1828,7 @@
                 document.getElementById('modalTitle').textContent = 'Add New Product';
                 document.querySelector('#productForm button[type="submit"]').textContent = 'Save Product';
                 productForm.reset();
-                $('#productDescription').summernote('code', ''); // Reset WYSIWYG
+                $('#productDescription').summernote('code', ''); 
                 resetSEO();
                 
                 document.getElementById('sizeColorContainer').innerHTML = ''; 
@@ -1920,12 +1943,10 @@
             appearanceSettingsForm.addEventListener('submit', saveSlidesAndSocials);
             document.getElementById('restrictedKeywordsForm').addEventListener('submit', saveRestrictedKeywords);
             
-            // New Forms Listeners
             document.getElementById('returnActionForm').addEventListener('submit', handleReturnActionSubmit);
             document.getElementById('addReturnReasonForm').addEventListener('submit', handleReturnReasonSubmit);
             document.getElementById('addCancelReasonForm').addEventListener('submit', handleCancelReasonSubmit);
             
-            // Handover Form Listener
             document.getElementById('handoverForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 showLoader();
@@ -1965,7 +1986,7 @@
             showLoader();
             try {
                 await loadSettings();
-                await loadSpyDetector(); // Spy Detector Fetch Call
+                await loadSpyDetector(); 
                 loadCategories();
                 loadProducts();
                 loadOrders();
@@ -1981,7 +2002,6 @@
             }
         }
         
-        // Spy Detector State & Core Setup
         async function loadSpyDetector() {
             db.collection('settings').doc('spyDetector').onSnapshot(doc => {
                 if(doc.exists) {
@@ -2010,20 +2030,17 @@
             adminCustomers.forEach(c => {
                 if (c.isBlocked && c.blockUntil === 'permanent') return;
 
-                // Check if already on active 1-day spy block to avoid immediate re-trigger
                 if (c.isBlocked && c.blockReason && c.blockReason.includes('Spy Detector') && c.blockUntil !== 'permanent') {
                     if (new Date(c.blockUntil) > new Date()) return;
                 }
 
                 let violation = null;
 
-                // 1. Check Restricted Keywords in user profile (Name, email, search logs etc)
                 if (adminRestrictedKeywords && adminRestrictedKeywords.length > 0) {
                     const checkStr = JSON.stringify(c).toLowerCase();
                     for (let kw of adminRestrictedKeywords) {
                         if (kw.trim() && checkStr.includes(kw.toLowerCase().trim())) {
                             let possibleViolation = `Restricted Keyword Used: ${kw}`;
-                            // Check if this specific violation was forgiven by admin
                             let isForgiven = c.forgivenSpyReasons && c.forgivenSpyReasons.some(r => r.includes(possibleViolation));
                             if (!isForgiven) {
                                 violation = possibleViolation;
@@ -2033,7 +2050,6 @@
                     }
                 }
 
-                // 2. Check 5+ Order Cancellations Today
                 if (!violation) {
                     let userCancelsToday = adminOrders.filter(o => {
                         let isUserOrder = (o.userId === c.id) || (o.customer === c.name) || (o.customerEmail === c.email);
@@ -2070,14 +2086,12 @@
             let penaltyLabel = '';
 
             if (strike === 0) {
-                // 1st offense = 1 Day Block
                 let d = new Date();
                 d.setDate(d.getDate() + 1);
                 blockUntil = d.toISOString();
                 penaltyLabel = `1-Day Block`;
                 reason = `Spy Detector (1st Strike): ` + reason;
             } else {
-                // 2nd offense or more = Permanent Block
                 blockUntil = 'permanent';
                 penaltyLabel = `Permanent Block`;
                 reason = `Spy Detector (Permanent): ` + reason;
@@ -2091,7 +2105,6 @@
                     spyStrikeCount: newStrike
                 });
                 
-                // Add to session log
                 const timeStr = new Date().toLocaleTimeString();
                 spySessionLogs.unshift({
                     time: timeStr,
@@ -2144,6 +2157,10 @@
                 const doc = await db.collection('settings').doc('general').get();
                 if(doc.exists) {
                     const data = doc.data();
+                    
+                    document.getElementById('uploadApiKey').value = data.uploadApiKey || '';
+                    document.getElementById('uploadFolder').value = data.uploadFolder || '';
+
                     document.getElementById('siteName').value = data.siteName || '';
                     document.getElementById('domainName').value = data.domainName || '';
                     document.getElementById('logoUrl').value = data.logoUrl || '';
@@ -2160,7 +2177,6 @@
                     document.getElementById('sidebarStoreName').innerHTML = `<i class="fas fa-bolt" style="color:var(--warning-color)"></i> ${data.siteName || 'Admin'}`;
                 }
 
-                // Load Hero Slides
                 const slidesSnap = await db.collection('heroSlides').orderBy('order').get();
                 const bannerContainer = document.getElementById('bannerContainer');
                 bannerContainer.innerHTML = '';
@@ -2169,7 +2185,6 @@
                     addBannerField(s.src, d.id);
                 });
 
-                // Load Socials
                 const socialsSnap = await db.collection('socials').get();
                 const socialsContainer = document.getElementById('socialsContainer');
                 socialsContainer.innerHTML = '';
@@ -2178,7 +2193,6 @@
                     addSocialField(s.iconClass, s.url, d.id);
                 });
                 
-                // Load Restricted Keywords
                 const resDoc = await db.collection('settings').doc('restricted').get();
                 if(resDoc.exists) {
                     adminRestrictedKeywords = resDoc.data().keywords || [];
@@ -2288,9 +2302,11 @@
                 const imgType = typeof imgData === 'string' ? 'image' : (imgData.type || 'image');
                 
                 let imgHtml = '';
-                if (imgUrl) {
+                if (imgUrl || imgType === 'embed') {
                     if (imgType === 'video') {
                         imgHtml = `<video src="${imgUrl}" style="width:45px; height:45px; border-radius:8px; object-fit:cover; border: 1px solid var(--border-color);" muted></video>`;
+                    } else if (imgType === 'embed') {
+                        imgHtml = `<div style="width:45px; height:45px; border-radius:8px; background:var(--light-gray); border: 1px solid var(--border-color); display:flex; align-items:center; justify-content:center;"><i class="fas fa-code" style="color:var(--gray-color);"></i></div>`;
                     } else {
                         imgHtml = `<img src="${imgUrl}" style="width:45px; height:45px; border-radius:8px; object-fit:cover; border: 1px solid var(--border-color);">`;
                     }
@@ -2803,11 +2819,9 @@
             filteredCustomers.forEach(c => {
                 let isCurrentlyBlocked = c.isBlocked;
                 
-                // Auto-unblock logic check
                 if (isCurrentlyBlocked && c.blockUntil && c.blockUntil !== 'permanent') {
                     if (new Date(c.blockUntil) < new Date()) {
                         isCurrentlyBlocked = false;
-                        // Silently update database to unblock
                         db.collection('users').doc(c.id).update({
                             isBlocked: false,
                             blockUntil: firebase.firestore.FieldValue.delete(),
@@ -3248,7 +3262,7 @@
                     
                     let popupImgObj = selectedProd && selectedProd.images && selectedProd.images.length ? selectedProd.images[0] : '';
                     payload.bannerLogo = typeof popupImgObj === 'string' ? popupImgObj : (popupImgObj.url || '');
-                    payload.image = payload.bannerLogo; // Explicitly adding image
+                    payload.image = payload.bannerLogo;
                     
                     payload.price = selectedProd ? selectedProd.price : 0;
                     payload.originalPrice = selectedProd ? selectedProd.originalPrice : 0;
@@ -3305,6 +3319,8 @@
             showLoader();
             try {
                 const payload = {
+                    uploadApiKey: document.getElementById('uploadApiKey').value,
+                    uploadFolder: document.getElementById('uploadFolder').value,
                     siteName: document.getElementById('siteName').value,
                     domainName: document.getElementById('domainName').value,
                     logoUrl: document.getElementById('logoUrl').value,
@@ -3660,11 +3676,15 @@
         // Dynamic Field Generators
         window.addMediaField = function(url='', type='image') {
             const html = `<div class="dynamic-item media-item">
-                <select class="form-control media-type" style="width: 80px; flex: none;">
+                <select class="form-control media-type" style="width: 100px; flex: none;">
                     <option value="image" ${type==='image'?'selected':''}>Image</option>
-                    <option value="video" ${type==='video'?'selected':''}>Video</option>
+                    <option value="video" ${type==='video'?'selected':''}>Video URL</option>
+                    <option value="embed" ${type==='embed'?'selected':''}>Embed Code</option>
                 </select>
-                <input type="text" class="form-control product-media-input" placeholder="Media URL" value="${url}" style="flex:1;">
+                <div style="display:flex; flex:1; gap:5px;">
+                    <input type="text" class="form-control product-media-input" placeholder="Media URL / Embed Code" value="${url.replace(/"/g, '&quot;')}" style="flex:1;">
+                    <button type="button" class="btn btn-secondary" style="margin:0; width:auto; padding:0 15px; border-radius: 6px;" onclick="triggerUpload(this)"><i class="fas fa-upload"></i></button>
+                </div>
                 <button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button>
             </div>`;
             document.getElementById('mediaContainer').insertAdjacentHTML('beforeend', html);
@@ -3695,7 +3715,10 @@
                     <input type="number" class="form-control var-orig-price" placeholder="Orig. Price (৳)" value="${origPrice}" style="flex: 1; min-width: 90px;">
                     <input type="number" class="form-control var-curr-price" placeholder="Discount Price (৳)" value="${currPrice}" style="flex: 1; min-width: 90px;">
                     <input type="number" class="form-control var-stock" placeholder="Stock Qty" value="${stock}" style="flex: 1; min-width: 80px; ${stockDisplay}">
-                    <input type="text" class="form-control var-image" placeholder="Image URL (Optional)" value="${image}" style="flex: 2; min-width: 150px;">
+                    <div style="display:flex; flex: 2; min-width: 150px; gap:5px;">
+                        <input type="text" class="form-control var-image" placeholder="Image URL (Optional)" value="${image}" style="flex:1;">
+                        <button type="button" class="btn btn-secondary" style="margin:0; width:auto; padding:0 10px; border-radius: 6px;" onclick="triggerUpload(this)"><i class="fas fa-upload"></i></button>
+                    </div>
                     <button type="button" class="btn-icon-remove" onclick="this.closest('.variant-block').remove()" style="margin-top: 2px;">-</button>
                 </div>
                 <div class="sizes-container" id="sizes_${varId}" style="padding-left: 15px; border-left: 2px solid var(--primary-color);">
@@ -3732,7 +3755,10 @@
         
         window.addBannerField = function(src="", id="") {
             const html = `<div class="dynamic-item" data-id="${id}">
-                <input type="text" class="form-control banner-url" placeholder="Image URL Source" value="${src}" style="flex:1;">
+                <div style="display:flex; flex:1; gap:5px;">
+                    <input type="text" class="form-control banner-url" placeholder="Image URL Source" value="${src}" style="flex:1;">
+                    <button type="button" class="btn btn-secondary" style="margin:0; width:auto; padding:0 15px; border-radius: 6px;" onclick="triggerUpload(this)"><i class="fas fa-upload"></i></button>
+                </div>
                 <button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button>
             </div>`;
             document.getElementById('bannerContainer').insertAdjacentHTML('beforeend', html);
@@ -3927,7 +3953,6 @@
                 let deliveryFee = parseFloat(o.deliveryFee) || 0;
                 let discountAmt = parseFloat(o.discount) || 0;
                 
-                // Fallback if structured data is not available
                 if (!o.deliveryFee && !o.discount) {
                     let diff = total - subTotal;
                     if (diff >= 0) {
@@ -4021,30 +4046,71 @@
             showLoader();
             const element = document.getElementById('invoicePrintArea');
             
-            // Clone the element and append to body to ensure visibility during render
-            const clone = element.cloneNode(true);
-            clone.style.position = 'absolute';
-            clone.style.top = '-9999px';
-            clone.style.left = '-9999px';
-            clone.style.width = '800px'; 
-            clone.style.background = 'white';
-            clone.style.color = 'black';
-            clone.style.padding = '20px';
-            document.body.appendChild(clone);
-
             const opt = {
                 margin:       [0.5, 0.5, 0.5, 0.5],
                 filename:     'Invoice_Order.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
             
-            html2pdf().set(opt).from(clone).save().then(() => {
-                document.body.removeChild(clone);
+            html2pdf().set(opt).from(element).save().then(() => {
                 hideLoader();
             });
         };
+
+        // --- GLOBAL API IMAGE UPLOAD SYSTEM ---
+        let currentUploadTarget = null;
+        const hiddenFileInput = document.createElement('input');
+        hiddenFileInput.type = 'file';
+        hiddenFileInput.accept = 'image/*,video/*';
+        hiddenFileInput.style.display = 'none';
+        document.body.appendChild(hiddenFileInput);
+
+        window.triggerUpload = function(btnElement) {
+            currentUploadTarget = btnElement.parentElement.querySelector('input[type="text"]');
+            hiddenFileInput.click();
+        };
+
+        hiddenFileInput.addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if(!file || !currentUploadTarget) return;
+
+            showLoader();
+            try {
+                const doc = await db.collection('settings').doc('general').get();
+                let apiKey = doc.exists ? (doc.data().uploadApiKey || '') : '';
+                let folder = doc.exists ? (doc.data().uploadFolder || '') : '';
+
+                if(!apiKey) {
+                    alert("Please add Upload API Key in General Settings.");
+                    hideLoader();
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('image', file);
+                if(folder) formData.append('name', folder + '_' + file.name.split('.')[0]);
+
+                // Default ImgBB API Endpoint
+                const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                if(result.success) {
+                    currentUploadTarget.value = result.data.url;
+                } else {
+                    alert("Upload Failed: " + result.error.message);
+                }
+            } catch(err) {
+                alert("Upload Error: " + err.message);
+            } finally {
+                hiddenFileInput.value = ''; // reset file
+                hideLoader();
+            }
+        });
     </script>
 </body>
 </html>
