@@ -14,11 +14,12 @@
         label { display: block; font-weight: bold; margin-bottom: 5px; color: #444; font-size: 14px; }
         input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 15px; box-sizing: border-box; outline: none; }
         input:focus, select:focus { border-color: #007bff; }
+        .note { font-size: 11px; color: #dc3545; margin-top: 5px; display: block; }
         
         .btn-test { width: 100%; background: #007bff; color: white; border: none; padding: 15px; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
         .btn-test:hover { background: #0056b3; }
         
-        .result-box { margin-top: 25px; background: #282c34; color: #98c379; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 14px; min-height: 100px; overflow-wrap: break-word; }
+        .result-box { margin-top: 25px; background: #282c34; color: #98c379; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 14px; min-height: 100px; overflow-wrap: break-word; white-space: pre-wrap; }
         .status { text-align: center; font-weight: bold; margin-top: 10px; }
         .status.success { color: #28a745; }
         .status.error { color: #dc3545; }
@@ -29,6 +30,13 @@
 <div class="tester-card">
     <h2>API Testing Tool</h2>
     <p class="subtitle">আপনার পেমেন্ট সিস্টেম লাইভ টেস্ট করুন</p>
+
+    <!-- নতুন যুক্ত করা URL ফিল্ড -->
+    <div class="form-group">
+        <label>Gateway Base URL (আপনার লাইভ সাইটের লিংক)</label>
+        <input type="url" id="gatewayUrl" placeholder="https://yourdomain.com" value="https://yourdomain.com">
+        <span class="note">* শেষে স্ল্যাশ (/) দিবেন না। এই ডোমেনেই আপনার p2p ফোল্ডারটি হোস্ট করা থাকতে হবে।</span>
+    </div>
 
     <div class="form-group">
         <label>Merchant ID (ডাটাবেজে যা ম্যানুয়ালি সেভ করেছেন)</label>
@@ -54,9 +62,7 @@
 
     <div class="form-group" style="margin-top: 20px;">
         <label>Response / Result:</label>
-        <div class="result-box" id="resultBox">
-            Waiting for payment response...
-        </div>
+        <div class="result-box" id="resultBox">Waiting for payment response...</div>
     </div>
 </div>
 
@@ -74,19 +80,26 @@
       storageBucket: "autopay-api.firebasestorage.app",
       messagingSenderId: "560907178391",
       appId: "1:560907178391:web:aa544aedc91be464cd74d2"
+      // ... অন্যান্য তথ্য
     };
-    // Initialize Firebase
+    
     if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
     }
     const db = firebase.firestore();
 
     function startTestPayment() {
+        const baseUrl = document.getElementById('gatewayUrl').value.trim();
         const mId = document.getElementById('merchantId').value.trim();
         const amount = document.getElementById('payAmount').value.trim();
         const method = document.getElementById('payMethod').value;
         const resultBox = document.getElementById('resultBox');
         const statusMsg = document.getElementById('status-msg');
+
+        if (!baseUrl.startsWith('http')) {
+            alert("অনুগ্রহ করে সঠিক Gateway URL দিন (http বা https সহ)।");
+            return;
+        }
 
         if (!mId || !amount || amount <= 0) {
             alert("অনুগ্রহ করে Merchant ID এবং সঠিক টাকার পরিমাণ দিন।");
@@ -103,12 +116,14 @@
             merchantId: mId
         }));
 
-        // ২. URL নির্ধারণ করা (লোকাল অথবা লাইভ ডোমেন থেকে)
-        const baseUrl = window.location.origin; // এটি স্বয়ংক্রিয়ভাবে আপনার সাইটের ডোমেন নিয়ে নিবে
-        const endpoint = method === 'bkash' ? 'p2p/bkash-payment.html' : 'p2p/nagad-payment.html';
-        const paymentUrl = `${baseUrl}/${endpoint}?data=${payload}`;
+        // ২. URL তৈরি করা (আপনার ইনপুট দেওয়া ডোমেন অনুযায়ী)
+        const endpoint = method === 'bkash' ? '/p2p/bkash-payment.html' : '/p2p/nagad-payment.html';
+        
+        // baseUrl এর শেষে যদি স্ল্যাশ থাকে তা রিমুভ করে দেওয়া হচ্ছে
+        const cleanBaseUrl = baseUrl.replace(/\/$/, ""); 
+        const paymentUrl = `${cleanBaseUrl}${endpoint}?data=${payload}`;
 
-        resultBox.innerText = `Opening popup for ${method}...\nOrderID: ${orderId}`;
+        resultBox.innerText = `Opening popup URL:\n${paymentUrl}\n\nOrderID: ${orderId}`;
         statusMsg.innerText = "পেমেন্ট উইন্ডো ওপেন হয়েছে...";
         statusMsg.className = "status";
 
@@ -120,14 +135,12 @@
 
         // ৪. পপআপ থেকে ডাটা শোনার জন্য Listener
         window.addEventListener("message", function handler(event) {
-            // যদি রেসপন্স সাকসেস হয়
             if (event.data && event.data.status === 'SUCCESS') {
                 const responseData = event.data.data;
                 
                 statusMsg.innerText = "পেমেন্ট সফলভাবে ভেরিফাই হয়েছে!";
                 statusMsg.className = "status success";
                 
-                // রেজাল্ট বক্সে JSON শো করানো
                 resultBox.innerText = JSON.stringify(responseData, null, 4);
                 
                 // ডাটাবেজে টেস্ট অর্ডার সেভ করা
@@ -142,9 +155,8 @@
                 });
 
                 popup.close();
-                window.removeEventListener("message", handler); // Listener রিমুভ করা
+                window.removeEventListener("message", handler);
             } 
-            // যদি ইউজার পপআপ কেটে দেয়
             else if (event.data && event.data.status === 'CLOSED') {
                 statusMsg.innerText = "পেমেন্ট বাতিল করা হয়েছে।";
                 statusMsg.className = "status error";
