@@ -60,6 +60,11 @@
 
     <!-- Step 2 -->
     <div id="page-2" class="hidden">
+        <!-- নতুন অর্ডার আইডি ফিল্ড যুক্ত করা হলো -->
+        <div class="form-group">
+            <label>অর্ডার আইডি (Order ID)</label>
+            <input type="text" id="orderIdInput" value="ORD-12345">
+        </div>
         <div class="form-group">
             <label>টাকার পরিমাণ (Amount)</label>
             <input type="number" id="payAmount" value="10">
@@ -86,7 +91,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
 <script>
-    // ক্লায়েন্টের ডাটাবেজ
     const clientFirebaseConfig = {
         apiKey: "AIzaSyAtfjaSSlaDYUsogHrvBn_6MbEbM-M-O4Q",
         authDomain: "test-g-login-nur.firebaseapp.com",
@@ -114,7 +118,6 @@
         btn.disabled = true; btn.innerText = "Saving...";
 
         try {
-            // ফিল্ডের নামগুলো index.html এর মতই রাখা হলো
             await clientDb.collection('Merchants').doc(mId).set({
                 merchantId: mId,
                 bkashApi: bApi,
@@ -139,33 +142,42 @@
         document.getElementById('page-2').classList.remove('hidden');
         document.getElementById('step2-indicator').classList.add('active');
     }
+    
     function goToPage1() {
         document.getElementById('page-2').classList.add('hidden');
         document.getElementById('page-1').classList.remove('hidden');
         document.getElementById('step2-indicator').classList.remove('active');
+        document.getElementById('summaryBox').style.display = "none";
     }
 
     function proceedPayment() {
+        const orderId = document.getElementById('orderIdInput').value.trim();
         const amount = document.getElementById('payAmount').value.trim();
         const method = document.getElementById('payMethod').value;
+        
+        if(!orderId) return alert("অর্ডার আইডি দিন!");
         if(!amount || amount <= 0) return alert("সঠিক টাকার পরিমাণ দিন!");
 
-        const orderId = "ORD-" + Math.floor(Math.random() * 90000 + 10000);
         const selectedApiKey = method === 'bkash' ? savedConfig.bkashApi : savedConfig.nagadApi;
 
-        // **গুরুত্বপূর্ণ:** রিকুয়েস্টে এই ওয়েবসাইটের ডোমেইন পাঠানো হচ্ছে
         const payload = btoa(JSON.stringify({
             amount: amount,
-            orderId: orderId,
+            orderId: orderId, // ইউজার ইনপুট থেকে নেওয়া অর্ডার আইডি পাঠানো হচ্ছে
             merchantId: savedConfig.merchantId,
             apiKey: selectedApiKey,
             method: method,
-            domain: window.location.origin // e.g. aistudio.google.com
+            domain: window.location.origin 
         }));
 
         const cleanBaseUrl = savedConfig.gatewayUrl.replace(/\/$/, ""); 
         const endpoint = method === 'bkash' ? '/p2p/bkash-payment.html' : '/p2p/nagad-payment.html';
         const paymentUrl = `${cleanBaseUrl}${endpoint}?data=${payload}`;
+
+        const pBtn = document.getElementById('proceedBtn');
+        pBtn.innerText = "Awaiting Response...";
+        pBtn.disabled = true;
+
+        document.getElementById('summaryBox').style.display = "none";
 
         const width = 400; const height = 650;
         const left = (window.innerWidth / 2) - (width / 2);
@@ -173,23 +185,58 @@
         const popup = window.open(paymentUrl, "AutoPayTest", `width=${width},height=${height},top=${top},left=${left}`);
 
         window.addEventListener("message", function handler(event) {
+            pBtn.innerText = "Proceed to Pay";
+            pBtn.disabled = false;
+
             if (event.data) {
-                const box = document.getElementById('summaryBox');
-                const head = document.getElementById('summaryHeader');
-                const body = document.getElementById('summaryBody');
-                box.style.display = "block";
-                
-                if (event.data.status === 'SUCCESS') {
-                    head.innerText = "SUCCESS"; head.style.color = "green";
-                    body.innerHTML = `TrxID: ${event.data.data.trxID} <br> Amount: ৳${event.data.data.amount}`;
-                } else {
-                    head.innerText = "FAILED"; head.style.color = "red";
-                    body.innerHTML = `Error: ${event.data.message}`;
-                }
+                showSummary(event.data, amount, orderId, method);
                 window.removeEventListener("message", handler);
             }
         });
     }
+
+    function showSummary(response, amount, orderId, method) {
+        const box = document.getElementById('summaryBox');
+        const header = document.getElementById('summaryHeader');
+        const body = document.getElementById('summaryBody');
+
+        box.style.display = "block";
+        body.innerHTML = ""; 
+
+        if (response.status === 'SUCCESS') {
+            header.innerText = "PAYMENT SUCCESSFUL";
+            header.style.color = "green";
+            
+            const data = response.data;
+            body.innerHTML = `
+                <div class="summary-row"><span>Status:</span> <strong style="color:#28a745;">SUCCESS</strong></div>
+                <div class="summary-row"><span>Order ID:</span> <strong>${data.orderId}</strong></div>
+                <div class="summary-row"><span>Transaction ID:</span> <strong>${data.trxID}</strong></div>
+                <div class="summary-row"><span>Amount:</span> <strong>৳ ${data.amount}</strong></div>
+                <div class="summary-row"><span>Method:</span> <strong>${data.method || method.toUpperCase()}</strong></div>
+            `;
+        } 
+        else if (response.status === 'FAILED') {
+            header.innerText = "PAYMENT FAILED";
+            header.style.color = "red";
+            
+            body.innerHTML = `
+                <div class="summary-row"><span>Status:</span> <strong style="color:#dc3545;">FAILED</strong></div>
+                <div class="summary-row"><span>Order ID:</span> <strong>${orderId}</strong></div>
+                <div class="summary-row"><span>Error Message:</span> <strong>${response.message || 'Unknown Error'}</strong></div>
+            `;
+        } 
+        else if (response.status === 'CLOSED') {
+            header.innerText = "WINDOW CLOSED";
+            header.style.color = "#ffc107";
+            
+            body.innerHTML = `
+                <div class="summary-row"><span>Status:</span> <strong style="color:#ffc107;">CANCELLED</strong></div>
+                <div class="summary-row"><span>Reason:</span> <strong>User closed the popup manually.</strong></div>
+            `;
+        }
+    }
 </script>
+
 </body>
 </html>
