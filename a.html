@@ -1292,57 +1292,58 @@
         </div>
     </div>
 
+    <!-- Payment Gateway Modal -->
     <div id="gatewayModal" class="modal">
         <div class="modal-content">
             <button class="close-modal-btn" onclick="closeModal('gatewayModal')"><i class="fas fa-times"></i></button>
             <h3 id="gatewayModalTitle" style="font-size: 22px; margin-bottom: 25px;">Payment Gateway Integration</h3>
             <form id="gatewayForm">
                 <div class="form-group">
-                    <label for="gatewayLogo">Gateway Logo (URL/Text)</label>
-                    <div style="display:flex; gap:5px;">
-                        <input type="text" id="gatewayLogo" class="form-control">
-                        <button type="button" class="btn btn-secondary" style="margin:0; width:auto; padding:0 15px; border-radius: 6px;" onclick="triggerUpload(this)"><i class="fas fa-upload"></i></button>
-                    </div>
-                </div>
-                <div class="form-group"><label for="gatewayMobileNo">Mobile Banking Number</label><input type="text" id="gatewayMobileNo" class="form-control" placeholder="e.g. +8801..."></div>
-                <div class="form-group">
-                    <label for="gatewayBanner">Banner (Image URL/Text)</label>
-                    <div style="display:flex; gap:5px;">
-                        <input type="text" id="gatewayBanner" class="form-control" placeholder="Image info or https://...">
-                        <button type="button" class="btn btn-secondary" style="margin:0; width:auto; padding:0 15px; border-radius: 6px;" onclick="triggerUpload(this)"><i class="fas fa-upload"></i></button>
-                    </div>
-                </div>
-                
-                <div class="form-group"><label for="gatewayName">Service Name</label><input type="text" id="gatewayName" class="form-control" required></div>
-                
-                <div class="form-group">
-                    <label for="gatewayColor">Gateway Color Selection</label>
-                    <select id="gatewayColor" class="form-control">
-                        <option value="Red">Red</option>
-                        <option value="Pink">Pink</option>
-                        <option value="Green">Green</option>
-                        <option value="Blue">Blue</option>
-                        <option value="Sky Blue">Sky Blue</option>
-                        <option value="Purple">Purple</option>
-                        <option value="Yellow">Yellow</option>
+                    <label>Integration Type</label>
+                    <select id="gatewayType" class="form-control" onchange="toggleGatewayFields()">
+                        <option value="p2p">P2P</option>
+                        <option value="b2b">B2B</option>
                     </select>
                 </div>
-                
-                <div class="form-full">
-                    <div style="display: flex; align-items: center; margin-bottom: 20px; background: var(--light-gray); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color);">
-                        <label class="switch">
-                            <input type="checkbox" id="gatewayPluginToggle" onchange="toggleGatewayPlugin()">
-                            <span class="slider"></span>
-                        </label>
-                        <span style="font-weight: 600; color: var(--dark-color);">Enable Hosted Plugin URL</span>
+
+                <!-- Common Fields -->
+                <div class="form-group">
+                    <label for="gatewayLogo">Logo (URL/Text)</label>
+                    <div style="display:flex; gap:5px;">
+                        <input type="text" id="gatewayLogo" class="form-control" required>
+                        <button type="button" class="btn btn-secondary" style="margin:0; width:auto; padding:0 15px; border-radius: 6px;" onclick="triggerUpload(this)"><i class="fas fa-upload"></i></button>
                     </div>
                 </div>
                 
-                <div class="form-group hidden" id="gatewayPluginGroup">
-                    <label for="gatewayPlugin">External API/Plugin URL or Text</label>
-                    <input type="text" id="gatewayPlugin" class="form-control" placeholder="URL or text...">
+                <div class="form-group">
+                    <label for="gatewayName">Name / Gateway Name</label>
+                    <input type="text" id="gatewayName" class="form-control" required>
                 </div>
-                
+
+                <!-- P2P Fields -->
+                <div id="p2pFields">
+                    <div class="form-group">
+                        <label for="gatewayMerchantId">Merchant ID</label>
+                        <input type="text" id="gatewayMerchantId" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="gatewayApiKey">API Key</label>
+                        <input type="text" id="gatewayApiKey" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="gatewayBaseUrl">Base URL</label>
+                        <input type="text" id="gatewayBaseUrl" class="form-control">
+                    </div>
+                </div>
+
+                <!-- B2B Fields -->
+                <div id="b2bFields" class="hidden">
+                    <div class="form-group">
+                        <label for="gatewayTextBox">Text Box</label>
+                        <textarea id="gatewayTextBox" class="form-control" rows="3" placeholder="Additional details or instructions..."></textarea>
+                    </div>
+                </div>
+
                 <div class="form-row" style="margin-top: 30px;">
                     <button type="submit" class="btn btn-primary">✔</button>
                     <button type="button" class="btn btn-secondary" onclick="closeModal('gatewayModal')" style="margin-top: 0;">✘</button>
@@ -1674,13 +1675,14 @@
             }
         };
 
-        window.toggleGatewayPlugin = function() {
-            if (document.getElementById('gatewayPluginToggle').checked) {
-                document.getElementById('gatewayPluginGroup').classList.remove('hidden');
-                document.getElementById('gatewayPlugin').required = false;
+        window.toggleGatewayFields = function() {
+            const type = document.getElementById('gatewayType').value;
+            if (type === 'p2p') {
+                document.getElementById('p2pFields').classList.remove('hidden');
+                document.getElementById('b2bFields').classList.add('hidden');
             } else {
-                document.getElementById('gatewayPluginGroup').classList.add('hidden');
-                document.getElementById('gatewayPlugin').required = false;
+                document.getElementById('p2pFields').classList.add('hidden');
+                document.getElementById('b2bFields').classList.remove('hidden');
             }
         };
 
@@ -1885,13 +1887,10 @@
                 isEditingGateway = false;
                 editingGatewayId = null;
                 document.getElementById('gatewayModalTitle').textContent = 'Payment Gateway Integration';
-                document.querySelector('#gatewayForm button[type="submit"]').textContent = 'Save Gateway';
+                document.querySelector('#gatewayForm button[type="submit"]').textContent = '✔';
                 gatewayForm.reset();
-                document.getElementById('gatewayMobileNo').value = '';
-                document.getElementById('gatewayBanner').value = '';
-                document.getElementById('gatewayColor').value = 'Red';
-                document.getElementById('gatewayPluginToggle').checked = false;
-                toggleGatewayPlugin();
+                document.getElementById('gatewayType').value = 'p2p';
+                toggleGatewayFields();
                 openModal('gatewayModal');
             });
 
@@ -2928,13 +2927,12 @@
         function populateGatewaysTable() {
             gatewaysTable.innerHTML = '';
             adminGateways.forEach(g => {
-                let linkHref = g.integrationType === 'plugin' ? g.pluginUrl : '#';
-                let linkType = g.integrationType === 'plugin' ? 'API Plugin' : 'Offline/Manual';
+                let linkType = g.type === 'b2b' ? 'B2B' : 'P2P';
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td><img src="${g.logo}" width="45" height="45" style="object-fit:contain; border-radius:8px; border: 1px solid var(--border-color); background: #fff; padding: 2px;"></td>
                     <td style="font-weight: 600; font-size: 15px;">${g.name}</td>
-                    <td><a href="${linkHref}" target="_blank" style="color:var(--primary-color); font-weight: 500;">${linkType} <i class="fas fa-external-link-alt" style="font-size: 10px;"></i></a></td>
+                    <td><span style="color:var(--primary-color); font-weight: 500;">${linkType.toUpperCase()}</span></td>
                     <td>
                         <button class="btn-action btn-edit" onclick="editGateway('${g.id}')"><i class="fas fa-edit"></i></button>
                         <button class="btn-action btn-delete" onclick="deleteGateway('${g.id}')"><i class="fas fa-trash"></i></button>
@@ -3295,16 +3293,21 @@
             e.preventDefault();
             showLoader();
             try {
-                const isPlugin = document.getElementById('gatewayPluginToggle').checked;
+                const type = document.getElementById('gatewayType').value;
                 const payload = {
+                    type: type,
                     logo: document.getElementById('gatewayLogo').value,
-                    mobileNo: document.getElementById('gatewayMobileNo').value,
-                    banner: document.getElementById('gatewayBanner').value,
                     name: document.getElementById('gatewayName').value,
-                    color: document.getElementById('gatewayColor').value,
-                    integrationType: isPlugin ? 'plugin' : 'none',
-                    pluginUrl: isPlugin ? document.getElementById('gatewayPlugin').value : ''
                 };
+                
+                if (type === 'p2p') {
+                    payload.merchantId = document.getElementById('gatewayMerchantId').value;
+                    payload.apiKey = document.getElementById('gatewayApiKey').value;
+                    payload.baseUrl = document.getElementById('gatewayBaseUrl').value;
+                } else {
+                    payload.textBox = document.getElementById('gatewayTextBox').value;
+                }
+
                 if(isEditingGateway && editingGatewayId) {
                     await db.collection('paymentGateways').doc(editingGatewayId).update(payload);
                 } else {
@@ -3542,21 +3545,20 @@
         window.editGateway = function(id) {
             const g = adminGateways.find(x => x.id === id);
             if(!g) return;
+            document.getElementById('gatewayType').value = g.type || 'p2p';
+            toggleGatewayFields();
+
             document.getElementById('gatewayLogo').value = g.logo || '';
-            document.getElementById('gatewayMobileNo').value = g.mobileNo || '';
-            document.getElementById('gatewayBanner').value = g.banner || '';
             document.getElementById('gatewayName').value = g.name || '';
-            document.getElementById('gatewayColor').value = g.color || 'Red';
             
-            const isPlugin = g.integrationType === 'plugin';
-            document.getElementById('gatewayPluginToggle').checked = isPlugin;
-            toggleGatewayPlugin();
-            
-            if (isPlugin) {
-                document.getElementById('gatewayPlugin').value = g.pluginUrl || '';
+            if (g.type === 'p2p' || !g.type) {
+                document.getElementById('gatewayMerchantId').value = g.merchantId || '';
+                document.getElementById('gatewayApiKey').value = g.apiKey || '';
+                document.getElementById('gatewayBaseUrl').value = g.baseUrl || '';
             } else {
-                document.getElementById('gatewayPlugin').value = '';
+                document.getElementById('gatewayTextBox').value = g.textBox || '';
             }
+
             isEditingGateway = true; editingGatewayId = id;
             document.getElementById('gatewayModalTitle').textContent = 'Modify Payment Gateway';
             openModal('gatewayModal');
