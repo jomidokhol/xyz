@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoPay Advanced Tester</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eef2f3; padding: 20px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; margin: 0; }
+        .tester-card { background: white; width: 100%; max-width: 500px; padding: 30px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); }
+        h2 { text-align: center; color: #333; margin-bottom: 5px; }
+        p.subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 25px; }
+        
+        /* Stepper CSS */
+        .stepper { display: flex; justify-content: center; margin-bottom: 25px; gap: 10px; }
+        .step { padding: 8px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; background: #eee; color: #888; }
+        .step.active { background: #007bff; color: #fff; }
+        .step.completed { background: #28a745; color: #fff; }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #444; font-size: 13px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; box-sizing: border-box; outline: none; }
+        input:focus, select:focus { border-color: #007bff; }
+        .note { font-size: 11px; color: #dc3545; margin-top: 5px; display: block; }
+        
+        .btn { width: 100%; color: white; border: none; padding: 14px; border-radius: 5px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn-save { background: #28a745; }
+        .btn-save:hover { background: #218838; }
+        .btn-next { background: #17a2b8; display: none; }
+        .btn-next:hover { background: #138496; }
+        .btn-proceed { background: #007bff; }
+        .btn-proceed:hover { background: #0056b3; }
+        
+        /* Summary Box */
+        .summary-box { display: none; margin-top: 20px; border: 2px solid #eee; border-radius: 8px; overflow: hidden; }
+        .summary-header { background: #f8f9fa; padding: 15px; text-align: center; font-weight: bold; font-size: 18px; border-bottom: 2px solid #eee; }
+        .summary-header.success { color: #28a745; border-bottom-color: #28a745; }
+        .summary-header.failed { color: #dc3545; border-bottom-color: #dc3545; }
+        .summary-header.closed { color: #ffc107; border-bottom-color: #ffc107; }
+        .summary-body { padding: 15px; font-size: 14px; line-height: 1.8; color: #333; }
+        .summary-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #ddd; padding: 5px 0; }
+        .summary-row:last-child { border-bottom: none; }
+        
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div class="tester-card">
+    <h2>Advanced Test Environment</h2>
+    <p class="subtitle">API টেস্টিং এবং কনফিগারেশন</p>
+
+    <!-- Stepper -->
+    <div class="stepper">
+        <div class="step active" id="step1-indicator">Step 1: Setup</div>
+        <div class="step" id="step2-indicator">Step 2: Payment</div>
+    </div>
+
+    <!-- ================= PAGE 1 ================= -->
+    <div id="page-1">
+        <div class="form-group">
+            <label>Gateway Base URL (পপআপের মূল লিংক)</label>
+            <input type="url" id="gatewayUrl" placeholder="https://yourdomain.com">
+            <span class="note">* যেখানে p2p ফোল্ডার আছে। শেষে (/) দিবেন না।</span>
+        </div>
+        <div class="form-group">
+            <label>Merchant ID</label>
+            <input type="text" id="merchantId" placeholder="e.g. MER-123456" value="MER-123456">
+        </div>
+        <div class="form-group">
+            <label>bKash API Key</label>
+            <input type="text" id="bkashApi" placeholder="e.g. BK-XXXXXX" value="BK-TESTAPI">
+        </div>
+        <div class="form-group">
+            <label>Nagad API Key</label>
+            <input type="text" id="nagadApi" placeholder="e.g. NG-XXXXXX" value="NG-TESTAPI">
+        </div>
+
+        <button class="btn btn-save" id="saveBtn" onclick="saveToDatabase()">Save Configuration</button>
+        <button class="btn btn-next" id="nextBtn" onclick="goToPage2()">Next Step &rarr;</button>
+        <div id="db-msg" style="text-align:center; font-size:13px; font-weight:bold; margin-top:10px;"></div>
+    </div>
+
+    <!-- ================= PAGE 2 ================= -->
+    <div id="page-2" class="hidden">
+        <div class="form-group">
+            <label>টাকার পরিমাণ (Amount)</label>
+            <input type="number" id="payAmount" value="10">
+        </div>
+        <div class="form-group">
+            <label>পেমেন্ট মেথড</label>
+            <select id="payMethod">
+                <option value="bkash">bKash</option>
+                <option value="nagad">Nagad</option>
+            </select>
+        </div>
+
+        <button class="btn btn-proceed" id="proceedBtn" onclick="proceedPayment()">Proceed to Pay</button>
+        <button class="btn" style="background:#6c757d; margin-top:10px;" onclick="goToPage1()">&larr; Back to Setup</button>
+
+        <!-- Summary Section -->
+        <div class="summary-box" id="summaryBox">
+            <div class="summary-header" id="summaryHeader">Status</div>
+            <div class="summary-body" id="summaryBody">
+                <!-- Data will be injected here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+<script>
+    // ==========================================
+    // আপনার অরিজিনাল ফায়ারবেজ কনফিগারেশন দিন
+    // ==========================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyCFNNXY4oRMg8AjhWa9PqCN8gdILmwdRk0",
+      authDomain: "autopay-api.firebaseapp.com",
+      databaseURL: "https://autopay-api-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "autopay-api",
+      storageBucket: "autopay-api.firebasestorage.app",
+      messagingSenderId: "560907178391",
+      appId: "1:560907178391:web:aa544aedc91be464cd74d2"
+      // ... অন্যান্য তথ্য
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // গ্লোবাল ভেরিয়েবল
+    let savedConfig = {};
+
+    window.onload = function() {
+        document.getElementById('gatewayUrl').value = window.location.origin;
+    };
+
+    // --- STEP 1: Save to Database ---
+    async function saveToDatabase() {
+        const btn = document.getElementById('saveBtn');
+        const msg = document.getElementById('db-msg');
+        
+        const gUrl = document.getElementById('gatewayUrl').value.trim();
+        const mId = document.getElementById('merchantId').value.trim();
+        const bApi = document.getElementById('bkashApi').value.trim();
+        const nApi = document.getElementById('nagadApi').value.trim();
+
+        if(!gUrl || !mId || !bApi || !nApi) {
+            msg.innerText = "সবগুলো ঘর পূরণ করুন!"; msg.style.color = "red"; return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Saving to Database...";
+
+        // আপনার কারেন্ট ডোমেন (যেখান থেকে রিকুয়েস্ট যাবে)
+        const currentDomain = window.location.origin;
+
+        try {
+            await db.collection('Merchants').doc(mId).set({
+                merchantId: mId,
+                bkashApi: bApi,
+                nagadApi: nApi,
+                domain: currentDomain, // Security checking domain
+                email: "tester@autopay.com",
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            // ডাটা লোকালি সেভ করে রাখা হচ্ছে Step 2 এর জন্য
+            savedConfig = { gatewayUrl: gUrl, merchantId: mId, bkashApi: bApi, nagadApi: nApi };
+
+            msg.innerText = "ডাটাবেজে সফলভাবে সেভ হয়েছে!";
+            msg.style.color = "#28a745";
+            
+            btn.style.display = "none";
+            document.getElementById('nextBtn').style.display = "block";
+            document.getElementById('step1-indicator').classList.add('completed');
+
+        } catch (error) {
+            msg.innerText = "Error: " + error.message;
+            msg.style.color = "red";
+            btn.disabled = false;
+            btn.innerText = "Save Configuration";
+        }
+    }
+
+    // --- Navigation ---
+    function goToPage2() {
+        document.getElementById('page-1').classList.add('hidden');
+        document.getElementById('page-2').classList.remove('hidden');
+        document.getElementById('step2-indicator').classList.add('active');
+        // Reset summary if returning
+        document.getElementById('summaryBox').style.display = "none";
+    }
+
+    function goToPage1() {
+        document.getElementById('page-2').classList.add('hidden');
+        document.getElementById('page-1').classList.remove('hidden');
+        document.getElementById('step2-indicator').classList.remove('active');
+        document.getElementById('summaryBox').style.display = "none";
+    }
+
+    // --- STEP 2: Proceed Payment ---
+    function proceedPayment() {
+        const amount = document.getElementById('payAmount').value.trim();
+        const method = document.getElementById('payMethod').value;
+
+        if(!amount || amount <= 0) return alert("সঠিক টাকার পরিমাণ দিন!");
+
+        const orderId = "ORD-" + Math.floor(Math.random() * 90000 + 10000);
+        const selectedApiKey = method === 'bkash' ? savedConfig.bkashApi : savedConfig.nagadApi;
+
+        // Payload for Popup
+        const payload = btoa(JSON.stringify({
+            amount: amount,
+            orderId: orderId,
+            merchantId: savedConfig.merchantId,
+            apiKey: selectedApiKey,
+            method: method
+        }));
+
+        const cleanBaseUrl = savedConfig.gatewayUrl.replace(/\/$/, ""); 
+        const endpoint = method === 'bkash' ? '/p2p/bkash-payment.html' : '/p2p/nagad-payment.html';
+        const paymentUrl = `${cleanBaseUrl}${endpoint}?data=${payload}`;
+
+        // Reset Button
+        const pBtn = document.getElementById('proceedBtn');
+        pBtn.innerText = "Awaiting Response...";
+        pBtn.disabled = true;
+
+        // Hide old summary
+        document.getElementById('summaryBox').style.display = "none";
+
+        // Open Popup
+        const width = 400; const height = 650;
+        const left = (window.innerWidth / 2) - (width / 2);
+        const top = (window.innerHeight / 2) - (height / 2);
+        const popup = window.open(paymentUrl, "AutoPayTest", `width=${width},height=${height},top=${top},left=${left}`);
+
+        // Listen for Response
+        window.addEventListener("message", function handler(event) {
+            // Restore button
+            pBtn.innerText = "Proceed to Pay";
+            pBtn.disabled = false;
+
+            if (event.data) {
+                showSummary(event.data, amount, orderId, method);
+                window.removeEventListener("message", handler);
+            }
+        });
+    }
+
+    // --- Result Summary Display ---
+    function showSummary(response, amount, orderId, method) {
+        const box = document.getElementById('summaryBox');
+        const header = document.getElementById('summaryHeader');
+        const body = document.getElementById('summaryBody');
+
+        box.style.display = "block";
+        body.innerHTML = ""; // Clear previous
+
+        if (response.status === 'SUCCESS') {
+            header.innerText = "PAYMENT SUCCESSFUL";
+            header.className = "summary-header success";
+            
+            const data = response.data;
+            body.innerHTML = `
+                <div class="summary-row"><span>Status:</span> <strong style="color:#28a745;">SUCCESS</strong></div>
+                <div class="summary-row"><span>Order ID:</span> <strong>${data.orderId}</strong></div>
+                <div class="summary-row"><span>Transaction ID:</span> <strong>${data.trxID}</strong></div>
+                <div class="summary-row"><span>Amount:</span> <strong>৳ ${data.amount}</strong></div>
+                <div class="summary-row"><span>Method:</span> <strong>${data.method || method.toUpperCase()}</strong></div>
+            `;
+        } 
+        else if (response.status === 'FAILED') {
+            header.innerText = "PAYMENT FAILED";
+            header.className = "summary-header failed";
+            
+            body.innerHTML = `
+                <div class="summary-row"><span>Status:</span> <strong style="color:#dc3545;">FAILED</strong></div>
+                <div class="summary-row"><span>Order ID:</span> <strong>${orderId}</strong></div>
+                <div class="summary-row"><span>Error Message:</span> <strong>${response.message || 'Unknown Error'}</strong></div>
+            `;
+        } 
+        else if (response.status === 'CLOSED') {
+            header.innerText = "WINDOW CLOSED";
+            header.className = "summary-header closed";
+            
+            body.innerHTML = `
+                <div class="summary-row"><span>Status:</span> <strong style="color:#ffc107;">CANCELLED</strong></div>
+                <div class="summary-row"><span>Reason:</span> <strong>User closed the popup manually.</strong></div>
+            `;
+        }
+    }
+</script>
+
+</body>
+</html>
