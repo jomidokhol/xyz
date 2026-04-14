@@ -3911,6 +3911,7 @@
                 navigateTo('return-request');
             };
 
+            window.currentResumeOrderId = null;
             window.resumePayment = function(orderId) {
                 const order = window.userOrders.find(o => o.id === orderId);
                 if(!order) return;
@@ -3932,6 +3933,7 @@
                 updateCartCount();
                 renderCartItems();
                 window.currentOrderSubtotal = order.amount;
+                window.currentResumeOrderId = orderId; 
                 navigateTo('checkout');
             };
 
@@ -4355,115 +4357,6 @@
                     grid.appendChild(card);
                 });
             }
-
-            window.initiatePaymentValidation = async function() {
-                const inputField = document.getElementById('paymentTrxID');
-                const rawTrx = inputField.value;
-                const trxID = rawTrx.trim(); 
-
-                if (!trxID) {
-                    showCustomAlert("Error", "অনুগ্রহ করে ট্রানজেকশন আইডি দিন।");
-                    inputField.focus();
-                    return;
-                }
-
-                if (rawTrx.includes(' ') && rawTrx.trim().includes(' ')) {
-                    showCustomAlert("Error", "ট্রানজেকশন আইডিতে স্পেস গ্রহণযোগ্য নয়।");
-                    return;
-                }
-
-                const regex = /^[a-zA-Z0-9]{6,15}$/;
-                if (!trxID.match(regex)) {
-                    showCustomAlert("Error", "সঠিক ট্রানজেকশন আইডি প্রদান করুন।");
-                    return;
-                }
-
-                document.getElementById('payment-loading-overlay').style.display = 'flex';
-                const btn = document.getElementById('paymentVerifyBtn');
-                btn.disabled = true;
-                btn.innerText = "যাচাইকরণ চলছে...";
-
-                try {
-                    const savedParams = JSON.parse(sessionStorage.getItem('pendingOrderParams'));
-                    if (!savedParams) throw new Error("Order session lost. Please try again.");
-                    
-                    const targetAmount = savedParams.subtotal + savedParams.shippingFee - savedParams.couponDiscount;
-                    const paymentMethodText = savedParams.paymentMethodText.toLowerCase();
-
-                    let gatewayCode = '';
-                    if (paymentMethodText.includes('bkash')) gatewayCode = 'bKash';
-                    else if (paymentMethodText.includes('nagad')) gatewayCode = 'NAGAD';
-                    else gatewayCode = 'UNKNOWN'; 
-
-                    // Open popup logic from test.html
-                    const gatewayObj = paymentGateways.find(g => g.name.toLowerCase() === paymentMethodText);
-                    if (!gatewayObj || !gatewayObj.baseUrl || !gatewayObj.merchantId || !gatewayObj.apiKey) {
-                        throw new Error("Payment Gateway configuration is missing.");
-                    }
-
-                    const payload = btoa(JSON.stringify({
-                        amount: Math.floor(targetAmount),
-                        orderId: savedParams.orderNo.toString(),
-                        merchantId: gatewayObj.merchantId,
-                        apiKey: gatewayObj.apiKey,
-                        method: gatewayCode.toLowerCase(),
-                        domain: window.location.origin
-                    }));
-
-                    const cleanBaseUrl = gatewayObj.baseUrl.replace(/\/$/, ""); 
-                    const endpoint = gatewayCode === 'bKash' ? '/p2p/bkash-payment.html' : '/p2p/nagad-payment.html';
-                    const paymentUrl = `${cleanBaseUrl}${endpoint}?data=${payload}`;
-
-                    document.getElementById('payment-loading-overlay').style.display = 'none';
-                    btn.innerText = "Awaiting Response...";
-
-                    const width = 400; const height = 650;
-                    const left = (window.innerWidth / 2) - (width / 2);
-                    const top = (window.innerHeight / 2) - (height / 2);
-                    const popup = window.open(paymentUrl, "AutoPayTest", `width=${width},height=${height},top=${top},left=${left}`);
-
-                    window.addEventListener("message", function handler(event) {
-                        if (event.data) {
-                            window.removeEventListener("message", handler);
-                            
-                            if (event.data.status === 'SUCCESS') {
-                                btn.innerText = "VERIFY";
-                                btn.disabled = false;
-                                showNotification("পেমেন্ট সফল হয়েছে।");
-                                
-                                executeOrderPlacement(
-                                    savedParams.orderAddress, 
-                                    savedParams.selectedItems, 
-                                    savedParams.paymentMethodText, 
-                                    savedParams.subtotal, 
-                                    savedParams.shippingFee, 
-                                    0, 
-                                    savedParams.couponDiscount,
-                                    event.data.data.trxID,
-                                    null, 
-                                    savedParams.orderNo
-                                );
-                                sessionStorage.removeItem('pendingOrderParams');
-                            } else if (event.data.status === 'FAILED') {
-                                showCustomAlert("Payment Failed", "পেমেন্ট সম্পন্ন হয়নি। আবার চেষ্টা করুন।");
-                                btn.disabled = false;
-                                btn.innerText = "VERIFY";
-                            } else if (event.data.status === 'CLOSED') {
-                                showCustomAlert("Payment Cancelled", "আপনি পেমেন্ট উইন্ডোটি বন্ধ করে দিয়েছেন।");
-                                btn.disabled = false;
-                                btn.innerText = "VERIFY";
-                            }
-                        }
-                    });
-
-                } catch (error) {
-                    document.getElementById('payment-loading-overlay').style.display = 'none';
-                    console.error(error);
-                    showCustomAlert("Error", "পেমেন্ট যাচাইকরণে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
-                    btn.disabled = false;
-                    btn.innerText = "VERIFY";
-                }
-            };
 
             function getStarRating(rating) { 
                 let stars = '';
@@ -6043,21 +5936,6 @@
                 closeDatePicker();
             }
 
-            window.cancelPaymentProcess = function() {
-                sessionStorage.removeItem('pendingOrderParams');
-                navigateTo('checkout');
-                showNotification('Payment cancelled. Your order was not placed.');
-            };
-
-            window.copyPaymentNumber = function() {
-                const gwMobile = document.getElementById('paymentAdminNumber').textContent;
-                if(gwMobile && gwMobile !== '...') {
-                    navigator.clipboard.writeText(gwMobile).then(() => {
-                        showNotification('নম্বরটি কপি করা হয়েছে!');
-                    });
-                }
-            };
-
             function setupEventListeners() {
                 let adTimer;
                 let timeLeft = 5;
@@ -6253,6 +6131,7 @@
                     document.getElementById('osTotal').textContent = `৳${formatPrice(Math.max(0, newTotal))}`;
                 });
 
+                // ======= অটোমেটিক পপ-আপ পেমেন্ট লজিক =======
                 checkoutForm.addEventListener('submit', async function(e) {
                     e.preventDefault();
 
@@ -6290,72 +6169,85 @@
                         pendingOrderParams = { orderAddress, selectedItems, paymentMethodText, subtotal, shippingFee, codFee, couponDiscount: window.appliedCouponDiscount };
                         document.getElementById('codConfirmOverlay').classList.add('active');
                     } else {
+                        // Digital Payment (bKash/NAGAD) Integration with Popup
                         const gatewayObj = paymentGateways.find(g => g.name === paymentMethodText);
-                        if (gatewayObj) {
+                        
+                        if (gatewayObj && (gatewayObj.name.toLowerCase().includes('bkash') || gatewayObj.name.toLowerCase().includes('nagad'))) {
                             const total = finalSubtotal + shippingFee;
-                            const orderNo = Math.floor(Math.random() * 1000000000000) + 1000000000000;
-
-                            const orderParams = { 
-                                orderAddress, 
-                                selectedItems, 
-                                paymentMethodText, 
-                                subtotal, 
-                                shippingFee, 
-                                codFee: 0, 
-                                couponDiscount: window.appliedCouponDiscount, 
-                                orderNo 
-                            };
-                            sessionStorage.setItem('pendingOrderParams', JSON.stringify(orderParams));
-
-                            let themeColor = colorMap[gatewayObj.color] || colorMap['Pink'];
-                            document.documentElement.style.setProperty('--payment-theme-color', themeColor);
-
-                            document.getElementById('paymentHeaderTitle').innerText = `${gatewayObj.name} Checkout`;
-                            document.getElementById('paymentGwName').innerText = `${gatewayObj.name} Payment`;
-                            document.getElementById('paymentAmountDisplay').innerText = formatPrice(total);
-                            document.getElementById('paymentInstructionAmount').innerText = formatPrice(total);
+                            const orderNo = window.currentResumeOrderId || (Math.floor(Math.random() * 1000000000000) + 1000000000000);
                             
-                            // Old implementation used gateway mobileNo. Now, pop-up does not need inline instructions,
-                            // but we keep UI consistent and transition to popup. 
-                            document.getElementById('paymentAdminNumber').innerText = gatewayObj.mobileNo || 'No Number Provided';
-
-                            let gwNameLower = gatewayObj.name.toLowerCase();
-                            let step1Text = "আপনার মোবাইল ব্যাংকিং অ্যাপে প্রবেশ করুন।";
-                            if (gwNameLower.includes('bkash')) {
-                                step1Text = "*247# ডায়াল করে আপনার bKash মোবাইল মেনুতে যান অথবা bKash অ্যাপে যান।";
-                            } else if (gwNameLower.includes('nagad')) {
-                                step1Text = "*167# ডায়াল করে আপনার Nagad মোবাইল মেনুতে যান অথবা Nagad অ্যাপে যান।";
-                            } else if (gwNameLower.includes('rocket')) {
-                                step1Text = "*322# ডায়াল করে আপনার Rocket মোবাইল মেনুতে যান অথবা Rocket অ্যাপে যান।";
-                            } else if (gwNameLower.includes('upay')) {
-                                step1Text = "*268# ডায়াল করে আপনার Upay মোবাইল মেনুতে যান অথবা Upay অ্যাপে যান।";
+                            if (!gatewayObj.baseUrl || !gatewayObj.merchantId || !gatewayObj.apiKey) {
+                                showCustomAlert("Error", "Payment Gateway configuration is missing.");
+                                return;
                             }
 
-                            document.getElementById('payInstructionStep1').innerText = step1Text;
-                            document.getElementById('payInstructionGwName1').innerText = gatewayObj.name;
-                            document.getElementById('payInstructionGwName2').innerText = gatewayObj.name;
+                            let gatewayCode = gatewayObj.name.toLowerCase().includes('bkash') ? 'bKash' : 'NAGAD';
+                            
+                            const payload = btoa(JSON.stringify({
+                                amount: Math.floor(total),
+                                orderId: orderNo.toString(),
+                                merchantId: gatewayObj.merchantId,
+                                apiKey: gatewayObj.apiKey,
+                                method: gatewayCode.toLowerCase(),
+                                domain: window.location.origin
+                            }));
 
-                            if (gatewayObj.banner) {
-                                document.getElementById('paymentGwBanner').src = gatewayObj.banner;
-                                document.getElementById('paymentGwBanner').style.display = 'inline-block';
-                                document.getElementById('paymentWalletIconImg').src = gatewayObj.banner;
-                                document.getElementById('paymentWalletIconImg').style.display = 'block';
-                                document.getElementById('paymentWalletIconFallback').style.display = 'none';
-                            } else {
-                                document.getElementById('paymentGwBanner').style.display = 'none';
-                                document.getElementById('paymentWalletIconImg').style.display = 'none';
-                                document.getElementById('paymentWalletIconFallback').style.display = 'block';
-                            }
+                            const cleanBaseUrl = gatewayObj.baseUrl.replace(/\/$/, ""); 
+                            const endpoint = gatewayCode === 'bKash' ? '/p2p/bkash-payment.html' : '/p2p/nagad-payment.html';
+                            const paymentUrl = `${cleanBaseUrl}${endpoint}?data=${payload}`;
 
-                            document.getElementById('paymentTrxID').value = '';
-                            const btn = document.getElementById('paymentVerifyBtn');
-                            btn.disabled = false;
-                            btn.innerText = "VERIFY";
+                            const proceedBtn = document.querySelector('#checkoutForm button[type="submit"]');
+                            const originalBtnText = proceedBtn.innerHTML;
+                            proceedBtn.innerHTML = '<span>Processing Payment...</span>';
+                            proceedBtn.disabled = true;
 
-                            // We still show the payment info page, but it's just a placeholder where 
-                            // the user clicks VERIFY to trigger initiatePaymentValidation() popup.
-                            navigateTo('payment');
+                            const width = 400; const height = 650;
+                            const left = (window.innerWidth / 2) - (width / 2);
+                            const top = (window.innerHeight / 2) - (height / 2);
+                            const popup = window.open(paymentUrl, "AutoPayTest", `width=${width},height=${height},top=${top},left=${left}`);
+
+                            const checkPopupClosed = setInterval(() => {
+                                if (popup.closed) {
+                                    clearInterval(checkPopupClosed);
+                                    if(proceedBtn.disabled) {
+                                        proceedBtn.innerHTML = originalBtnText;
+                                        proceedBtn.disabled = false;
+                                        showCustomAlert("Payment Failed!", "Try Again");
+                                    }
+                                }
+                            }, 1000);
+
+                            window.addEventListener("message", function handler(event) {
+                                if (event.data) {
+                                    window.removeEventListener("message", handler);
+                                    clearInterval(checkPopupClosed);
+                                    proceedBtn.innerHTML = originalBtnText;
+                                    proceedBtn.disabled = false;
+                                    
+                                    if (event.data.status === 'SUCCESS' && event.data.data.orderId === orderNo.toString()) {
+                                        showNotification("পেমেন্ট সফল হয়েছে।");
+                                        executeOrderPlacement(
+                                            orderAddress, 
+                                            selectedItems, 
+                                            paymentMethodText, 
+                                            subtotal, 
+                                            shippingFee, 
+                                            0, 
+                                            window.appliedCouponDiscount,
+                                            event.data.data.trxID,
+                                            null, 
+                                            orderNo
+                                        );
+                                        window.currentResumeOrderId = null;
+                                    } else if (event.data.status === 'FAILED') {
+                                        showCustomAlert("Payment Failed!", "Try Again");
+                                    } else if (event.data.status === 'CLOSED') {
+                                        showCustomAlert("Payment Cancelled", "Payment Failed! Try Again");
+                                    }
+                                }
+                            });
                         } else {
+                            // Fallback for missing configurations or other gateways
                             executeOrderPlacement(orderAddress, selectedItems, paymentMethodText, subtotal, shippingFee, 0, window.appliedCouponDiscount);
                         }
                     }
@@ -6708,16 +6600,6 @@
                 await loadInitialData();
                 init();
                 startOfferTimer();
-
-                // Check and handle interrupted payment process gracefully
-                if (sessionStorage.getItem('interruptedPayment')) {
-                    sessionStorage.removeItem('interruptedPayment');
-                    sessionStorage.removeItem('pendingOrderParams');
-                    setTimeout(() => {
-                        navigateTo('order-summary');
-                        showCustomAlert('Payment Unsuccessful', 'Your payment process was interrupted. Please try again.');
-                    }, 800);
-                }
 
                 // Initial Watermark pass for any pre-loaded images
                 document.querySelectorAll('img').forEach(applyWatermarkToElement);
