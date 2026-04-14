@@ -19,7 +19,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-    <!-- FCM For Push Notifications -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging-compat.js"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
@@ -599,86 +598,6 @@
         .track-title { font-weight: 600; font-size: 0.95rem; color: #374151; margin-bottom: 3px; line-height: 1.2; }
         .track-desc { font-size: 0.8rem; color: #9ca3af; line-height: 1.3; }
         .track-time { text-align: right; font-size: 0.75rem; color: #6b7280; width: 65px; line-height: 1.2; font-weight: 500; }
-
-        .payment-page-bg {
-            background-color: #f4f6f9;
-            background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
-            background-size: 20px 20px;
-            min-height: 100vh;
-            padding-top: 20px;
-            padding-bottom: 20px;
-        }
-        #payment-page.active {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-        }
-        .payment-container { width: 100%; max-width: 400px; margin: 0 auto; padding: 0 15px; }
-        .payment-header-icons {
-            display: flex; justify-content: space-between; padding: 15px 20px;
-            background: white; border-radius: 8px; margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05); align-items: center;
-        }
-        .payment-header-icons span { color: #5f6368; cursor: pointer; font-size: 18px; font-weight: bold;}
-        .payment-header-title { font-weight: 600; color: #333; font-size: 1.1rem;}
-        .payment-logo-section { text-align: center; margin-bottom: 20px; min-height: 60px; display: flex; justify-content: center; align-items: center;}
-        .payment-logo-section img { max-width: 240px; max-height: 80px; object-fit: contain; border-radius: 8px;}
-        .payment-white-box {
-            background: white; padding: 15px 20px; border-radius: 8px; margin-bottom: 10px;
-            display: flex; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            font-weight: 600; color: #444; font-size: 1.1rem;
-        }
-        .payment-wallet-icon {
-            width: 35px; height: 35px; margin-right: 15px; border: 1px solid #ddd;
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 16px; color: var(--payment-theme-color); background: #f9f9f9; overflow: hidden;
-        }
-        .payment-wallet-icon img { width: 100%; height: 100%; object-fit: cover;}
-        
-        .payment-theme-card {
-            background-color: var(--payment-theme-color); color: white; padding: 25px 20px;
-            border-radius: 8px; margin-top: 15px; position: relative; transition: background-color 0.3s;
-        }
-        .payment-section-title { text-align: center; margin-bottom: 20px; font-size: 16px; font-weight: 600; letter-spacing: 0.5px;}
-        .payment-input-group { margin-bottom: 25px; }
-        .payment-input-group input {
-            width: 100%; padding: 14px; border-radius: 6px; border: none;
-            font-size: 15px; outline: none; text-align: center; font-weight: 600; letter-spacing: 1px;
-            font-family: 'Poppins', sans-serif; color: #333;
-        }
-        .payment-input-group input::placeholder { color: #aaa; font-weight: 400; letter-spacing: normal;}
-        
-        .payment-instructions { list-style-type: disc; padding-left: 20px; font-size: 13.5px; line-height: 1.7; font-family: 'Noto Sans Bengali', 'Poppins', sans-serif; color: white; margin-bottom: 0;}
-        .payment-instructions li { position: relative; margin-bottom: 12px; }
-        .payment-instructions li::before { display: none; }
-        .payment-highlight-yellow { color: #ffe600; font-weight: 700; font-size: 14px;}
-        
-        .payment-copy-btn {
-            background: rgba(0, 0, 0, 0.2); border: none;
-            color: white; padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 500;
-            cursor: pointer; margin-left: 8px; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s;
-        }
-        .payment-copy-btn:hover { background: rgba(0, 0, 0, 0.3); }
-        
-        .payment-verify-btn {
-            width: 100%; background-color: #dc2626 !important; color: white; border: none;
-            padding: 16px; font-size: 16px; font-weight: bold; border-radius: 8px; margin-top: 15px;
-            cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: background-color 0.3s, filter 0.3s; font-family: 'Noto Sans Bengali', 'Poppins', sans-serif;
-        }
-        .payment-verify-btn:hover { filter: brightness(0.9); }
-        .payment-verify-btn:disabled { cursor: not-allowed; opacity: 0.7; filter: grayscale(50%);}
-        
-        #payment-loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(255, 255, 255, 0.95); 
-            z-index: 10000; display: none; justify-content: center; align-items: center;
-        }
-        .payment-loader-svg { width: 80px; height: 80px; }
-        .payment-ring { fill: none; stroke: var(--payment-theme-color); stroke-width: 7; stroke-linecap: round; transform-origin: center; opacity: 0.8;}
-        .payment-ring-1 { stroke-dasharray: 200; stroke-dashoffset: 80; animation: spin 1.5s linear infinite; }
-        .payment-ring-2 { stroke-dasharray: 140; stroke-dashoffset: 60; animation: spin 1.2s linear infinite reverse; }
-        .payment-ring-3 { stroke-dasharray: 80; stroke-dashoffset: 40; animation: spin 1s linear infinite; }
 
         /* Handover Bubble */
         .handover-bubble {
@@ -1339,56 +1258,6 @@
                 </div>
             </section>
         </div>
-        
-        <div id="payment-page" class="page-section payment-page-bg">
-            <div class="payment-container">
-                <div class="payment-header-icons">
-                    <span onclick="cancelPaymentProcess()"><i class="fas fa-arrow-left"></i></span>
-                    <div class="payment-header-title" id="paymentHeaderTitle">Payment Checkout</div>
-                    <span onclick="cancelPaymentProcess()"><i class="fas fa-times"></i></span>
-                </div>
-
-                <div class="payment-logo-section">
-                    <img id="paymentGwBanner" src="" alt="Payment Gateway Banner" style="display:none;">
-                </div>
-
-                <div class="payment-white-box">
-                    <div class="payment-wallet-icon">
-                        <i class="fas fa-wallet" id="paymentWalletIconFallback"></i>
-                        <img id="paymentWalletIconImg" src="" style="display:none;">
-                    </div>
-                    <span id="paymentGwName">Payment Method</span>
-                </div>
-
-                <div class="payment-white-box">
-                    <i class="fas fa-money-bill-wave" style="color: var(--payment-theme-color); margin-right: 15px; font-size: 18px;"></i>
-                    <span>৳ <span id="paymentAmountDisplay">0.00</span></span>
-                </div>
-
-                <div class="payment-theme-card" id="paymentThemeCard">
-                    <div class="payment-section-title">ট্রানজেকশন আইডি দিন</div>
-
-                    <div class="payment-input-group">
-                        <input type="text" id="paymentTrxID" placeholder="ট্রানজেকশন আইডি দিন">
-                    </div>
-
-                    <ul class="payment-instructions">
-                        <li id="payInstructionStep1">আপনার মোবাইল ব্যাংকিং অ্যাপে প্রবেশ করুন।</li>
-                        <li>"<span class="payment-highlight-yellow">Send Money</span>" -এ ক্লিক করুন।</li>
-                        <li>
-                            প্রাপক নম্বর হিসেবে এই নম্বরটি লিখুন: <span class="payment-highlight-yellow" id="paymentAdminNumber">...</span>
-                            <button type="button" class="payment-copy-btn" onclick="copyPaymentNumber()"><i class="far fa-copy"></i> Copy</button>
-                        </li>
-                        <li>টাকার পরিমাণ: <span class="payment-highlight-yellow" id="paymentInstructionAmount">0.00</span></li>
-                        <li>নিশ্চিত করতে এখন আপনার <span id="payInstructionGwName1">Gateway</span> মোবাইল মেনু পিন লিখুন।</li>
-                        <li>সবকিছু ঠিক থাকলে, আপনি <span id="payInstructionGwName2">Gateway</span> থেকে একটি নিশ্চিতকরণ বার্তা পাবেন।</li>
-                        <li>এখন উপরের বক্সে আপনার <span class="payment-highlight-yellow">Transaction ID</span> দিন এবং নিচে <span class="payment-highlight-yellow">VERIFY</span> বাটনে ক্লিক করুন।</li>
-                    </ul>
-                </div>
-
-                <button type="button" class="payment-verify-btn" id="paymentVerifyBtn" onclick="initiatePaymentValidation()">VERIFY</button>
-            </div>
-        </div>
 
         <div id="write-review-page" class="page-section">
             <div class="container" style="max-width: 600px; padding: 40px 20px;">
@@ -1765,14 +1634,6 @@
         </div>
     </footer>
 
-    <div id="payment-loading-overlay">
-        <svg class="payment-loader-svg" viewBox="0 0 120 120">
-            <circle class="payment-ring payment-ring-1" cx="60" cy="60" r="50"></circle>
-            <circle class="payment-ring payment-ring-2" cx="60" cy="60" r="35"></circle>
-            <circle class="payment-ring payment-ring-3" cx="60" cy="60" r="20"></circle>
-        </svg>
-    </div>
-
     <!-- Cancel Order Layer -->
     <div class="cancel-overlay" id="cancelOverlay">
         <div class="cancel-modal">
@@ -2096,19 +1957,6 @@
             }
             const db = firebase.firestore();
             const auth = firebase.auth();
-
-            const autoPayFirebaseConfig = {
-                apiKey: "AIzaSyCFNNXY4oRMg8AjhWa9PqCN8gdILmwdRk0",
-                authDomain: "autopay-api.firebaseapp.com",
-                databaseURL: "https://autopay-api-default-rtdb.asia-southeast1.firebasedatabase.app",
-                projectId: "autopay-api",
-                storageBucket: "autopay-api.firebasestorage.app",
-                messagingSenderId: "560907178391",
-                appId: "1:560907178391:web:aa544aedc91be464cd74d2",
-                measurementId: "G-X7D91TPCWL"
-            };
-            const autoPayApp = firebase.initializeApp(autoPayFirebaseConfig, "AutoPayApp");
-            const autoPayDb = autoPayApp.firestore();
 
             const colorMap = {
                 'Red': '#dc2626',
@@ -2662,14 +2510,6 @@
                 return region === 'Outside Dhaka' ? outside : inside;
             }
 
-            window.addEventListener('beforeunload', function (e) {
-                if (document.getElementById('payment-page') && document.getElementById('payment-page').classList.contains('active')) {
-                    sessionStorage.setItem('interruptedPayment', 'true');
-                    e.preventDefault();
-                    e.returnValue = '';
-                }
-            });
-
             async function loadGlobalData() {
                 try {
                     const settingsSnap = await db.collection('settings').doc('general').get();
@@ -3034,7 +2874,7 @@
                             const pageId = path.split('?')[0];
                             const profilePages = ['profile', 'profile-location', 'profile-tracking', 'profile-setup', 'profile-topay', 'profile-toship', 'profile-toreceive', 'profile-toreview', 'profile-returns'];
                             
-                            if (!isLoggedIn && (profilePages.includes(pageId) || pageId === 'checkout' || pageId === 'order-summary' || pageId === 'payment')) {
+                            if (!isLoggedIn && (profilePages.includes(pageId) || pageId === 'checkout' || pageId === 'order-summary')) {
                                 navigateTo('login');
                             }
                         }
@@ -3207,7 +3047,7 @@
                     let finalPageId = path.split('?')[0];
                     const profilePages = ['profile', 'profile-location', 'profile-tracking', 'profile-setup', 'profile-topay', 'profile-toship', 'profile-toreceive', 'profile-toreview', 'profile-returns'];
                     
-                    if (!isLoggedIn && (profilePages.includes(finalPageId) || finalPageId === 'checkout' || finalPageId === 'order-summary' || finalPageId === 'write-review' || finalPageId === 'payment' || finalPageId === 'return-request')) {
+                    if (!isLoggedIn && (profilePages.includes(finalPageId) || finalPageId === 'checkout' || finalPageId === 'order-summary' || finalPageId === 'write-review' || finalPageId === 'return-request')) {
                         finalPageId = 'login';
                     }
 
@@ -3237,17 +3077,9 @@
 
                     const headerEl = document.querySelector('header');
                     const footerEl = document.querySelector('footer');
-                    if (finalPageId === 'payment') {
-                        if(headerEl) headerEl.style.display = 'none';
-                        if(footerEl) footerEl.style.display = 'none';
-                    } else if (document.getElementById('blocked-page').style.display !== 'flex') {
+                    if (document.getElementById('blocked-page').style.display !== 'flex') {
                         if(headerEl) headerEl.style.display = 'block';
                         if(footerEl) footerEl.style.display = 'block';
-                    }
-
-                    if (finalPageId !== 'payment' && sessionStorage.getItem('interruptedPayment')) {
-                        sessionStorage.removeItem('interruptedPayment');
-                        sessionStorage.removeItem('pendingOrderParams');
                     }
 
                     if (imageSliderInterval) {
@@ -3440,7 +3272,6 @@
                 });
             }
             
-            // Overriding fetchUserOrders to handle returnRequests collection & admin message
             window.fetchUserOrders = async function() {
                 if (!isLoggedIn || !currentUser) return;
                 const ordersContainer = document.getElementById('userOrdersList');
@@ -3590,7 +3421,6 @@
 
                                 let returnMsgHtml = '';
                                 
-                                // New Logic: Check returnRequests collection
                                 let matchedReturnReq = userReturnRequests.find(req => req.orderId === order.id && req.productId === navId);
 
                                 if (matchedReturnReq) {
@@ -3623,7 +3453,7 @@
                                         returnMsgHtml = `<div style="margin-top:10px; padding:12px; background:#fee2e2; color:#b91c1c; border-radius:6px; font-size:0.85rem; border:1px solid #fecaca; line-height: 1.5;">
                                             <strong style="font-size: 1rem;">আপনার রিটার্ন & রিফান্ড রিকুয়েষ্ট রিজেক্ট করা হয়েছে।</strong><br>
                                             অর্ডার আইডি: ${order.id}<br>
-                                            আমরা আপনার রিকুয়েষ্ট বিবেচনা করে দেখেছি কিন্তু অত্যান্ত দুঃখের সাথে বলতে হচ্ছে এখানে আমারা কোন সাহায্য করতে পারবো না।, এবং আপনি যে সমস্যার কথা বলেছেন (<b>${reasonStr}</b>) তা এই পণ্যটির সাথে সমঞ্জস্যপূর্ণ নয়।
+                                            আমরা আপনার রিকুয়েষ্ট বিবেচনা করে দেখেছি কিন্তু অত্যান্ত দুঃখের সাথে বলতে হচ্ছে এখানে আমারা কোন সাহায্য করতে পারবো না।, এবং আপনি যে সমস্যার কথা বলেছেন (**${reasonStr}</b>) তা এই পণ্যটির সাথে সমঞ্জস্যপূর্ণ নয়।
                                             ${adminMsg}
                                             <div style="margin-top:12px; display:flex; gap:10px;">
                                                 <button class="btn btn-outline" style="padding:6px 12px; font-size:0.85rem; border-color:#b91c1c; color:#b91c1c; flex:1;" onclick="navigateTo('home')">Go Back Home</button>
@@ -4202,7 +4032,7 @@
                     }
 
                     itemsHtml += `
-                        <div style="display:flex; gap:12px; margin-bottom:10px;">
+                        <div style="display:flex; gap:12px; marginbottom:10px;">
                             <img src="${displayImg}" style="width:60px; height:60px; object-fit:cover; border-radius:6px; border:1px solid #eee;">
                             <div style="flex:1;">
                                 <h4 style="font-size:0.9rem; margin:0 0 4px 0; color:#333; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${item.name}</h4>
@@ -4565,78 +4395,66 @@
                     else if (paymentMethodText.includes('nagad')) gatewayCode = 'NAGAD';
                     else gatewayCode = 'UNKNOWN'; 
 
-                    const snapshot = await autoPayDb.collection('AutoPayMessages')
-                                           .where('sender', 'in', ['bKash', 'NAGAD'])
-                                           .get();
-            
-                    let isPaymentValid = false;
-                    let matchedDocId = null;
+                    // Open popup logic from test.html
+                    const gatewayObj = paymentGateways.find(g => g.name.toLowerCase() === paymentMethodText);
+                    if (!gatewayObj || !gatewayObj.baseUrl || !gatewayObj.merchantId || !gatewayObj.apiKey) {
+                        throw new Error("Payment Gateway configuration is missing.");
+                    }
 
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        const smsText = data.message || "";
-                        const senderName = data.sender || "";
+                    const payload = btoa(JSON.stringify({
+                        amount: Math.floor(targetAmount),
+                        orderId: savedParams.orderNo.toString(),
+                        merchantId: gatewayObj.merchantId,
+                        apiKey: gatewayObj.apiKey,
+                        method: gatewayCode.toLowerCase(),
+                        domain: window.location.origin
+                    }));
 
-                        if (data.used === true) return; 
+                    const cleanBaseUrl = gatewayObj.baseUrl.replace(/\/$/, ""); 
+                    const endpoint = gatewayCode === 'bKash' ? '/p2p/bkash-payment.html' : '/p2p/nagad-payment.html';
+                    const paymentUrl = `${cleanBaseUrl}${endpoint}?data=${payload}`;
 
-                        if (senderName === 'bKash') {
-                            const trxRegex1 = /TrxID[:\s]*([A-Z0-9]{10})/i;
-                            const trxMatch1 = smsText.match(trxRegex1);
-                            const extractedTrxID1 = trxMatch1 ? trxMatch1[1] : null;
+                    document.getElementById('payment-loading-overlay').style.display = 'none';
+                    btn.innerText = "Awaiting Response...";
 
-                            const amountRegex1 = /received Tk[:\s]*(\d+)/i;
-                            const amountMatch1 = smsText.match(amountRegex1);
-                            const extractedAmount1 = amountMatch1 ? parseInt(amountMatch1[1]) : null;
+                    const width = 400; const height = 650;
+                    const left = (window.innerWidth / 2) - (width / 2);
+                    const top = (window.innerHeight / 2) - (height / 2);
+                    const popup = window.open(paymentUrl, "AutoPayTest", `width=${width},height=${height},top=${top},left=${left}`);
 
-                            if (extractedTrxID1 === trxID && extractedAmount1 === Math.floor(targetAmount)) {
-                                isPaymentValid = true;
-                                matchedDocId = doc.id;
-                            }
-                        }
-
-                        if (senderName === 'NAGAD') {
-                            if (/Received/i.test(smsText)) {
-                                const amountRegex2 = /Amount.*?Tk\s*(\d+)\./i;
-                                const amountMatch2 = smsText.match(amountRegex2);
-                                const extractedAmount2 = amountMatch2 ? parseInt(amountMatch2[1]) : null;
-
-                                const trxRegex2 = /TxnID:\s*([A-Za-z0-9]{8,10})(?!\w)/i;
-                                const trxMatch2 = smsText.match(trxRegex2);
-                                const extractedTrxID2 = trxMatch2 ? trxMatch2[1] : null;
-
-                                if (extractedTrxID2 === trxID && extractedAmount2 === Math.floor(targetAmount)) {
-                                    isPaymentValid = true;
-                                    matchedDocId = doc.id;
-                                }
+                    window.addEventListener("message", function handler(event) {
+                        if (event.data) {
+                            window.removeEventListener("message", handler);
+                            
+                            if (event.data.status === 'SUCCESS') {
+                                btn.innerText = "VERIFY";
+                                btn.disabled = false;
+                                showNotification("পেমেন্ট সফল হয়েছে।");
+                                
+                                executeOrderPlacement(
+                                    savedParams.orderAddress, 
+                                    savedParams.selectedItems, 
+                                    savedParams.paymentMethodText, 
+                                    savedParams.subtotal, 
+                                    savedParams.shippingFee, 
+                                    0, 
+                                    savedParams.couponDiscount,
+                                    event.data.data.trxID,
+                                    null, 
+                                    savedParams.orderNo
+                                );
+                                sessionStorage.removeItem('pendingOrderParams');
+                            } else if (event.data.status === 'FAILED') {
+                                showCustomAlert("Payment Failed", "পেমেন্ট সম্পন্ন হয়নি। আবার চেষ্টা করুন।");
+                                btn.disabled = false;
+                                btn.innerText = "VERIFY";
+                            } else if (event.data.status === 'CLOSED') {
+                                showCustomAlert("Payment Cancelled", "আপনি পেমেন্ট উইন্ডোটি বন্ধ করে দিয়েছেন।");
+                                btn.disabled = false;
+                                btn.innerText = "VERIFY";
                             }
                         }
                     });
-
-                    if (isPaymentValid && matchedDocId) {
-                        await autoPayDb.collection('AutoPayMessages').doc(matchedDocId).update({ used: true });
-                        
-                        document.getElementById('payment-loading-overlay').style.display = 'none';
-                        showNotification("পেমেন্ট সফল হয়েছে।");
-                        
-                        executeOrderPlacement(
-                            savedParams.orderAddress, 
-                            savedParams.selectedItems, 
-                            savedParams.paymentMethodText, 
-                            savedParams.subtotal, 
-                            savedParams.shippingFee, 
-                            0, 
-                            savedParams.couponDiscount,
-                            trxID,
-                            null, 
-                            savedParams.orderNo
-                        );
-                        sessionStorage.removeItem('pendingOrderParams');
-                    } else {
-                        document.getElementById('payment-loading-overlay').style.display = 'none';
-                        showCustomAlert("Error", "আপনার ট্রানজেকশন আইডি সঠিক নয় অথবা পেমেন্ট এখনো আপডেট হয়নি।");
-                        btn.disabled = false;
-                        btn.innerText = "VERIFY";
-                    }
 
                 } catch (error) {
                     document.getElementById('payment-loading-overlay').style.display = 'none';
@@ -6496,6 +6314,9 @@
                             document.getElementById('paymentGwName').innerText = `${gatewayObj.name} Payment`;
                             document.getElementById('paymentAmountDisplay').innerText = formatPrice(total);
                             document.getElementById('paymentInstructionAmount').innerText = formatPrice(total);
+                            
+                            // Old implementation used gateway mobileNo. Now, pop-up does not need inline instructions,
+                            // but we keep UI consistent and transition to popup. 
                             document.getElementById('paymentAdminNumber').innerText = gatewayObj.mobileNo || 'No Number Provided';
 
                             let gwNameLower = gatewayObj.name.toLowerCase();
@@ -6531,6 +6352,8 @@
                             btn.disabled = false;
                             btn.innerText = "VERIFY";
 
+                            // We still show the payment info page, but it's just a placeholder where 
+                            // the user clicks VERIFY to trigger initiatePaymentValidation() popup.
                             navigateTo('payment');
                         } else {
                             executeOrderPlacement(orderAddress, selectedItems, paymentMethodText, subtotal, shippingFee, 0, window.appliedCouponDiscount);
