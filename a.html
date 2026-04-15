@@ -789,6 +789,16 @@
                             <div class="form-full"><div class="form-group"><label>About Us Text</label><textarea id="footerAbout" class="form-control" rows="2"></textarea></div></div>
                             <div class="form-full"><div class="form-group"><label>Copyright</label><input type="text" id="footerCopyright" class="form-control"></div></div>
 
+                            <h4 style="margin: 25px 0 15px; color: var(--primary-color); font-size: 15px;">Footer Quick Links</h4>
+                            <div class="form-full dynamic-list-wrapper">
+                                <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; color: var(--dark-color); font-weight: 600;">
+                                    Quick Links
+                                    <button type="button" class="btn-icon-add" onclick="addQuickLinkField()"><i class="fas fa-plus"></i></button>
+                                </label>
+                                <div class="dynamic-list-header"><span style="flex:1;">Link Name / Title</span><span style="flex:2;">URL / Action Text</span><span style="width:32px; text-align:center;"></span></div>
+                                <div id="quickLinksContainer" class="dynamic-list"></div>
+                            </div>
+
                             <button type="submit" class="btn btn-primary" style="width: auto; margin-top: 10px; padding: 12px 30px;">Save General Settings</button>
                         </form>
                     </div>
@@ -1020,6 +1030,23 @@
                                 <button type="button" class="btn-icon-add" onclick="addSeoKeyword()" style="width:28px; height:28px; font-size:12px; margin-left:5px;"><i class="fas fa-plus"></i></button>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <div class="form-full">
+                    <div style="display: flex; align-items: center; margin-bottom: 20px; background: var(--light-gray); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color);">
+                        <label class="switch">
+                            <input type="checkbox" id="sizeOnlyToggle" onchange="toggleSizeOnly()">
+                            <span class="slider"></span>
+                        </label>
+                        <span style="font-weight: 600; color: var(--dark-color);">Enable Product Sizes (Size & Stock Only)</span>
+                    </div>
+                    <div id="sizeOnlySection" class="hidden dynamic-list-wrapper">
+                        <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; color: var(--dark-color); font-weight: 600;">
+                            Sizes Options 
+                            <button type="button" class="btn-icon-add" onclick="addSizeOnlyField()"><i class="fas fa-plus"></i></button>
+                        </label>
+                        <div id="sizeOnlyContainer" class="dynamic-list"></div>
                     </div>
                 </div>
                 
@@ -1837,6 +1864,10 @@
                 document.getElementById('mediaContainer').innerHTML = '';
                 addMediaField();
                 
+                document.getElementById('sizeOnlyContainer').innerHTML = '';
+                document.getElementById('sizeOnlyToggle').checked = false;
+                toggleSizeOnly();
+
                 document.getElementById('sizeColorToggle').checked = false;
                 toggleSizeColor();
 
@@ -2172,6 +2203,14 @@
                     $('#footerAbout').summernote('code', data.footerAbout || '');
                     document.getElementById('footerCopyright').value = data.footerCopyright || '';
                     
+                    const qlContainer = document.getElementById('quickLinksContainer');
+                    qlContainer.innerHTML = '';
+                    if(data.quickLinks && data.quickLinks.length > 0) {
+                        data.quickLinks.forEach(ql => {
+                            addQuickLinkField(ql.name, ql.link);
+                        });
+                    }
+                    
                     document.getElementById('loginStoreName').innerText = `${data.siteName || 'Store'} Admin`;
                     document.getElementById('sidebarStoreName').innerHTML = `<i class="fas fa-bolt" style="color:var(--warning-color)"></i> ${data.siteName || 'Admin'}`;
                 }
@@ -2319,7 +2358,8 @@
                 if (currentStatus === 'Out of Stock') statusClass = 'status-out';
                 if (currentStatus === 'Inactive') statusClass = 'status-cancelled';
 
-                let toggleBtnHtml = (p.variants && p.variants.length > 0) ? `<button class="btn-action" style="background:var(--gray-color);" onclick="toggleVariants('${p.id}')" title="Toggle Variants"><i class="fas fa-chevron-down" id="icon-var-${p.id}"></i></button>` : '';
+                let hasAnyVariant = (p.variants && p.variants.length > 0) || (p.sizeOnlyVariants && p.sizeOnlyVariants.length > 0);
+                let toggleBtnHtml = hasAnyVariant ? `<button class="btn-action" style="background:var(--gray-color);" onclick="toggleVariants('${p.id}')" title="Toggle Variants"><i class="fas fa-chevron-down" id="icon-var-${p.id}"></i></button>` : '';
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -2343,8 +2383,28 @@
                     </td>
                 `;
                 productsTable.appendChild(row);
-
-                if (p.variants && p.variants.length > 0) {
+                
+                if (p.sizeOnlyVariants && p.sizeOnlyVariants.length > 0 && !(p.variants && p.variants.length > 0)) {
+                    p.sizeOnlyVariants.forEach(v => {
+                        const varRow = document.createElement('tr');
+                        varRow.className = `variant-row-${p.id}`;
+                        varRow.style.display = 'none';
+                        varRow.style.backgroundColor = 'rgba(59, 130, 246, 0.02)';
+                        varRow.innerHTML = `
+                            <td style="padding-left: 35px;">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <i class="fas fa-level-up-alt fa-rotate-90" style="color: var(--gray-color); margin-left: 10px;"></i>
+                                    <span style="font-size: 12px; color: var(--gray-color); font-weight: 600;">Size Only</span>
+                                </div>
+                            </td>
+                            <td colspan="2" style="font-size: 13px; color: var(--gray-color);"><span style="color: var(--dark-color); font-weight: 600;">Size: ${v.size}</span></td>
+                            <td style="font-size: 13px; font-weight: 600;">৳${p.price}</td>
+                            <td style="font-size: 13px;">${v.stock}</td>
+                            <td colspan="2"></td>
+                        `;
+                        productsTable.appendChild(varRow);
+                    });
+                } else if (p.variants && p.variants.length > 0) {
                     p.variants.forEach(v => {
                         const varImg = v.image ? `<img src="${v.image}" style="width:30px; height:30px; border-radius:6px; object-fit:cover;">` : `<i class="fas fa-level-up-alt fa-rotate-90" style="color: var(--gray-color); margin-left: 10px;"></i>`;
                         
@@ -3110,7 +3170,9 @@
             const seo_tag = adminSeoKeywords.join(', ');
 
             let variants = [];
+            let sizeOnlyVariants = [];
             let totalStock = 0;
+            
             if(document.getElementById('sizeColorToggle').checked) {
                 const varBlocks = document.querySelectorAll('#sizeColorContainer .variant-block');
                 varBlocks.forEach((block, idx) => {
@@ -3157,6 +3219,17 @@
                     }
                 });
                 stock = totalStock;
+            } else if(document.getElementById('sizeOnlyToggle').checked) {
+                const soItems = document.querySelectorAll('#sizeOnlyContainer .size-only-item');
+                soItems.forEach(item => {
+                    const sName = item.querySelector('.so-size-name').value;
+                    const sStock = parseInt(item.querySelector('.so-stock').value) || 0;
+                    if(sName) {
+                        sizeOnlyVariants.push({ size: sName, stock: sStock });
+                        totalStock += sStock;
+                    }
+                });
+                stock = totalStock;
             }
             
             if(stock <= 0 && status !== 'Inactive') status = 'Out of Stock';
@@ -3166,7 +3239,7 @@
 
             const payload = { 
                 pid, name, category, originalPrice, price, discount, stock, sales, description, 
-                status, keyword: status, images, seo_tag, variants, allowedGateways,
+                status, keyword: status, images, seo_tag, variants, sizeOnlyVariants, allowedGateways,
                 hasReturnPolicy, returnTime,
                 hasOrderCancellation, orderCancelTimeValue, orderCancelTimeUnit,
                 deliveryMinDays, deliveryMaxDays, deliveryInside, deliveryOutside
@@ -3321,6 +3394,16 @@
             e.preventDefault();
             showLoader();
             try {
+                const qlItems = document.querySelectorAll('#quickLinksContainer .quick-link-item');
+                let quickLinks = [];
+                qlItems.forEach(item => {
+                    const n = item.querySelector('.ql-name').value;
+                    const l = item.querySelector('.ql-url').value;
+                    if(n || l) {
+                        quickLinks.push({ name: n, link: l });
+                    }
+                });
+
                 const payload = {
                     uploadApiKey: document.getElementById('uploadApiKey').value,
                     uploadFolder: document.getElementById('uploadFolder').value,
@@ -3334,7 +3417,8 @@
                     footerEmail: document.getElementById('footerEmail').value,
                     footerAddress: $('#footerAddress').summernote('code'),
                     footerAbout: $('#footerAbout').summernote('code'),
-                    footerCopyright: document.getElementById('footerCopyright').value
+                    footerCopyright: document.getElementById('footerCopyright').value,
+                    quickLinks: quickLinks
                 };
                 await db.collection('settings').doc('general').set(payload, {merge:true});
                 alert('Settings Saved Successfully!');
@@ -3430,6 +3514,18 @@
 
             adminSeoKeywords = p.seo_tag ? (typeof p.seo_tag === 'string' ? p.seo_tag.split(',').map(s=>s.trim()).filter(Boolean) : [...p.seo_tag]) : (p.keywords ? [...p.keywords] : []);
             renderTags();
+
+            document.getElementById('sizeOnlyContainer').innerHTML = '';
+            if(p.sizeOnlyVariants && p.sizeOnlyVariants.length > 0) {
+                document.getElementById('sizeOnlyToggle').checked = true;
+                toggleSizeOnly();
+                p.sizeOnlyVariants.forEach(v => {
+                    addSizeOnlyField(v.size, v.stock);
+                });
+            } else {
+                document.getElementById('sizeOnlyToggle').checked = false;
+                toggleSizeOnly();
+            }
 
             const sc = document.getElementById('sizeColorContainer'); sc.innerHTML = '';
             if(p.variants && p.variants.length > 0) {
@@ -3624,7 +3720,9 @@
                 let newProdStock = parseInt(prod.stock) || 0;
                 let qtyToDeduct = parseInt(item.qty) || 1;
                 let variantsUpdated = false;
+                let sizeOnlyVariantsUpdated = false;
                 let updatedVariants = prod.variants ? JSON.parse(JSON.stringify(prod.variants)) : [];
+                let updatedSizeOnlyVariants = prod.sizeOnlyVariants ? JSON.parse(JSON.stringify(prod.sizeOnlyVariants)) : [];
 
                 if (updatedVariants.length > 0) {
                     for (let v of updatedVariants) {
@@ -3642,6 +3740,12 @@
                             }
                         }
                     }
+                } else if (updatedSizeOnlyVariants.length > 0 && item.size && item.size !== 'N/A') {
+                    let sizeObj = updatedSizeOnlyVariants.find(s => s.size === item.size);
+                    if (sizeObj) {
+                        sizeObj.stock = Math.max(0, sizeObj.stock - qtyToDeduct);
+                        sizeOnlyVariantsUpdated = true;
+                    }
                 }
 
                 newProdStock = Math.max(0, newProdStock - qtyToDeduct);
@@ -3653,6 +3757,9 @@
                 let updateData = { stock: newProdStock, status: newStatus };
                 if (variantsUpdated) {
                     updateData.variants = updatedVariants;
+                }
+                if (sizeOnlyVariantsUpdated) {
+                    updateData.sizeOnlyVariants = updatedSizeOnlyVariants;
                 }
 
                 batch.update(pRef, updateData);
@@ -3690,6 +3797,15 @@
                 <button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button>
             </div>`;
             document.getElementById('mediaContainer').insertAdjacentHTML('beforeend', html);
+        };
+        
+        window.addSizeOnlyField = function(sizeName = '', stock = '') {
+            const html = `<div class="dynamic-item size-only-item" style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" class="form-control so-size-name" placeholder="Size Name (e.g. M, L, XL)" value="${sizeName}" style="flex: 2;">
+                <input type="number" class="form-control so-stock" placeholder="Stock Qty" value="${stock}" style="flex: 1;">
+                <button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button>
+            </div>`;
+            document.getElementById('sizeOnlyContainer').insertAdjacentHTML('beforeend', html);
         };
         
         let variantCounter = 0;
@@ -3765,9 +3881,19 @@
             </div>`;
             document.getElementById('bannerContainer').insertAdjacentHTML('beforeend', html);
         };
+        
         window.addSocialField = function(icon="", url="", id="") {
             const html = `<div class="dynamic-item" data-id="${id}"><input type="text" class="form-control social-icon-input" placeholder="Icon (e.g. fab fa-facebook)" value="${icon}" style="flex:1;"><input type="text" class="form-control social-url" placeholder="Link URL" value="${url}" style="flex:2;"><button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button></div>`;
             document.getElementById('socialsContainer').insertAdjacentHTML('beforeend', html);
+        };
+        
+        window.addQuickLinkField = function(name = "", link = "") {
+            const html = `<div class="dynamic-item quick-link-item">
+                <input type="text" class="form-control ql-name" placeholder="Link Name / Title" value="${name}" style="flex:1;">
+                <input type="text" class="form-control ql-url" placeholder="URL / Action Text" value="${link}" style="flex:2;">
+                <button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button>
+            </div>`;
+            document.getElementById('quickLinksContainer').insertAdjacentHTML('beforeend', html);
         };
         
         window.addSeoKeyword = function() {
@@ -3827,6 +3953,28 @@
         }
         window.removeRestrictedTag = function(index) { adminRestrictedKeywords.splice(index, 1); renderRestrictedTags(); }
         
+        window.toggleSizeOnly = function() {
+            const sec = document.getElementById('sizeOnlySection');
+            const pStock = document.getElementById('productStock');
+            
+            if(document.getElementById('sizeOnlyToggle').checked) {
+                sec.classList.remove('hidden');
+                pStock.removeAttribute('required');
+                if(document.getElementById('sizeOnlyContainer').children.length === 0) addSizeOnlyField();
+                
+                // Disable sizeColor toggle to prevent conflict
+                if(document.getElementById('sizeColorToggle').checked) {
+                    document.getElementById('sizeColorToggle').checked = false;
+                    toggleSizeColor();
+                }
+            } else {
+                sec.classList.add('hidden');
+                if(!document.getElementById('sizeColorToggle').checked) {
+                    pStock.setAttribute('required', 'true');
+                }
+            }
+        }
+
         window.toggleSizeColor = function() {
             const sec = document.getElementById('sizeColorSection');
             const mainPricing = document.getElementById('mainPricingStock');
@@ -3839,11 +3987,19 @@
                 pPrice.removeAttribute('required');
                 pStock.removeAttribute('required');
                 if(document.getElementById('sizeColorContainer').children.length === 0) addSizeColorField();
+                
+                // Disable sizeOnly toggle to prevent conflict
+                if(document.getElementById('sizeOnlyToggle').checked) {
+                    document.getElementById('sizeOnlyToggle').checked = false;
+                    toggleSizeOnly();
+                }
             } else {
                 sec.classList.add('hidden');
                 mainPricing.classList.remove('hidden');
                 pPrice.setAttribute('required', 'true');
-                pStock.setAttribute('required', 'true');
+                if(!document.getElementById('sizeOnlyToggle').checked) {
+                    pStock.setAttribute('required', 'true');
+                }
             }
         }
 
