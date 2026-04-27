@@ -3304,8 +3304,8 @@
             const headerEl = document.querySelector('header');
             const footerEl = document.querySelector('footer');
             if (document.getElementById('blocked-page').style.display !== 'flex') {
-            if(headerEl) headerEl.style.display = 'block';
-            if(footerEl) footerEl.style.display = 'block';
+            if (headerEl) headerEl.style.display = 'block';
+            if (footerEl) footerEl.style.display = 'block';
             }
             
             if (imageSliderInterval) {
@@ -6494,7 +6494,7 @@
             }
             });
             
-            cartIcon.addEventListcartIcon.addEventListener('click', () => {
+            cartIcon.addEventListener('click', () => {
             cartOverlay.classList.add('active');
             setTimeout(autoSwipeHint, 500);
             });
