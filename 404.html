@@ -170,7 +170,7 @@
     .product-img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.5s ease; }
     .product-card:hover .product-img { transform: scale(1.05); }
     .off-badge { position: absolute; top: 8px; right: 8px; background: #16a34a; color: white; font-weight: 700; font-size: 0.75rem; padding: 3px 8px; border-radius: 20px; z-index: 3; line-height: 1.2; }
-    .out-of-stock-banner { position: absolute bottom: 0; left: 0; width: 100%; background: rgba(0, 0, 0, 0.6); color: white; font-weight: 700; font-size: 0.9rem; padding: 8px 0; text-align: center; z-index: 4; text-transform: uppercase; letter-spacing: 1px; backdrop-filter: blur(2px); }
+    .out-of-stock-banner { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0, 0, 0, 0.6); color: white; font-weight: 700; font-size: 0.9rem; padding: 8px 0; text-align: center; z-index: 4; text-transform: uppercase; letter-spacing: 1px; backdrop-filter: blur(2px); }
     .card-info { padding: 10px 0 0 0; background: white; flex-grow: 1; display: flex; flex-direction: column; }
     
     .product-title { font-size: clamp(0.85rem, 3vw, 1rem); font-weight: 700; color: #111; margin-bottom: 5px; line-height: 1.3; height: 2.6em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; letter-spacing: -0.01em; }
@@ -2613,6 +2613,27 @@
             return totalFee;
         }
 
+        window.updatePageTitle = function(pageId) {
+            const siteName = document.getElementById('pageTitle').textContent || 'Online Shop';
+            if (pageId === 'product-details') return; 
+            
+            let pageName = 'Home';
+            const names = {
+                'search': 'Search', 'search-results': 'Search Results', 'all-categories': 'Categories',
+                'order-summary': 'Order Summary', 'checkout': 'Checkout', 'login': 'Login',
+                'register': 'Register', 'profile': 'My Profile', 'profile-location': 'My Addresses',
+                'profile-tracking': 'My Orders', 'profile-setup': 'Profile Setup',
+                'profile-topay': 'To Pay', 'profile-toship': 'To Ship', 'profile-toreceive': 'To Receive',
+                'profile-toreview': 'To Review', 'profile-returns': 'Returns',
+                'all-reviews': 'All Reviews', 'write-review': 'Write Review', 'return-request': 'Return Request',
+                '404': 'Page Not Found'
+            };
+            if (names[pageId]) pageName = names[pageId];
+            
+            document.title = (pageId === 'home' || pageId === '') ? siteName : `${pageName} - ${siteName}`;
+            document.getElementById('ogUrl').content = window.location.href;
+        };
+
         async function loadGlobalData() {
             try {
                 const settingsSnap = await db.collection('settings').doc('general').get();
@@ -2694,7 +2715,7 @@
                     if (formattedUrl && !/^https?:\/\//i.test(formattedUrl)) {
                         formattedUrl = 'https://' + formattedUrl;
                     }
-                    socialGrid.innerHTML += `<a href="${formattedUrl}" class="social-icon" target="_blank" rel="noopener noreferrer"><i class="${social.iconClass}"></i></a>`;
+                    socialGrid.innerHTML += `<a href="#" data-raw-url="${formattedUrl}" class="social-icon dynamic-social-link" rel="noopener noreferrer"><i class="${social.iconClass}"></i></a>`;
                 });
 
                 try {
@@ -2706,6 +2727,10 @@
                     const rSnap = await db.collection('returnReasons').get();
                     returnReasonsData = rSnap.docs.map(doc => doc.data().reason);
                 } catch(e) { console.error("Error loading return reasons", e); }
+
+                let path = window.location.pathname.substring(1).split('?')[0];
+                if(path === '' || path === 'user.html') path = 'home';
+                window.updatePageTitle(path);
 
             } catch(e) {}
         }
@@ -3290,10 +3315,7 @@
             
             document.querySelectorAll('.filter-options-dropdown').forEach(d => d.classList.remove('active'));
             
-            if (finalPageId !== 'product-details') {
-            document.title = document.getElementById('pageTitle').textContent;
-            document.getElementById('ogUrl').content = window.location.href;
-            }
+            window.updatePageTitle(finalPageId);
             
             if (finalPageId === 'product-details' && params.has('id')) {
             const productId = params.get('id');
@@ -3715,8 +3737,8 @@
             actionButtonsHtml += `<button class="btn btn-outline" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 6px; margin-left:10px;" onclick="showOrderTracking('${order.id}')"><i class="fas fa-truck"></i> Track</button>`;
             }
             
-            // Remove Summary button for 'Pending Payment' orders
-            if (order.status !== 'Pending Payment') {
+            // Remove Summary button for 'Pending Payment' orders ONLY in To Pay section logic
+            if (!isToPay && order.status !== 'Pending Payment') {
             actionButtonsHtml += `<button class="btn btn-secondary" style="padding: 6px 15px; font-size: 0.85rem; margin-left:10px; border-radius: 6px;" onclick="showOrderSummary('${order.id}')"><i class="fas fa-file-invoice"></i> Summary</button>`;
             }
             
@@ -3947,6 +3969,7 @@
             let matchedSize = variant.sizes ? variant.sizes.find(s => s.size === item.size) : null;
             if(matchedSize) {
             variant = {...variant, size: matchedSize.size};
+            }
             }
             }
             }
@@ -6388,6 +6411,28 @@
             });
             }
             
+            // Dynamic Social Links Text Updater
+            document.querySelectorAll('.dynamic-social-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+            e.preventDefault();
+            let rawUrl = this.getAttribute('data-raw-url');
+            let uName = currentUser ? currentUser.name : 'Customer';
+            let sName = document.getElementById('pageTitle').textContent || 'Online Shop';
+            let message = `Hello, I am ${uName}. Coming from ${sName}.`;
+            
+            let newUrl = rawUrl;
+            if (rawUrl.includes('wa.me')) {
+            newUrl = rawUrl + (rawUrl.includes('?') ? '&' : '?') + 'text=' + encodeURIComponent(message);
+            } else if (rawUrl.includes('m.me')) {
+            // Messenger doesnt support pre-filled text officially via URL scheme consistently, but adding for fallback
+            } else if (rawUrl.includes('t.me')) {
+            newUrl = rawUrl + (rawUrl.includes('?') ? '&' : '?') + 'text=' + encodeURIComponent(message);
+            }
+            
+            window.open(newUrl, '_blank');
+            });
+            });
+            
             let adTimer;
             let timeLeft = 5;
             
@@ -6449,7 +6494,7 @@
             }
             });
             
-            cartIcon.addEventListener('click', () => {
+            cartIcon.addEventListcartIcon.addEventListener('click', () => {
             cartOverlay.classList.add('active');
             setTimeout(autoSwipeHint, 500);
             });
@@ -6578,6 +6623,7 @@
             showCustomAlert('Invalid Coupon', 'The coupon code is invalid or expired.');
             }
             document.getElementById('osDiscount').textContent = `-${window.getPriceDisplay(window.appliedCouponDiscount)}`;
+            
             
             let defaultAddr = window.osSelectedAddress;
             let shippingFee = defaultAddr ? getCartShippingFee(defaultAddr.region, cart.filter(i => i.selected)) : 0;
