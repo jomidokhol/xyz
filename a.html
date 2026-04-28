@@ -272,7 +272,7 @@
         .note-modal-backdrop { z-index: 100050 !important; }
         .note-popover { z-index: 100060 !important; }
 
-        /* Invoice Print Area Fixes - A4 Size */
+        /* Invoice Print Area Fixes - A4 Size Constraint */
         #invoicePrintArea {
             background: #fff;
             padding: 40px;
@@ -281,12 +281,23 @@
             color: #000;
             box-sizing: border-box;
         }
+        
+        #invoicePrintArea table {
+            table-layout: fixed;
+            width: 100%;
+            word-wrap: break-word;
+        }
+        #invoicePrintArea th:nth-child(1), #invoicePrintArea td:nth-child(1) { width: 45%; }
+        #invoicePrintArea th:nth-child(2), #invoicePrintArea td:nth-child(2) { width: 15%; text-align: center; }
+        #invoicePrintArea th:nth-child(3), #invoicePrintArea td:nth-child(3) { width: 20%; text-align: right; }
+        #invoicePrintArea th:nth-child(4), #invoicePrintArea td:nth-child(4) { width: 20%; text-align: right; }
+        #invoicePrintArea td, #invoicePrintArea th { overflow: hidden; text-overflow: ellipsis; }
+
         @media print { 
             body * { visibility: hidden; } 
             #invoicePrintArea, #invoicePrintArea * { visibility: visible; } 
             #invoicePrintArea { position: absolute; left: 0; top: 0; width: 210mm; padding: 20mm; background: white; color: black; box-shadow: none; border: none;} 
-            .modal { position: absolute; left: 0; top: 0; margin: 0; padding: 0; visibility: visible; background: transparent; backdrop-filter: none;}
-            .close-modal-btn, .print-hide { display: none !important; }
+            .print-hide { display: none !important; }
             @page { size: A4; margin: 0; }
         }
 
@@ -358,6 +369,7 @@
                 
                 <li class="menu-header">Business</li>
                 <li><a href="#" class="menu-item" data-page="orders" id="menuOrdersLink"><i class="fas fa-shopping-bag"></i> Orders</a></li>
+                <li><a href="#" class="menu-item" data-page="invoiceCreator"><i class="fas fa-file-invoice"></i> Invoice Creator</a></li>
                 <li><a href="#" class="menu-item" data-page="returns"><i class="fas fa-undo"></i> Returns & Refunds</a></li>
                 <li><a href="#" class="menu-item" data-page="cancelReasons"><i class="fas fa-ban"></i> Cancel Reasons</a></li>
                 <li><a href="#" class="menu-item" data-page="customers"><i class="fas fa-users"></i> Customers</a></li>
@@ -531,12 +543,43 @@
                                     <th>Products Info</th>
                                     <th>Amount</th>
                                     <th>Payment Info</th>
-                                    <th>Status</th>
+                                    <th>Status (Auto updates Timestamp)</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="ordersTable"></tbody>
                         </table>
+                    </div>
+                </div>
+                
+                <!-- Invoice Creator Page -->
+                <div id="invoiceCreatorPage" class="page-content hidden">
+                    <div class="table-header">
+                        <h3 class="table-title">Invoice Creator</h3>
+                    </div>
+                    
+                    <div class="form-section">
+                        <p style="font-size: 13px; color: var(--gray-color); margin-bottom: 10px;">Paste the order data copied from the Orders page to generate a printable invoice.</p>
+                        <div style="display:flex; gap:15px; margin-bottom:20px; flex-wrap: wrap;">
+                            <textarea id="pasteInvoiceData" class="form-control" rows="3" placeholder="Paste copied data here..." style="flex:1; min-width: 300px;"></textarea>
+                            <div style="display:flex; flex-direction:column; gap:10px;">
+                                <button class="btn btn-primary" onclick="generatePastedInvoice()" style="height:100%; min-width: 150px;"><i class="fas fa-magic"></i> Generate</button>
+                                <button class="btn btn-secondary" onclick="document.getElementById('pasteInvoiceData').value=''" style="margin-top:0;">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="invoiceActions" class="hidden print-hide" style="background: var(--light-color); padding: 20px; border-radius: 8px; margin-bottom: 20px; display:flex; justify-content:space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <h3 style="font-size: 20px; margin: 0;">Generated Invoice</h3>
+                        <div style="display:flex; gap: 10px;">
+                            <button class="btn btn-secondary" onclick="printInvoice()" style="margin-top:0; padding: 10px 15px; border-radius: 6px;"><i class="fas fa-print"></i> Print</button>
+                            <button class="btn btn-primary" onclick="downloadInvoice()" style="padding: 10px 15px; border-radius: 6px; margin-top:0;"><i class="fas fa-download"></i> Download</button>
+                        </div>
+                    </div>
+
+                    <div id="invoiceCreatorArea" style="overflow-x: auto; padding-bottom: 40px; border-radius: 8px;">
+                         <!-- Exact A4 Sized wrapper for Print & Download -->
+                         <div id="invoicePrintArea" style="display:none;"></div>
                     </div>
                 </div>
 
@@ -1382,7 +1425,7 @@
     <div id="orderDetailsModal" class="modal">
         <div class="modal-content">
             <button class="close-modal-btn" onclick="closeModal('orderDetailsModal')"><i class="fas fa-times"></i></button>
-            <h3 style="font-size: 22px; margin-bottom: 25px;">Invoice Details <span id="detailOrderId" style="color: var(--primary-color);"></span></h3>
+            <h3 style="font-size: 22px; margin-bottom: 25px;">Order Details <span id="detailOrderId" style="color: var(--primary-color);"></span></h3>
             
             <div id="orderDetailsContent" style="background: var(--light-gray); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);"></div>
             
@@ -1418,25 +1461,6 @@
                 </div>
                 <button type="submit" class="btn btn-danger" style="margin-top:15px; width: 100%; padding: 12px; border-radius: 8px;">Block User</button>
             </form>
-        </div>
-    </div>
-
-    <!-- Invoice Modal -->
-    <div id="invoiceModal" class="modal">
-        <div class="modal-content" style="max-width: 850px; padding: 0; background: transparent; box-shadow: none; border: none;">
-            <div class="print-hide" style="background: var(--light-color); padding: 20px; border-radius: 8px; margin-bottom: 20px; display:flex; justify-content:space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                <h3 style="font-size: 22px; margin: 0;">Billing Paper</h3>
-                <div style="display:flex; gap: 10px;">
-                    <button class="btn btn-secondary" onclick="printInvoice()" style="margin-top:0; padding: 10px 15px; border-radius: 6px;"><i class="fas fa-print"></i> Print</button>
-                    <button class="btn btn-primary" onclick="downloadInvoice()" style="padding: 10px 15px; border-radius: 6px; margin-top:0;"><i class="fas fa-download"></i> Download</button>
-                    <button class="btn btn-danger" onclick="closeModal('invoiceModal')" style="padding: 10px 15px; border-radius: 6px; margin-top:0;"><i class="fas fa-times"></i> Close</button>
-                </div>
-            </div>
-            
-            <!-- Exact A4 Sized wrapper for Print & Download -->
-            <div id="invoicePrintArea">
-                <!-- Data will be populated by JS -->
-            </div>
         </div>
     </div>
 
@@ -1996,6 +2020,8 @@
                     const order = doc.data();
 
                     let updateData = { status: 'Handover', deliveryInfo: deliveryInfo };
+                    updateData['statusTimestamps.Handover'] = new Date().toISOString(); // Timestamp Record
+
                     if (!order.stockDeducted) {
                         await deductStock(order);
                         updateData.stockDeducted = true;
@@ -2258,6 +2284,29 @@
         function loadOrders() {
             db.collection('orders').onSnapshot(snap => {
                 adminOrders = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                
+                // Auto-Update to Received if TrxID exists
+                let batch = db.batch();
+                let needsAutoUpdate = false;
+                adminOrders.forEach(o => {
+                    if ((!o.status || o.status === 'Pending') && o.trxId && o.payment && o.payment.toUpperCase() !== 'COD') {
+                        let ref = db.collection('orders').doc(o.id);
+                        batch.update(ref, {
+                            status: 'Received',
+                            'statusTimestamps.Received': new Date().toISOString()
+                        });
+                        needsAutoUpdate = true;
+                        // Update local object immediately to reflect without waiting for next snapshot
+                        o.status = 'Received';
+                        if(!o.statusTimestamps) o.statusTimestamps = {};
+                        o.statusTimestamps['Received'] = new Date().toISOString();
+                    }
+                });
+
+                if(needsAutoUpdate) {
+                    batch.commit().catch(err => console.error("Auto update failed:", err));
+                }
+
                 if (adminOrders.length > adminLastSeenOrderCount) {
                     document.getElementById('menuOrdersLink').classList.add('notification-dot');
                     document.getElementById('toggleSidebarBtn').classList.add('notification-dot');
@@ -2566,7 +2615,15 @@
                     </div>`;
                 }
 
-                let invoiceBtnHtml = (o.status === 'Received' || o.status === 'Delivered') ? `<button class="btn-action btn-success" onclick="generateInvoice('${o.id}')" title="Billing Paper"><i class="fas fa-file-invoice"></i></button>` : '';
+                // Copy Invoice Data Button instead of generating invoice modal
+                let invoiceBtnHtml = (o.status === 'Received' || o.status === 'Delivered' || o.status === 'Handover') ? `<button class="btn-action btn-success" onclick="copyInvoiceData('${o.id}')" title="Copy Invoice Data"><i class="fas fa-copy"></i></button>` : '';
+                
+                // Formatted Timestamp text
+                let timeInfoHtml = '';
+                if(o.statusTimestamps && o.statusTimestamps[o.status || 'Pending']) {
+                    let d = new Date(o.statusTimestamps[o.status || 'Pending']);
+                    timeInfoHtml = `<br><span style="font-size: 11px; color: var(--gray-color);">${d.toLocaleString()}</span>`;
+                }
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -2584,6 +2641,7 @@
                             <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
                             <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
                         </select>
+                        ${timeInfoHtml}
                     </td>
                     <td>
                         <div class="action-buttons">
@@ -3678,6 +3736,18 @@
         };
 
         window.updateOrderStatus = async function(id, newStatus) { 
+            const orderRef = db.collection('orders').doc(id);
+            const doc = await orderRef.get();
+            if (!doc.exists) return;
+            const order = doc.data();
+
+            if (newStatus === 'Delivered' && order.status !== 'Handover' && order.status !== 'Delivered') {
+                alert("Delivery failed! Order must go through 'Handover' before marking as 'Delivered'.");
+                const selectEl = document.querySelector(`select[onchange="updateOrderStatus('${id}', this.value)"]`);
+                if(selectEl) selectEl.value = order.status || 'Pending';
+                return;
+            }
+
             if (newStatus === 'Handover') {
                 document.getElementById('handoverOrderId').value = id;
                 document.getElementById('handoverForm').reset();
@@ -3687,17 +3757,15 @@
 
             showLoader();
             try {
-                const orderRef = db.collection('orders').doc(id);
-                const doc = await orderRef.get();
-                if (!doc.exists) { hideLoader(); return; }
-                const order = doc.data();
+                let updateData = { status: newStatus };
+                updateData[`statusTimestamps.${newStatus}`] = new Date().toISOString(); // Timestamp Record
 
                 if (newStatus !== 'Pending' && !order.stockDeducted) {
                     await deductStock(order);
-                    await orderRef.update({ status: newStatus, stockDeducted: true });
-                } else {
-                    await orderRef.update({ status: newStatus });
+                    updateData.stockDeducted = true;
                 }
+
+                await orderRef.update(updateData);
             } catch(e) {
                 console.error("Status update error:", e);
                 alert("Failed to update status: " + e.message);
@@ -4071,130 +4139,145 @@
             openModal('orderDetailsModal');
         };
 
-        window.generateInvoice = function(id) {
-            showLoader();
-            setTimeout(() => {
-                const o = adminOrders.find(x => x.id === id);
-                if(!o) { hideLoader(); return; }
-
-                const siteName = document.getElementById('siteName').value || 'My Store';
-                const domainName = document.getElementById('domainName').value || 'www.example.com';
-
-                let itemsHtml = '';
-                let itemsArray = Array.isArray(o.cartItems) ? o.cartItems : (Array.isArray(o.products) ? o.products : []);
-                let subTotal = 0;
-
-                if (itemsArray.length) {
-                    itemsArray.forEach(item => {
-                        let v = [];
-                        if (item.color && item.color !== 'N/A') v.push(item.color);
-                        if (item.size && item.size !== 'N/A') v.push(item.size);
-                        let variantStr = v.length ? `(${v.join(', ')})` : '';
-                        let itemTotal = (item.price || 0) * (item.qty || 1);
-                        subTotal += itemTotal;
-
-                        itemsHtml += `
-                            <tr style="border-bottom: 1px dashed #eee;">
-                                <td style="padding: 12px 5px; text-align:left;">
-                                    <strong>${item.name}</strong><br>
-                                    <small style="color:#666;">PID: ${item.pid || 'N/A'} ${variantStr}</small>
-                                </td>
-                                <td style="padding: 12px 5px; text-align:center;">${item.qty || 1}</td>
-                                <td style="padding: 12px 5px; text-align:right;">৳${item.price || 0}</td>
-                                <td style="padding: 12px 5px; text-align:right;">৳${itemTotal}</td>
-                            </tr>
-                        `;
-                    });
-                }
-
-                let total = parseFloat(o.amount) || 0;
-                let deliveryFee = parseFloat(o.deliveryFee) || 0;
-                let discountAmt = parseFloat(o.discount) || 0;
-                
-                if (!o.deliveryFee && !o.discount) {
-                    let diff = total - subTotal;
-                    if (diff >= 0) {
-                        deliveryFee = diff;
-                        discountAmt = 0;
-                    } else {
-                        deliveryFee = 0;
-                        discountAmt = Math.abs(diff);
-                    }
-                }
-
-                document.getElementById('invoicePrintArea').innerHTML = `
-                    <div style="text-align: center; margin-bottom: 25px; border-bottom: 2px solid #333; padding-bottom: 20px;">
-                        <h1 style="margin: 0; font-size: 28px; color: #000; font-weight: 700;">${siteName}</h1>
-                        <p style="margin: 5px 0 0; color: #555;">${domainName}</p>
-                    </div>
-                    
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 30px; line-height: 1.6;">
-                        <div style="text-align: left;">
-                            <strong style="font-size: 16px;">Billed To:</strong><br>
-                            <span style="font-weight: 600;">${o.customer || 'N/A'}</span><br>
-                            ${o.address || ''}<br>
-                            Phone: ${o.phone || 'N/A'}
-                        </div>
-                        <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
-                            <div><strong>Order ID:</strong> #${o.id.substring(0,8)}</div>
-                            <div><strong>Order Date:</strong> ${o.date || new Date().toLocaleDateString()}</div>
-                            <div><strong>Status:</strong> ${o.status}</div>
-                            <div><strong>Payment:</strong> ${o.payment}</div>
-                        </div>
-                    </div>
-
-                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
-                        <thead>
-                            <tr style="background: #f8f8f8; border-bottom: 2px solid #ccc;">
-                                <th style="padding: 12px 5px; text-align:left;">Item Description</th>
-                                <th style="padding: 12px 5px; text-align:center;">Qty</th>
-                                <th style="padding: 12px 5px; text-align:right;">Unit Price</th>
-                                <th style="padding: 12px 5px; text-align:right;">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${itemsHtml}
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="3" style="text-align: right; padding: 10px 5px; font-weight: bold;">Subtotal:</td>
-                                <td style="text-align: right; padding: 10px 5px; font-weight: bold;">৳${subTotal.toFixed(2)}</td>
-                            </tr>
-                            <tr>
-                                <td colspan="3" style="text-align: right; padding: 5px 5px; color: #555;">Delivery Charge:</td>
-                                <td style="text-align: right; padding: 5px 5px; color: #555;">+ ৳${deliveryFee.toFixed(2)}</td>
-                            </tr>
-                            <tr>
-                                <td colspan="3" style="text-align: right; padding: 5px 5px; color: #555;">Discount:</td>
-                                <td style="text-align: right; padding: 5px 5px; color: #555;">- ৳${discountAmt.toFixed(2)}</td>
-                            </tr>
-                            <tr>
-                                <td colspan="3" style="text-align: right; padding: 15px 5px; font-weight: bold; font-size: 18px; border-top: 2px solid #333;">Grand Total:</td>
-                                <td style="text-align: right; padding: 15px 5px; font-weight: bold; font-size: 18px; border-top: 2px solid #333;">৳${total.toFixed(2)}</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-
-                    <div style="text-align: center; margin-top: 40px;">
-                        <svg id="invoiceBarcode"></svg>
-                        <p style="margin-top: 10px; font-size: 12px; color: #888;">Thank you for your purchase!</p>
-                    </div>
-                `;
-
-                openModal('invoiceModal');
-                
-                JsBarcode("#invoiceBarcode", o.id, {
-                    format: "CODE128",
-                    width: 1.5,
-                    height: 40,
-                    displayValue: true,
-                    fontSize: 14,
-                    margin: 0
-                });
-
-                hideLoader();
-            }, 300);
+        // Copy Invoice Data function replaces generating invoice inside the table
+        window.copyInvoiceData = function(id) {
+            const o = adminOrders.find(x => x.id === id);
+            if(!o) return;
+            const dataToCopy = JSON.stringify(o);
+            navigator.clipboard.writeText(dataToCopy).then(() => {
+                alert('Invoice data copied! Go to the "Invoice Creator" page to paste and generate.');
+            }).catch(err => {
+                alert('Failed to copy. Try again.');
+            });
         };
+
+        window.generatePastedInvoice = function() {
+            const dataStr = document.getElementById('pasteInvoiceData').value.trim();
+            if(!dataStr) { alert('Please paste the copied order data first!'); return; }
+            try {
+                const o = JSON.parse(dataStr);
+                renderInvoiceLayout(o);
+                document.getElementById('invoiceActions').classList.remove('hidden');
+                document.getElementById('invoicePrintArea').style.display = 'block';
+            } catch(e) {
+                alert('Invalid data pasted! Ensure you copied it correctly from the Orders table.');
+            }
+        };
+
+        function renderInvoiceLayout(o) {
+            const siteName = document.getElementById('siteName').value || 'My Store';
+            const domainName = document.getElementById('domainName').value || 'www.example.com';
+
+            let itemsHtml = '';
+            let itemsArray = Array.isArray(o.cartItems) ? o.cartItems : (Array.isArray(o.products) ? o.products : []);
+            let subTotal = 0;
+
+            if (itemsArray.length) {
+                itemsArray.forEach(item => {
+                    let v = [];
+                    if (item.color && item.color !== 'N/A') v.push(item.color);
+                    if (item.size && item.size !== 'N/A') v.push(item.size);
+                    let variantStr = v.length ? `(${v.join(', ')})` : '';
+                    let itemTotal = (item.price || 0) * (item.qty || 1);
+                    subTotal += itemTotal;
+
+                    itemsHtml += `
+                        <tr style="border-bottom: 1px dashed #eee;">
+                            <td style="padding: 12px 5px; text-align:left;">
+                                <strong>${item.name}</strong><br>
+                                <small style="color:#666;">PID: ${item.pid || 'N/A'} ${variantStr}</small>
+                            </td>
+                            <td style="padding: 12px 5px; text-align:center;">${item.qty || 1}</td>
+                            <td style="padding: 12px 5px; text-align:right;">৳${item.price || 0}</td>
+                            <td style="padding: 12px 5px; text-align:right;">৳${itemTotal}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            let total = parseFloat(o.amount) || 0;
+            let deliveryFee = parseFloat(o.deliveryFee) || 0;
+            let discountAmt = parseFloat(o.discount) || 0;
+            
+            if (!o.deliveryFee && !o.discount) {
+                let diff = total - subTotal;
+                if (diff >= 0) {
+                    deliveryFee = diff;
+                    discountAmt = 0;
+                } else {
+                    deliveryFee = 0;
+                    discountAmt = Math.abs(diff);
+                }
+            }
+
+            document.getElementById('invoicePrintArea').innerHTML = `
+                <div style="text-align: center; margin-bottom: 25px; border-bottom: 2px solid #333; padding-bottom: 20px;">
+                    <h1 style="margin: 0; font-size: 28px; color: #000; font-weight: 700;">${siteName}</h1>
+                    <p style="margin: 5px 0 0; color: #555;">${domainName}</p>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 30px; line-height: 1.6;">
+                    <div style="text-align: left;">
+                        <strong style="font-size: 16px;">Billed To:</strong><br>
+                        <span style="font-weight: 600;">${o.customer || 'N/A'}</span><br>
+                        ${o.address || ''}<br>
+                        Phone: ${o.phone || 'N/A'}
+                    </div>
+                    <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
+                        <div><strong>Order ID:</strong> #${(o.id || '').substring(0,8)}</div>
+                        <div><strong>Order Date:</strong> ${o.date || new Date().toLocaleDateString()}</div>
+                        <div><strong>Status:</strong> ${o.status || 'Pending'}</div>
+                        <div><strong>Payment:</strong> ${o.payment || 'N/A'}</div>
+                    </div>
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
+                    <thead>
+                        <tr style="background: #f8f8f8; border-bottom: 2px solid #ccc;">
+                            <th style="padding: 12px 5px; text-align:left;">Item Description</th>
+                            <th style="padding: 12px 5px; text-align:center;">Qty</th>
+                            <th style="padding: 12px 5px; text-align:right;">Unit Price</th>
+                            <th style="padding: 12px 5px; text-align:right;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHtml}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" style="text-align: right; padding: 10px 5px; font-weight: bold;">Subtotal:</td>
+                            <td style="text-align: right; padding: 10px 5px; font-weight: bold;">৳${subTotal.toFixed(2)}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="text-align: right; padding: 5px 5px; color: #555;">Delivery Charge:</td>
+                            <td style="text-align: right; padding: 5px 5px; color: #555;">+ ৳${deliveryFee.toFixed(2)}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="text-align: right; padding: 5px 5px; color: #555;">Discount:</td>
+                            <td style="text-align: right; padding: 5px 5px; color: #555;">- ৳${discountAmt.toFixed(2)}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="text-align: right; padding: 15px 5px; font-weight: bold; font-size: 18px; border-top: 2px solid #333;">Grand Total:</td>
+                            <td style="text-align: right; padding: 15px 5px; font-weight: bold; font-size: 18px; border-top: 2px solid #333;">৳${total.toFixed(2)}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <div style="text-align: center; margin-top: 40px;">
+                    <svg id="invoiceBarcode"></svg>
+                    <p style="margin-top: 10px; font-size: 12px; color: #888;">Thank you for your purchase!</p>
+                </div>
+            `;
+            
+            JsBarcode("#invoiceBarcode", o.id, {
+                format: "CODE128",
+                width: 1.5,
+                height: 40,
+                displayValue: true,
+                fontSize: 14,
+                margin: 0
+            });
+        }
 
         window.printInvoice = function() {
             window.print();
