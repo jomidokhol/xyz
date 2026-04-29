@@ -203,7 +203,7 @@
 <!-- Firebase SDKs -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, doc, getDoc, collection, addDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, doc, getDoc, collection, addDoc, setDoc, serverTimestamp, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
   const firebaseConfig = {
@@ -222,11 +222,13 @@
   window._getDoc = getDoc;
   window._doc = doc;
   
-  // নতুন ইমপোর্ট করা ফাংশনগুলো উইন্ডোতে অ্যাসাইন করা হলো সাপোর্ট চ্যাটে ডাটা পাঠানোর জন্য
   window._collection = collection;
   window._addDoc = addDoc;
   window._setDoc = setDoc;
   window._serverTimestamp = serverTimestamp;
+  window._getDocs = getDocs;
+  window._query = query;
+  window._where = where;
 
   // ── Auth Guard ──
   onAuthStateChanged(window._auth, async (user) => {
@@ -259,6 +261,8 @@
 let botState = "MAIN_MENU";
 let tempData = {};
 let isBotTyping = false;
+let pendingCommand = null;
+let previousState = null;
 
 /* ── DOM ELEMENTS ── */
 const msgArea = document.getElementById('messages-area');
@@ -267,7 +271,7 @@ const typingRow = document.getElementById('typing-row');
 const msgInput = document.getElementById('msg-input');
 const cmdMenu = document.getElementById('cmd-menu');
 
-/* ── HUMANIZED PHRASES (Temporary) ── */
+/* ── HUMANIZED PHRASES & TASK NAMES ── */
 const WAIT_PHRASES = [
     "একটু অপেক্ষা করুন, আমি চেক করছি...",
     "তথ্যটি যাচাই করা হচ্ছে, জাস্ট এ সেকেন্ড...",
@@ -275,12 +279,26 @@ const WAIT_PHRASES = [
     "অপেক্ষা করার জন্য ধন্যবাদ, আমি দেখছি..."
 ];
 
+const TASK_NAMES = {
+    "AWAIT_TRACK_ID": "অর্ডার ট্র্যাকিং",
+    "AWAIT_CANCEL_ID": "অর্ডার ক্যানসেল",
+    "AWAIT_CANCEL_REASON": "অর্ডার ক্যানসেল",
+    "AWAIT_CANCEL_CONFIRM": "অর্ডার ক্যানসেল কনফার্মেশন",
+    "AWAIT_RETURN_ID": "পণ্য রিটার্ন/রিফান্ড",
+    "AWAIT_RETURN_ISSUE": "পণ্য রিটার্ন/রিফান্ড",
+    "AWAIT_LOC_ID": "লোকেশন পরিবর্তন",
+    "AWAIT_NEW_LOC": "লোকেশন পরিবর্তন",
+    "AWAIT_PAYMENT_ISSUE": "পেমেন্ট জটিলতা সমাধান",
+    "AWAIT_PAY_NUMBER": "পেমেন্ট ডাটা এন্ট্রি",
+    "AWAIT_PAY_AMOUNT": "পেমেন্ট ডাটা এন্ট্রি",
+    "AWAIT_PAY_TRXID": "পেমেন্ট ডাটা এন্ট্রি"
+};
+
 /* ── CORE UI FUNCTIONS ── */
 function scrollToBottom() {
     setTimeout(() => { msgArea.scrollTop = msgArea.scrollHeight; }, 50);
 }
 
-// ক্লিপবোর্ডে কপি করার ফাংশন
 window.copyToClipboard = function(text, btnElement) {
     navigator.clipboard.writeText(text).then(() => {
         const originalText = btnElement.innerHTML;
@@ -294,21 +312,42 @@ function toggleCmdMenu() {
     document.getElementById('slash-btn').classList.toggle('active');
 }
 
+function getCmdText(cmd) {
+    if(cmd==='ACTION_MENU') return '/menu';
+    if(cmd==='ACTION_TRACK') return '/track';
+    if(cmd==='ACTION_CANCEL') return '/cancel';
+    if(cmd==='ACTION_RETURN') return '/return';
+    if(cmd==='ACTION_LOCATION') return '/location';
+    if(cmd==='ACTION_CONTACT') return '/contact';
+    if(cmd==='ACTION_PAYMENT') return '/payment';
+    if(cmd==='ACTION_CUST_ID') return '/id';
+    if(cmd==='ACTION_PASS_REC') return '/password';
+    return cmd;
+}
+
 function execCommand(cmd) {
     toggleCmdMenu();
-    inputWrap.style.display = 'flex'; 
     
-    let cmdText = '';
-    if(cmd==='ACTION_MENU') cmdText = '/menu';
-    if(cmd==='ACTION_TRACK') cmdText = '/track';
-    if(cmd==='ACTION_CANCEL') cmdText = '/cancel';
-    if(cmd==='ACTION_RETURN') cmdText = '/return';
-    if(cmd==='ACTION_LOCATION') cmdText = '/location';
-    if(cmd==='ACTION_CONTACT') cmdText = '/contact';
-    if(cmd==='ACTION_PAYMENT') cmdText = '/payment';
-    if(cmd==='ACTION_CUST_ID') cmdText = '/id';
-    if(cmd==='ACTION_PASS_REC') cmdText = '/password';
-    renderUserMsg(cmdText);
+    // Check if interrupt is needed
+    if (botState !== "MAIN_MENU" && botState !== "AWAIT_INTERRUPT_CONFIRM") {
+        pendingCommand = cmd;
+        previousState = botState;
+        botState = "AWAIT_INTERRUPT_CONFIRM";
+        
+        let taskName = TASK_NAMES[previousState] || "একটি চলমান কাজ";
+        renderUserMsg(getCmdText(cmd));
+        
+        simulateBotThinking(() => {
+            renderBotMsg(`আপনি বর্তমানে <b>${taskName}</b> এর প্রসেসে আছেন। আপনি কি এই কাজটি এখানেই বন্ধ করে নতুন কমান্ডটি চালু করতে চাচ্ছেন?`, [
+                { label: "হ্যাঁ, নতুন কাজ শুরু করুন", value: "CONFIRM_INTERRUPT_YES" },
+                { label: "না, আগের কাজ চালিয়ে যান", value: "CONFIRM_INTERRUPT_NO" }
+            ]);
+        });
+        return;
+    }
+    
+    inputWrap.style.display = 'flex'; 
+    renderUserMsg(getCmdText(cmd));
 
     botState = "MAIN_MENU";
     tempData = {};
@@ -355,12 +394,7 @@ function renderBotMsg(text, options = null) {
             optionsHtml += `<button class="inline-btn" onclick="handleOptionClick('${opt.value}', '${opt.label}')">${opt.label}</button>`;
         });
         optionsHtml += `</div>`;
-        
-        if (options.length === 1 && options[0].value === 'ACTION_MENU') {
-            hideInput = false;
-        } else {
-            hideInput = true;
-        }
+        hideInput = true; // Any options will hide input to force selection
     }
     
     if (hideInput) {
@@ -403,10 +437,8 @@ function simulateBotThinking(finalReplyCallback, requiresWaitMsg = false) {
 
     if (requiresWaitMsg) {
         const randomWait = WAIT_PHRASES[Math.floor(Math.random() * WAIT_PHRASES.length)];
-        
         setTimeout(() => {
             typingRow.style.display = 'none';
-            
             const tempId = 'temp_msg_' + Date.now();
             const tempHtml = `
               <div class="msg-row from-admin" id="${tempId}">
@@ -423,18 +455,15 @@ function simulateBotThinking(finalReplyCallback, requiresWaitMsg = false) {
             setTimeout(() => {
                 const tempEl = document.getElementById(tempId);
                 if(tempEl) tempEl.remove();
-
                 typingRow.style.display = 'flex';
                 msgArea.appendChild(typingRow);
                 scrollToBottom();
-                
                 setTimeout(() => {
                     typingRow.style.display = 'none';
                     isBotTyping = false;
                     finalReplyCallback();
                 }, 1000);
             }, 1200);
-
         }, 800);
     } else {
         setTimeout(() => {
@@ -445,7 +474,7 @@ function simulateBotThinking(finalReplyCallback, requiresWaitMsg = false) {
     }
 }
 
-/* ── FIRESTORE DATA FETCHING & WRITING ── */
+/* ── FIRESTORE DATA FETCHING & LOGIC HELPER ── */
 async function fetchUserOrder(orderId) {
     try {
         const docRef = window._doc(window._db, 'orders', orderId);
@@ -462,20 +491,15 @@ async function fetchUserOrder(orderId) {
     }
 }
 
-// ইউজারের রিকুয়েস্ট সরাসরি সাপোর্ট অ্যাডমিন প্যানেলে পাঠানোর ফাংশন
 async function sendRequestToSupport(requestText) {
     try {
         const uid = window.currentUser.uid;
-        
-        // ১. ইউজারের নামে মেসেজ অ্যাড করা 
         await window._addDoc(window._collection(window._db, 'chats', uid, 'messages'), {
             sender: 'user',
             text: `[Bot Auto Forward]\n${requestText}`,
             timestamp: window._serverTimestamp(),
             read: false
         });
-
-        // ২. চ্যাট প্যানেল নোটিফিকেশন ট্রিগার করা
         await window._setDoc(window._doc(window._db, 'chats', uid), {
             name: window.currentUser.name || 'সম্মানিত গ্রাহক',
             photoURL: window.currentUser.photoURL || '',
@@ -484,47 +508,107 @@ async function sendRequestToSupport(requestText) {
             lastSender: 'user',
             unreadAdmin: 1
         }, { merge: true });
-
         return true;
     } catch(e) {
-        console.error(e);
         return false;
     }
 }
 
+async function fetchDynamicReasons(collectionName) {
+    try {
+        const snap = await window._getDocs(window._collection(window._db, collectionName));
+        let reasons = [];
+        snap.forEach(doc => {
+            if(doc.data().reason) reasons.push({ label: doc.data().reason, value: doc.data().reason });
+        });
+        return reasons;
+    } catch(e) { return []; }
+}
+
+async function getOrderProductData(order) {
+    let productId = null;
+    if(order.cartItems && order.cartItems.length > 0) productId = order.cartItems[0].productId || order.cartItems[0].pid || order.cartItems[0].id;
+    else if(order.products && order.products.length > 0) productId = order.products[0].productId || order.products[0].pid || order.products[0].id;
+    
+    if(!productId) return null;
+    
+    try {
+        let pDoc = await window._getDoc(window._doc(window._db, 'products', productId));
+        if(!pDoc.exists()) {
+            const q = window._query(window._collection(window._db, 'products'), window._where('pid', '==', productId));
+            const qs = await window._getDocs(q);
+            if(!qs.empty) pDoc = qs.docs[0];
+        }
+        if(pDoc && pDoc.exists()) return pDoc.data();
+    } catch(e) {}
+    return null;
+}
+
+function parseReturnTimeMs(timeStr) {
+    if(!timeStr) return 0;
+    let val = parseInt(timeStr) || 0;
+    if(timeStr.includes('hour')) return val * 60 * 60 * 1000;
+    if(timeStr.includes('day')) return val * 24 * 60 * 60 * 1000;
+    return 0;
+}
+
 /* ── BOT LOGIC & STATE MACHINE ── */
+function getFullMenuOptions() {
+    return [
+        { label: "📦 অর্ডার ট্র্যাক করুন", value: "ACTION_TRACK" },
+        { label: "❌ অর্ডার ক্যানসেল করুন", value: "ACTION_CANCEL" },
+        { label: "🔄 পণ্য রিটার্ন/রিফান্ড", value: "ACTION_RETURN" },
+        { label: "📍 লোকেশন পরিবর্তন", value: "ACTION_LOCATION" },
+        { label: "📞 বিসনেস কন্টাক্ট সমূহ", value: "ACTION_CONTACT" },
+        { label: "💳 পেমেন্ট জটিলতা", value: "ACTION_PAYMENT" },
+        { label: "🆔 আপনার কাস্টমার আইডি", value: "ACTION_CUST_ID" },
+        { label: "🔐 পাসওয়ার্ড রিকভারি", value: "ACTION_PASS_REC" }
+    ];
+}
+
 function showMainMenu(isWelcome = false) {
     botState = "MAIN_MENU";
     tempData = {};
-    
     let msg = isWelcome 
         ? `হ্যালো <b>${window.currentUser?.name}</b>! আমি AutoBot 🤖। আপনাকে কীভাবে সাহায্য করতে পারি?` 
         : `মেইন মেনু: আপনাকে কীভাবে সাহায্য করতে পারি?`;
-
     simulateBotThinking(() => {
-        renderBotMsg(msg, [
-            { label: "📦 অর্ডার ট্র্যাক করুন", value: "ACTION_TRACK" },
-            { label: "❌ অর্ডার ক্যানসেল করুন", value: "ACTION_CANCEL" },
-            { label: "🔄 পণ্য রিটার্ন/রিফান্ড", value: "ACTION_RETURN" },
-            { label: "📍 লোকেশন পরিবর্তন", value: "ACTION_LOCATION" },
-            { label: "📞 বিসনেস কন্টাক্ট সমূহ", value: "ACTION_CONTACT" },
-            { label: "💳 পেমেন্ট জটিলতা", value: "ACTION_PAYMENT" },
-            { label: "🆔 আপনার কাস্টমার আইডি", value: "ACTION_CUST_ID" },
-            { label: "🔐 পাসওয়ার্ড রিকভারি", value: "ACTION_PASS_REC" }
-        ]);
+        renderBotMsg(msg, getFullMenuOptions());
     });
 }
 
-function returnToMenuOptions() {
-    return [
-        { label: "মেনুতে ফিরে যান", value: "ACTION_MENU" }
-    ];
+function showAfterTaskMenu(prependMessage = null) {
+    botState = "MAIN_MENU";
+    tempData = {};
+    simulateBotThinking(() => {
+        if (prependMessage) {
+            renderBotMsg(prependMessage);
+        }
+        setTimeout(() => {
+            renderBotMsg("আর কিভাবে সাহায্য করতে পারি?", getFullMenuOptions());
+        }, 600);
+    });
 }
 
 async function processBotLogic(input) {
     input = input.trim();
 
-    // মেইন মেনু রিডাইরেক্ট
+    // Interrupt Confirmation Logic
+    if (botState === "AWAIT_INTERRUPT_CONFIRM") {
+        if (input === "CONFIRM_INTERRUPT_YES") {
+            botState = "MAIN_MENU";
+            tempData = {};
+            processBotLogic(pendingCommand);
+        } else {
+            botState = previousState;
+            inputWrap.style.display = 'flex';
+            simulateBotThinking(() => {
+                renderBotMsg("ঠিক আছে, দয়া করে আগের কাজটি চালিয়ে যান।");
+            });
+        }
+        return;
+    }
+
     if (input === "ACTION_MENU") {
         showMainMenu();
         return;
@@ -534,59 +618,50 @@ async function processBotLogic(input) {
     if (botState === "MAIN_MENU") {
         if (input === "ACTION_TRACK") {
             botState = "AWAIT_TRACK_ID";
-            simulateBotThinking(() => { renderBotMsg("অনুগ্রহ করে আপনার <b>অর্ডার আইডি</b> টি লিখুন:", returnToMenuOptions()); });
+            simulateBotThinking(() => { renderBotMsg("অনুগ্রহ করে আপনার <b>অর্ডার আইডি</b> টি লিখুন:"); });
         } 
         else if (input === "ACTION_CANCEL") {
             botState = "AWAIT_CANCEL_ID";
-            simulateBotThinking(() => { renderBotMsg("অর্ডার ক্যানসেল করতে আপনার <b>অর্ডার আইডি</b> টি দিন:", returnToMenuOptions()); });
+            simulateBotThinking(() => { renderBotMsg("অর্ডার ক্যানসেল করতে আপনার <b>অর্ডার আইডি</b> টি দিন:"); });
         }
         else if (input === "ACTION_RETURN") {
             botState = "AWAIT_RETURN_ID";
-            simulateBotThinking(() => { renderBotMsg("রিটার্ন/রিফান্ডের জন্য আপনার <b>অর্ডার আইডি</b> টি দিন:", returnToMenuOptions()); });
+            simulateBotThinking(() => { renderBotMsg("রিটার্ন/রিফান্ডের জন্য আপনার <b>অর্ডার আইডি</b> টি দিন:"); });
         }
         else if (input === "ACTION_LOCATION") {
             botState = "AWAIT_LOC_ID";
-            simulateBotThinking(() => { renderBotMsg("লোকেশন পরিবর্তনের জন্য <b>অর্ডার আইডি</b> টি দিন:", returnToMenuOptions()); });
+            simulateBotThinking(() => { renderBotMsg("লোকেশন পরিবর্তনের জন্য <b>অর্ডার আইডি</b> টি দিন:"); });
         }
         else if (input === "ACTION_CONTACT") {
             simulateBotThinking(async () => {
                 try {
                     const snap = await window._getDoc(window._doc(window._db, 'settings', 'config'));
-                    let phone = "+8801XXXXXXXXX";
-                    let email = "support@example.com";
-                    let address = "Dhaka, Bangladesh";
-                    
+                    let phone = "+8801XXXXXXXXX", email = "support@example.com", address = "Dhaka, Bangladesh";
                     if (snap.exists()) {
                         const data = snap.data();
                         if(data.contactPhone) phone = data.contactPhone;
                         if(data.contactEmail) email = data.contactEmail;
                         if(data.contactAddress) address = data.contactAddress;
                     }
-
-                    renderBotMsg(`আমাদের সাথে যোগাযোগের তথ্য নিচে দেওয়া হলো:<br><br>
+                    showAfterTaskMenu(`আমাদের সাথে যোগাযোগের তথ্য নিচে দেওয়া হলো:<br><br>
                     <b>ফোন নম্বর:</b> ${phone} <button class="copy-btn" onclick="copyToClipboard('${phone}', this)"><i class="fa-regular fa-copy"></i> কপি</button><br><br>
                     <b>ইমেইল:</b> ${email} <button class="copy-btn" onclick="copyToClipboard('${email}', this)"><i class="fa-regular fa-copy"></i> কপি</button><br><br>
-                    <b>ঠিকানা:</b> ${address}`, returnToMenuOptions());
+                    <b>ঠিকানা:</b> ${address}`);
                 } catch(e) {
-                    renderBotMsg("দুঃখিত, এই মুহূর্তে তথ্য পাওয়া যাচ্ছে না। পরে আবার চেষ্টা করুন।", returnToMenuOptions());
+                    showAfterTaskMenu("দুঃখিত, এই মুহূর্তে তথ্য পাওয়া যাচ্ছে না। পরে আবার চেষ্টা করুন।");
                 }
-                botState = "MAIN_MENU";
             });
         }
         else if (input === "ACTION_CUST_ID") {
             simulateBotThinking(() => {
                 const uid = window.currentUser.uid;
-                renderBotMsg(`আপনার ইউনিক কাস্টমার (Customer) আইডি হলো:<br><br>
+                showAfterTaskMenu(`আপনার ইউনিক কাস্টমার (Customer) আইডি হলো:<br><br>
                 <b>${uid}</b> <button class="copy-btn" onclick="copyToClipboard('${uid}', this)"><i class="fa-regular fa-copy"></i> কপি</button><br><br>
-                (এই আইডিটি আমাদের সাপোর্ট এজেন্টকে দেওয়ার প্রয়োজন হতে পারে)`, returnToMenuOptions());
-                botState = "MAIN_MENU";
+                (এই আইডিটি আমাদের সাপোর্ট এজেন্টকে দেওয়ার প্রয়োজন হতে পারে)`);
             });
         }
         else if (input === "ACTION_PASS_REC") {
-            simulateBotThinking(() => {
-                renderBotMsg("পাসওয়ার্ড রিকভারি ফিচারটি খুব শীঘ্রই যুক্ত করা হবে। অনুগ্রহ করে সাথে থাকুন।", returnToMenuOptions());
-                botState = "MAIN_MENU";
-            });
+            simulateBotThinking(() => { showAfterTaskMenu("পাসওয়ার্ড রিকভারি ফিচারটি খুব শীঘ্রই যুক্ত করা হবে। অনুগ্রহ করে সাথে থাকুন।"); });
         }
         else if (input === "ACTION_PAYMENT") {
             botState = "AWAIT_PAYMENT_ISSUE";
@@ -596,8 +671,7 @@ async function processBotLogic(input) {
                     { label: "পেমেন্ট পেজ থেকে বের করে দিচ্ছে", value: "PAY_ISSUE_2" },
                     { label: "পেমেন্ট নম্বরে টাকা যাচ্ছে না", value: "PAY_ISSUE_3" },
                     { label: "ভুল করে টাকা বেশি/কম পাঠিয়ে ফেলেছি", value: "PAY_ISSUE_4" },
-                    { label: "ব্যাংক ট্রান্সফার হচ্ছে না", value: "PAY_ISSUE_5" },
-                    { label: "মেনুতে ফিরে যান", value: "ACTION_MENU" }
+                    { label: "ব্যাংক ট্রান্সফার হচ্ছে না", value: "PAY_ISSUE_5" }
                 ]);
             });
         }
@@ -609,67 +683,40 @@ async function processBotLogic(input) {
 
     // ── PAYMENT ISSUE FLOW ──
     if (botState === "AWAIT_PAYMENT_ISSUE") {
-        let ruleMsg = "";
-        let issueType = "";
-
-        if(input === "PAY_ISSUE_1") {
-            issueType = "টাকা পাঠানোর পরও পেমেন্ট হয়নি";
-            ruleMsg = "পেমেন্ট গেটওয়ের সার্ভারজনিত কারণে অনেক সময় এমন হতে পারে। ২-৩ মিনিট অপেক্ষা করে স্ট্যাটাস চেক করুন।";
-        } else if(input === "PAY_ISSUE_2") {
-            issueType = "পেমেন্ট পেজ থেকে বের করে দিচ্ছে";
-            ruleMsg = "ব্রাউজারের ক্যাশ ক্লিয়ার করে আবার চেষ্টা করুন অথবা অন্য কোনো ব্রাউজার ব্যবহার করুন।";
-        } else if(input === "PAY_ISSUE_3") {
-            issueType = "পেমেন্ট নম্বরে টাকা যাচ্ছে না";
-            ruleMsg = "আমাদের নম্বরে কোনো লিমিট সমস্যা থাকতে পারে। দয়া করে বিকল্প পেমেন্ট মেথড বা কিছু সময় পর আবার চেষ্টা করুন।";
-        } else if(input === "PAY_ISSUE_4") {
-            issueType = "ভুল করে টাকা বেশি/কম পাঠিয়ে ফেলেছি";
-            ruleMsg = "টাকার পরিমাণ একদম সঠিক না হওয়ার আপনার ট্রাংজেকশন আইডি গ্রহণ করা হয়নি এবং পেমেন্ট আটকে গেছে।";
-        } else if(input === "PAY_ISSUE_5") {
-            issueType = "ব্যাংক ট্রান্সফার হচ্ছে না";
-            ruleMsg = "আপনার ব্যাংক অ্যাকাউন্ট ও আমাদের পেমেন্ট গেটওয়ের মধ্যে সংযোগজনিত ত্রুটি হতে পারে।";
-        } else {
-            showMainMenu();
-            return;
-        }
+        let ruleMsg = "", issueType = "";
+        if(input === "PAY_ISSUE_1") { issueType = "টাকা পাঠানোর পরও পেমেন্ট হয়নি"; ruleMsg = "পেমেন্ট গেটওয়ের সার্ভারজনিত কারণে অনেক সময় এমন হতে পারে। ২-৩ মিনিট অপেক্ষা করে স্ট্যাটাস চেক করুন।"; } 
+        else if(input === "PAY_ISSUE_2") { issueType = "পেমেন্ট পেজ থেকে বের করে দিচ্ছে"; ruleMsg = "ব্রাউজারের ক্যাশ ক্লিয়ার করে আবার চেষ্টা করুন অথবা অন্য কোনো ব্রাউজার ব্যবহার করুন।"; } 
+        else if(input === "PAY_ISSUE_3") { issueType = "পেমেন্ট নম্বরে টাকা যাচ্ছে না"; ruleMsg = "আমাদের নম্বরে কোনো লিমিট সমস্যা থাকতে পারে। দয়া করে বিকল্প পেমেন্ট মেথড বা কিছু সময় পর আবার চেষ্টা করুন।"; } 
+        else if(input === "PAY_ISSUE_4") { issueType = "ভুল করে টাকা বেশি/কম পাঠিয়ে ফেলেছি"; ruleMsg = "টাকার পরিমাণ একদম সঠিক না হওয়ার আপনার ট্রাংজেকশন আইডি গ্রহণ করা হয়নি এবং পেমেন্ট আটকে গেছে।"; } 
+        else if(input === "PAY_ISSUE_5") { issueType = "ব্যাংক ট্রান্সফার হচ্ছে না"; ruleMsg = "আপনার ব্যাংক অ্যাকাউন্ট ও আমাদের পেমেন্ট গেটওয়ের মধ্যে সংযোগজনিত ত্রুটি হতে পারে।"; } 
+        else { showMainMenu(); return; }
 
         tempData.payIssueType = issueType;
         botState = "AWAIT_PAY_NUMBER";
-        simulateBotThinking(() => {
-            renderBotMsg(`${ruleMsg}<br><br>যাচাই করার জন্য অনুগ্রহ করে আপনার <b>টাকা পাঠানোর মোবাইল নম্বরটি (Send Number)</b> নিচে লিখুন:`, returnToMenuOptions());
-        });
+        simulateBotThinking(() => { renderBotMsg(`${ruleMsg}<br><br>যাচাই করার জন্য অনুগ্রহ করে আপনার <b>টাকা পাঠানোর মোবাইল নম্বরটি (Send Number)</b> নিচে লিখুন:`); });
         return;
     }
 
     if (botState === "AWAIT_PAY_NUMBER") {
         tempData.payNumber = input;
         botState = "AWAIT_PAY_AMOUNT";
-        simulateBotThinking(() => {
-            renderBotMsg(`ধন্যবাদ। এবার আপনার পাঠানো <b>টাকার পরিমাণ (Amount)</b> লিখুন:`, returnToMenuOptions());
-        });
+        simulateBotThinking(() => { renderBotMsg(`ধন্যবাদ। এবার আপনার পাঠানো <b>টাকার পরিমাণ (Amount)</b> লিখুন:`); });
         return;
     }
 
     if (botState === "AWAIT_PAY_AMOUNT") {
         tempData.payAmount = input;
         botState = "AWAIT_PAY_TRXID";
-        simulateBotThinking(() => {
-            renderBotMsg(`ধন্যবাদ। সবশেষে আপনার পেমেন্টের <b>ট্রাংজেকশন আইডি (TrxID)</b> টি লিখুন:`, returnToMenuOptions());
-        });
+        simulateBotThinking(() => { renderBotMsg(`ধন্যবাদ। সবশেষে আপনার পেমেন্টের <b>ট্রাংজেকশন আইডি (TrxID)</b> টি লিখুন:`); });
         return;
     }
 
     if (botState === "AWAIT_PAY_TRXID") {
         tempData.trxId = input;
-        
         simulateBotThinking(async () => {
             const summaryData = `[Payment Support Request]\nসমস্যা: ${tempData.payIssueType}\nনম্বর: ${tempData.payNumber}\nপরিমাণ: ${tempData.payAmount}\nTrxID: ${tempData.trxId}`;
-            
-            // ডাটাবেইজে অ্যাডমিনের কাছে রিকুয়েস্ট পাঠানো
             await sendRequestToSupport(summaryData);
-            
-            botState = "MAIN_MENU";
-            // Syntax Fix: Using backticks for html string containing quotes
-            renderBotMsg(`আপনার রিকুয়েষ্টটি আমাদের প্রতিনিধির কাছে পাঠানো হয়েছে।<br><br>অনুগ্রহ করে এখন আমাদের <b>সাপোর্ট পেজে</b> যান এবং আপনার আসল ট্রাংজেকশনের একটি স্ক্রিনশট পাঠিয়ে দিন।<br><br><a href="support.html" class="inline-btn" style="text-decoration:none;"><i class="fa-solid fa-headset"></i> সাপোর্ট পেজে যান</a>`, returnToMenuOptions());
+            showAfterTaskMenu(`আপনার রিকুয়েষ্টটি আমাদের প্রতিনিধির কাছে পাঠানো হয়েছে।<br><br>অনুগ্রহ করে এখন আমাদের <b>সাপোর্ট পেজে</b> যান এবং আপনার আসল ট্রাংজেকশনের একটি স্ক্রিনশট পাঠিয়ে দিন।<br><br><a href="support.html" class="inline-btn" style="text-decoration:none;"><i class="fa-solid fa-headset"></i> সাপোর্ট পেজে যান</a>`);
         }, true);
         return;
     }
@@ -680,10 +727,9 @@ async function processBotLogic(input) {
             const order = await fetchUserOrder(input);
             if (order) {
                 let itemsStr = order.cartItems?.map(i => i.name).join(', ') || 'N/A';
-                renderBotMsg(`আপনার অর্ডার <b>#${input}</b> এর স্ট্যাটাস:<br><br><b>বর্তমান অবস্থা:</b> ${order.status}<br><b>ডেলিভারি ঠিকানা:</b> ${order.address}<br><b>আইটেম:</b> ${itemsStr}`, returnToMenuOptions());
-                botState = "MAIN_MENU";
+                showAfterTaskMenu(`আপনার অর্ডার <b>#${input}</b> এর স্ট্যাটাস:<br><br><b>বর্তমান অবস্থা:</b> ${order.status}<br><b>ডেলিভারি ঠিকানা:</b> ${order.address}<br><b>আইটেম:</b> ${itemsStr}`);
             } else {
-                renderBotMsg("দুঃখিত, এই অর্ডার আইডি টি আপনার অ্যাকাউন্টে পাওয়া যায়নি। সঠিক আইডি দিন বা মেনুতে ফিরে যান।", returnToMenuOptions());
+                showAfterTaskMenu("দুঃখিত, এই অর্ডার আইডি টি আপনার অ্যাকাউন্টে পাওয়া যায়নি। সঠিক আইডি দিন বা মেনু থেকে পুনরায় চেষ্টা করুন।");
             }
         }, true); 
         return;
@@ -695,20 +741,42 @@ async function processBotLogic(input) {
             const order = await fetchUserOrder(input);
             if (order) {
                 if(order.status === 'Shipped' || order.status === 'Delivered' || order.status === 'Cancelled') {
-                    renderBotMsg(`দুঃখিত, আপনার অর্ডারটি বর্তমানে <b>${order.status}</b> অবস্থায় আছে, তাই এটি এখন ক্যানসেল করা সম্ভব নয়।`, returnToMenuOptions());
-                    botState = "MAIN_MENU";
+                    showAfterTaskMenu(`দুঃখিত, আপনার অর্ডারটি বর্তমানে <b>${order.status}</b> অবস্থায় আছে, তাই এটি এখন ক্যানসেল করা সম্ভব নয়।`);
                 } else {
+                    // Check Cancellation Policy from DB Product
+                    let pData = await getOrderProductData(order);
+                    if(pData) {
+                        if(pData.hasOrderCancellation === false) {
+                            showAfterTaskMenu("দুঃখিত, এই পণ্যটির জন্য অর্ডার ক্যানসেলেশন প্রযোজ্য নয়।");
+                            return;
+                        } else if (pData.hasOrderCancellation) {
+                            let val = parseInt(pData.orderCancelTimeValue) || 0;
+                            let unit = pData.orderCancelTimeUnit || 'Minutes';
+                            let allowedMs = unit === 'Hours' ? val * 3600000 : val * 60000;
+                            let orderTime = order.createdAt ? (order.createdAt.toDate ? order.createdAt.toDate() : new Date(order.createdAt)) : (order.date ? new Date(order.date) : new Date());
+                            if((new Date() - orderTime) > allowedMs) {
+                                showAfterTaskMenu(`দুঃখিত, অর্ডার ক্যানসেল করার নির্ধারিত সময় (${val} ${unit}) পার হয়ে গেছে।`);
+                                return;
+                            }
+                        }
+                    }
+
                     tempData.cancelId = input;
                     botState = "AWAIT_CANCEL_REASON";
-                    renderBotMsg("আপনি কি কারণে অর্ডারটি ক্যানসেল করতে চাচ্ছেন?", [
-                        { label: "ডেলিভারিতে দেরি হচ্ছে", value: "Late Delivery" },
-                        { label: "ভুল অর্ডার করে ফেলেছি", value: "Mistake Order" },
-                        { label: "পণ্যটি আর প্রয়োজন নেই", value: "No longer needed" },
-                        { label: "মেনুতে ফিরে যান", value: "ACTION_MENU" }
-                    ]);
+                    let reasonsList = await fetchDynamicReasons('cancelReasons');
+                    if(reasonsList.length === 0) {
+                        reasonsList = [
+                            { label: "ডেলিভারিতে দেরি হচ্ছে", value: "Late Delivery" },
+                            { label: "ভুল অর্ডার করে ফেলেছি", value: "Mistake Order" },
+                            { label: "পণ্যটি আর প্রয়োজন নেই", value: "No longer needed" }
+                        ];
+                    }
+                    reasonsList.push({ label: "অন্যান্য কারণ", value: "Other" });
+                    
+                    renderBotMsg("আপনি কি কারণে অর্ডারটি ক্যানসেল করতে চাচ্ছেন?", reasonsList);
                 }
             } else {
-                renderBotMsg("অর্ডারটি খুঁজে পাওয়া যায়নি। সঠিক আইডি দিন।", returnToMenuOptions());
+                showAfterTaskMenu("অর্ডারটি খুঁজে পাওয়া যায়নি। সঠিক আইডি দিন।");
             }
         }, true);
         return;
@@ -720,7 +788,7 @@ async function processBotLogic(input) {
         simulateBotThinking(() => {
             renderBotMsg(`আপনি কারণ হিসেবে বলেছেন: "${input}"। <br><br>আপনি কি নিশ্চিত যে অর্ডার <b>#${tempData.cancelId}</b> ক্যানসেল করতে চান?`, [
                 { label: "হ্যাঁ, ক্যানসেল করুন", value: "CONFIRM_YES" },
-                { label: "না, বাতিল করুন", value: "ACTION_MENU" }
+                { label: "না, বাতিল করুন", value: "CONFIRM_NO" }
             ]);
         });
         return;
@@ -729,9 +797,10 @@ async function processBotLogic(input) {
     if (botState === "AWAIT_CANCEL_CONFIRM") {
         simulateBotThinking(() => {
             if(input === "CONFIRM_YES") {
-                renderBotMsg(`✅ ধন্যবাদ! আপনার অর্ডার <b>#${tempData.cancelId}</b> ক্যানসেল করার রিকুয়েস্ট সাবমিট হয়েছে। (ডাটাবেইজ রাইট অফ আছে)`, returnToMenuOptions());
+                showAfterTaskMenu(`✅ ধন্যবাদ! আপনার অর্ডার <b>#${tempData.cancelId}</b> ক্যানসেল করার রিকুয়েস্ট সাবমিট হয়েছে। (ডাটাবেইজ রাইট অফ আছে)`);
+            } else {
+                showAfterTaskMenu("অর্ডার ক্যানসেল রিকুয়েস্ট বাতিল করা হয়েছে।");
             }
-            botState = "MAIN_MENU";
         });
         return;
     }
@@ -742,19 +811,41 @@ async function processBotLogic(input) {
             const order = await fetchUserOrder(input);
             if (order) {
                 if(order.status === 'Delivered') {
+                    
+                    // Check Return Policy from DB Product
+                    let pData = await getOrderProductData(order);
+                    if(pData) {
+                        if(pData.hasReturnPolicy === false) {
+                            showAfterTaskMenu("দুঃখিত, এই পণ্যটির কোনো রিটার্ন বা রিফান্ড পলিসি নেই।");
+                            return;
+                        } else if(pData.hasReturnPolicy && pData.returnTime) {
+                            let deliveryTime = order.statusTimestamps && order.statusTimestamps.Delivered ? new Date(order.statusTimestamps.Delivered) : new Date(order.date);
+                            let allowedMs = parseReturnTimeMs(pData.returnTime);
+                            if((new Date() - deliveryTime) > allowedMs) {
+                                showAfterTaskMenu(`দুঃখিত, পণ্য রিটার্ন করার নির্ধারিত সময় (${pData.returnTime}) পার হয়ে গেছে।`);
+                                return;
+                            }
+                        }
+                    }
+
                     botState = "AWAIT_RETURN_ISSUE";
-                    renderBotMsg("পণ্যটি রিটার্ন করার মূল কারণ কী?", [
-                        { label: "পণ্যটি ভাঙা/ক্ষতিগ্রস্ত", value: "Damaged" },
-                        { label: "ভুল সাইজ/কালার পেয়েছি", value: "Wrong Item" },
-                        { label: "ছবির সাথে মিল নেই", value: "Not as described" },
-                        { label: "মেনুতে ফিরে যান", value: "ACTION_MENU" }
-                    ]);
+                    tempData.cancelId = input; // Re-using for return ID
+                    let reasonsList = await fetchDynamicReasons('returnReasons');
+                    if(reasonsList.length === 0) {
+                        reasonsList = [
+                            { label: "পণ্যটি ভাঙা/ক্ষতিগ্রস্ত", value: "Damaged" },
+                            { label: "ভুল সাইজ/কালার পেয়েছি", value: "Wrong Item" },
+                            { label: "ছবির সাথে মিল নেই", value: "Not as described" }
+                        ];
+                    }
+                    reasonsList.push({ label: "অন্যান্য কারণ", value: "Other" });
+
+                    renderBotMsg("পণ্যটি রিটার্ন করার মূল কারণ কী?", reasonsList);
                 } else {
-                    renderBotMsg(`পণ্যটি এখনো ডেলিভারি হয়নি (বর্তমান স্ট্যাটাস: <b>${order.status}</b>)। ডেলিভারি পাওয়ার পর রিটার্ন আবেদন করুন।`, returnToMenuOptions());
-                    botState = "MAIN_MENU";
+                    showAfterTaskMenu(`পণ্যটি এখনো ডেলিভারি হয়নি (বর্তমান স্ট্যাটাস: <b>${order.status}</b>)। ডেলিভারি পাওয়ার পর রিটার্ন আবেদন করুন।`);
                 }
             } else {
-                renderBotMsg("অর্ডার আইডি পাওয়া যায়নি।", returnToMenuOptions()); 
+                showAfterTaskMenu("অর্ডার আইডি পাওয়া যায়নি।"); 
             }
         }, true);
         return;
@@ -762,13 +853,9 @@ async function processBotLogic(input) {
 
     if (botState === "AWAIT_RETURN_ISSUE") {
         simulateBotThinking(async () => {
-            // রিটার্নের ক্ষেত্রেও অ্যাডমিনের কাছে মেসেজ পাঠানো
             const requestMsg = `[Return Request]\nঅর্ডার আইডি: ${tempData.cancelId || 'N/A'}\nকারণ: ${input}`;
             await sendRequestToSupport(requestMsg);
-
-            // Syntax Fix: Using backticks
-            renderBotMsg(`আপনার রিটার্ন রিকোয়েস্ট জমা নেওয়া হয়েছে। আমাদের একজন এজেন্ট খুব দ্রুত আপনার সাথে যোগাযোগ করবেন। বিস্তারিত জানতে আপনি আমাদের <b>সাপোর্ট পেজে</b> মেসেজ দিতে পারেন।<br><br><a href="support.html" class="inline-btn" style="text-decoration:none;"><i class="fa-solid fa-headset"></i> সাপোর্ট পেজে যান</a>`, returnToMenuOptions());
-            botState = "MAIN_MENU";
+            showAfterTaskMenu(`আপনার রিটার্ন রিকোয়েস্ট জমা নেওয়া হয়েছে। আমাদের একজন এজেন্ট খুব দ্রুত আপনার সাথে যোগাযোগ করবেন। বিস্তারিত জানতে আপনি আমাদের <b>সাপোর্ট পেজে</b> মেসেজ দিতে পারেন।<br><br><a href="support.html" class="inline-btn" style="text-decoration:none;"><i class="fa-solid fa-headset"></i> সাপোর্ট পেজে যান</a>`);
         });
         return;
     }
@@ -779,15 +866,14 @@ async function processBotLogic(input) {
             const order = await fetchUserOrder(input);
             if (order) {
                 if(order.status === 'Shipped' || order.status === 'Delivered' || order.status === 'Cancelled') {
-                    renderBotMsg(`অর্ডারটি অলরেডি <b>${order.status}</b>। এখন লোকেশন পরিবর্তন সম্ভব নয়।`, returnToMenuOptions());
-                    botState = "MAIN_MENU";
+                    showAfterTaskMenu(`অর্ডারটি অলরেডি <b>${order.status}</b>। এখন লোকেশন পরিবর্তন সম্ভব নয়।`);
                 } else {
                     tempData.locId = input;
                     botState = "AWAIT_NEW_LOC";
-                    renderBotMsg(`আপনার বর্তমান ঠিকানা: <b>${order.address}</b><br><br>অনুগ্রহ করে আপনার <b>নতুন ডেলিভারি এড্রেসটি</b> লিখে পাঠান:`, returnToMenuOptions());
+                    renderBotMsg(`আপনার বর্তমান ঠিকানা: <b>${order.address}</b><br><br>অনুগ্রহ করে আপনার <b>নতুন ডেলিভারি এড্রেসটি</b> লিখে পাঠান:`);
                 }
             } else {
-                renderBotMsg("অর্ডার আইডি পাওয়া যায়নি।", returnToMenuOptions()); 
+                showAfterTaskMenu("অর্ডার আইডি পাওয়া যায়নি।"); 
             }
         }, true);
         return;
@@ -795,8 +881,7 @@ async function processBotLogic(input) {
 
     if (botState === "AWAIT_NEW_LOC") {
         simulateBotThinking(() => {
-            renderBotMsg(`সফল হয়েছে! আপনার অর্ডার <b>#${tempData.locId}</b> এর নতুন ঠিকানা হিসেবে <b>"${input}"</b> আপডেট করার রিকুয়েস্ট নেওয়া হয়েছে। (ডাটাবেইজ রাইট অফ আছে)`, returnToMenuOptions());
-            botState = "MAIN_MENU";
+            showAfterTaskMenu(`সফল হয়েছে! আপনার অর্ডার <b>#${tempData.locId}</b> এর নতুন ঠিকানা হিসেবে <b>"${input}"</b> আপডেট করার রিকুয়েস্ট নেওয়া হয়েছে। (ডাটাবেইজ রাইট অফ আছে)`);
         });
         return;
     }
