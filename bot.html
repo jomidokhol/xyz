@@ -668,6 +668,7 @@ async function processBotLogic(input) {
             await sendRequestToSupport(summaryData);
             
             botState = "MAIN_MENU";
+            // Syntax Fix: Using backticks for html string containing quotes
             renderBotMsg(`আপনার রিকুয়েষ্টটি আমাদের প্রতিনিধির কাছে পাঠানো হয়েছে।<br><br>অনুগ্রহ করে এখন আমাদের <b>সাপোর্ট পেজে</b> যান এবং আপনার আসল ট্রাংজেকশনের একটি স্ক্রিনশট পাঠিয়ে দিন।<br><br><a href="support.html" class="inline-btn" style="text-decoration:none;"><i class="fa-solid fa-headset"></i> সাপোর্ট পেজে যান</a>`, returnToMenuOptions());
         }, true);
         return;
@@ -765,7 +766,8 @@ async function processBotLogic(input) {
             const requestMsg = `[Return Request]\nঅর্ডার আইডি: ${tempData.cancelId || 'N/A'}\nকারণ: ${input}`;
             await sendRequestToSupport(requestMsg);
 
-            renderBotMsg("আপনার রিটার্ন রিকোয়েস্ট জমা নেওয়া হয়েছে। আমাদের একজন এজেন্ট খুব দ্রুত আপনার সাথে যোগাযোগ করবেন। বিস্তারিত জানতে আপনি আমাদের <b>সাপোর্ট পেজে</b> মেসেজ দিতে পারেন।<br><br><a href="support.html" class="inline-btn" style="text-decoration:none;"><i class="fa-solid fa-headset"></i> সাপোর্ট পেজে যান</a>", returnToMenuOptions());
+            // Syntax Fix: Using backticks
+            renderBotMsg(`আপনার রিটার্ন রিকোয়েস্ট জমা নেওয়া হয়েছে। আমাদের একজন এজেন্ট খুব দ্রুত আপনার সাথে যোগাযোগ করবেন। বিস্তারিত জানতে আপনি আমাদের <b>সাপোর্ট পেজে</b> মেসেজ দিতে পারেন।<br><br><a href="support.html" class="inline-btn" style="text-decoration:none;"><i class="fa-solid fa-headset"></i> সাপোর্ট পেজে যান</a>`, returnToMenuOptions());
             botState = "MAIN_MENU";
         });
         return;
