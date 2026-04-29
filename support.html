@@ -2,7 +2,6 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
-<!-- পরিবর্তন ১: নিচের অংশ হাইড হওয়া এবং জুম ফিক্স করা হয়েছে -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Customer Support - xyz</title>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -37,7 +36,6 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  /* পরিবর্তন ১: মোবাইল ব্রাউজারে 100dvh ব্যবহার করা হয়েছে */
   html, body { height: 100%; height: 100dvh; width: 100%; overflow: hidden; }
   body {
     font-family: 'Hind Siliguri', sans-serif;
@@ -45,14 +43,12 @@
     display: flex; flex-direction: column;
   }
 
-  /* ── FULL PAGE SHELL ── */
   .phone-shell {
     width: 100%; height: 100%; flex: 1;
     background: var(--white); overflow: hidden;
     display: flex; flex-direction: column; position: relative;
   }
 
-  /* ── HEADER ── */
   .chat-header {
     background: linear-gradient(135deg, var(--green-deep) 0%, var(--green-main) 100%);
     padding: 14px 16px 12px;
@@ -92,7 +88,6 @@
   }
   .hdr-btn:hover { background: rgba(255,255,255,0.25); }
 
-  /* ── MESSAGES AREA ── */
   #messages-area {
     flex: 1; overflow-y: auto; padding: 16px 14px;
     display: flex; flex-direction: column; gap: 10px;
@@ -100,16 +95,6 @@
   }
   #messages-area::-webkit-scrollbar { width: 4px; }
   #messages-area::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 4px; }
-
-  /* ── WELCOME BANNER ── */
-  .welcome-banner {
-    background: linear-gradient(135deg, var(--green-ghost), var(--green-pale));
-    border: 1.5px solid var(--green-light); border-radius: 14px;
-    padding: 14px 16px; text-align: center; margin-bottom: 4px; max-width: 500px; margin: 0 auto 4px auto; width: 100%;
-  }
-  .wb-icon { font-size: 32px; margin-bottom: 6px; color: var(--green-main); }
-  .wb-title { font-size: 15px; font-weight: 700; color: var(--green-deep); margin-bottom: 4px; }
-  .wb-text { font-size: 13px; color: var(--gray-600); line-height: 1.5; }
 
   /* ── SUGGESTED & FAQ QUERIES ── */
   .suggested-section { display: flex; flex-direction: column; gap: 6px; max-width: 500px; margin: 0 auto; width: 100%; }
@@ -165,6 +150,32 @@
   .msg-meta { font-size: 10.5px; color: var(--gray-400); margin-top: 3px; padding: 0 3px; display: flex; align-items: center; gap: 4px; }
   .msg-row.from-user .msg-meta { justify-content: flex-end; }
 
+  /* ── LINKS & IMAGES (NEW) ── */
+  .link-btn {
+    display: inline-flex; align-items: center; gap: 4px; background: rgba(0,0,0,0.08); 
+    border: 1px solid rgba(0,0,0,0.05); padding: 4px 10px; border-radius: 12px; 
+    color: var(--green-deep); text-decoration: none; font-size: 12px; font-weight: 600; 
+    margin-top: 4px; transition: var(--transition);
+  }
+  .link-btn:hover { background: rgba(0,0,0,0.12); transform: translateY(-1px); }
+  .msg-row.from-user .link-btn { background: rgba(255,255,255,0.2); color: #fff; border-color: rgba(255,255,255,0.3); }
+  .msg-row.from-user .link-btn:hover { background: rgba(255,255,255,0.3); }
+
+  .img-wrap { position: relative; display: inline-block; max-width: 100%; margin-top: 4px; }
+  .msg-image { max-width: 100%; border-radius: 8px; cursor: pointer; border: 1px solid rgba(0,0,0,0.1); display: block; }
+  .download-btn {
+    position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.5); color: #fff;
+    width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    text-decoration: none; transition: 0.2s; backdrop-filter: blur(2px); font-size: 14px;
+  }
+  .download-btn:hover { background: var(--green-main); transform: scale(1.1); }
+
+  /* ── LIGHTBOX (NEW) ── */
+  #lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 99999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+  #lightbox img { max-width: 90%; max-height: 90%; border-radius: 8px; box-shadow: 0 4px 24px rgba(0,0,0,0.3); }
+  .lightbox-close { position: absolute; top: 20px; right: 24px; color: #fff; font-size: 32px; cursor: pointer; transition: 0.2s; }
+  .lightbox-close:hover { color: var(--red); transform: scale(1.1); }
+
   /* ── TYPING BUBBLE ── */
   .typing-row { display: flex; align-items: flex-end; gap: 7px; max-width: 700px; margin: 0 auto; width: 100%; }
   .typing-bubble {
@@ -177,14 +188,13 @@
   .t-dot:nth-child(3) { animation-delay: 0.4s; }
   @keyframes typBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
 
-  /* ── CONTEXT MENU ── */
+  /* ── CONTEXT MENU & EDIT OVERLAY ── */
   .ctx-menu {
     position: fixed; z-index: 1000;
     background: var(--white); border-radius: 12px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.18);
     overflow: hidden; min-width: 160px;
-    animation: ctxIn 0.15s ease;
-    border: 1px solid var(--gray-200);
+    animation: ctxIn 0.15s ease; border: 1px solid var(--gray-200);
   }
   @keyframes ctxIn { from{opacity:0;transform:scale(.9)} to{opacity:1;transform:scale(1)} }
   .ctx-item {
@@ -197,7 +207,6 @@
   .ctx-item.danger:hover { background: #fef2f2; }
   .ctx-divider { height: 1px; background: var(--gray-100); }
 
-  /* ── EDIT OVERLAY ── */
   .edit-overlay {
     position: absolute; inset: 0; z-index: 500;
     background: rgba(0,0,0,0.5); display: flex;
@@ -233,18 +242,18 @@
     border-top: 1px solid var(--gray-200);
     padding: 10px 12px; padding-bottom: calc(10px + var(--safe-bottom));
     display: flex; align-items: flex-end; justify-content: center;
-    position: relative; z-index: 20;
-    box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+    position: relative; z-index: 20; box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
   }
   .input-container { display: flex; align-items: flex-end; gap: 8px; max-width: 700px; width: 100%; }
   
-  .emoji-btn, .send-btn {
-    width: 40px; height: 40px; border-radius: 50%; border: none;
+  .action-btn {
+    width: 38px; height: 38px; border-radius: 50%; border: none;
     flex-shrink: 0; display: flex; align-items: center; justify-content: center;
     font-size: 18px; cursor: pointer; transition: var(--transition);
+    background: var(--gray-100); color: var(--gray-500);
   }
-  .emoji-btn { background: var(--gray-100); color: var(--gray-500); font-size: 20px; }
-  .emoji-btn:hover { background: var(--green-ghost); color: var(--green-deep); }
+  .action-btn:hover { background: var(--green-ghost); color: var(--green-main); }
+  
   .msg-input-wrap { flex: 1; position: relative; }
   .msg-input {
     width: 100%; border: 1.5px solid var(--gray-200); border-radius: 22px;
@@ -254,7 +263,12 @@
     transition: var(--transition); line-height: 1.4; display: block;
   }
   .msg-input:focus { border-color: var(--green-main); background: var(--white); box-shadow: 0 0 0 3px rgba(22,163,74,0.12); }
-  .send-btn { background: var(--green-main); color: #fff; font-size: 16px; }
+  
+  .send-btn { 
+    width: 40px; height: 40px; border-radius: 50%; border: none; flex-shrink: 0; 
+    display: flex; align-items: center; justify-content: center; background: var(--green-main); 
+    color: #fff; font-size: 16px; cursor: pointer; transition: var(--transition); 
+  }
   .send-btn:hover { background: var(--green-deep); transform: scale(1.06); }
   .send-btn:disabled { background: var(--gray-300); cursor: not-allowed; transform: none; }
 
@@ -282,13 +296,17 @@
   }
   .scroll-down-btn.visible { display: flex; }
 
-  /* ── CONNECTION STATUS ── */
+  /* ── STATUS BANNERS ── */
   .conn-banner {
     background: var(--red); color: #fff; text-align: center;
     font-size: 13px; font-weight: 600; padding: 6px; display: none;
   }
   .conn-banner.show { display: block; }
-  .conn-banner i { margin-right: 5px; }
+  .upload-banner {
+    background: var(--green-mid); color: #fff; text-align: center;
+    font-size: 12px; font-weight: 600; padding: 4px; display: none;
+  }
+  .upload-banner.show { display: block; }
 
   /* ── OVERLAY MASK ── */
   #overlay-mask { position: fixed; inset: 0; z-index: 900; display: none; }
@@ -298,8 +316,9 @@
 <body>
 <div class="phone-shell" id="phone-shell">
 
-  <!-- Offline Banner -->
+  <!-- Banners -->
   <div class="conn-banner" id="conn-banner"><i class="fa-solid fa-triangle-exclamation"></i> ইন্টারনেট সংযোগ নেই</div>
+  <div class="upload-banner" id="upload-banner"><i class="fa-solid fa-spinner fa-spin"></i> ছবি আপলোড হচ্ছে...</div>
 
   <!-- Header -->
   <div class="chat-header">
@@ -318,18 +337,20 @@
     </div>
   </div>
 
-  <!-- Messages -->
+  <!-- Messages Area -->
   <div id="messages-area">
     <!-- Injected by JS -->
   </div>
 
-  <!-- Scroll Down Button -->
   <button class="scroll-down-btn" id="scroll-down-btn" onclick="scrollToBottom()"><i class="fa-solid fa-arrow-down"></i></button>
 
-  <!-- Input -->
+  <!-- Input Area -->
   <div class="input-wrapper" id="input-wrapper">
     <div class="input-container">
-      <button class="emoji-btn" id="emoji-btn" onclick="toggleEmoji()"><i class="fa-regular fa-face-smile"></i></button>
+      <button class="action-btn" id="emoji-btn" onclick="toggleEmoji()"><i class="fa-regular fa-face-smile"></i></button>
+      <input type="file" id="user-file-input" accept="image/*" style="display:none" onchange="handleImageUpload(event)">
+      <button class="action-btn" onclick="document.getElementById('user-file-input').click()" title="ছবি পাঠান"><i class="fa-solid fa-paperclip"></i></button>
+      
       <div class="msg-input-wrap">
         <textarea class="msg-input" id="msg-input" placeholder="বার্তা লিখুন…" rows="1" onkeydown="handleKey(event)" oninput="onInputChange(this)"></textarea>
       </div>
@@ -363,6 +384,12 @@
 </div>
 <div id="overlay-mask" onclick="closeCtxMenu()"></div>
 
+<!-- Lightbox for Image Preview -->
+<div id="lightbox" onclick="this.style.display='none'">
+  <span class="lightbox-close">&times;</span>
+  <img id="lightbox-img" src="">
+</div>
+
 <!-- Firebase SDKs -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -387,7 +414,6 @@
   window._fs = { collection, doc, setDoc, getDoc, addDoc, onSnapshot, updateDoc, deleteDoc, serverTimestamp, query, orderBy };
   window._firebaseReady = true;
 
-  // ── Auth Guard & Fetch User Data ──
   onAuthStateChanged(auth, async (user) => {
     if(!user) {
         window.location.href = 'home.html';
@@ -403,14 +429,16 @@
     initApp();
   });
 
-  // ── Strict Presence Logic ──
   window.setUserPresence = async function(isOnline) {
     if(!window.USER_ID) return;
     await setDoc(doc(db,'userStatus',window.USER_ID), { online: isOnline, lastSeen: serverTimestamp(), userId: window.USER_ID }, {merge:true});
   };
 
   const handlePresence = () => { 
-    window.setUserPresence(document.hasFocus() && document.visibilityState === "visible"); 
+    window.setUserPresence(document.hasFocus() && document.visibilityState === "visible");
+    if(document.visibilityState === "visible" && window._messages) {
+        markAdminMessagesAsRead(window._messages);
+    }
   };
   
   document.addEventListener("visibilitychange", handlePresence);
@@ -465,6 +493,15 @@
   let isInitialLoad = true;
   let processedNotifications = {};
 
+  // Mark messages as read function
+  function markAdminMessagesAsRead(msgs) {
+    msgs.forEach(m => {
+        if (m.sender === 'admin' && !m.read && document.visibilityState === 'visible') {
+            window.updateMsgFirestore(m.id, { read: true });
+        }
+    });
+  }
+
   window.listenMessages = function() {
     const { onSnapshot, collection, query, orderBy } = window._fs;
     const q = query(collection(db,'chats',window.USER_ID,'messages'), orderBy('timestamp'));
@@ -472,15 +509,17 @@
     window._msgUnsub = onSnapshot(q, (snap) => {
       window._messages = snap.docs.map(d => ({id:d.id,...d.data()}));
       renderMessages();
+      
+      // Mark as read immediately if app is visible
+      markAdminMessagesAsRead(window._messages);
 
-      // Notifications logic (Change 1)
       snap.docChanges().forEach(change => {
           if (!isInitialLoad && change.type === 'added') {
               const data = change.doc.data();
               if (data.sender === 'admin' && document.visibilityState === 'hidden' && navigator.onLine) {
                   if (!processedNotifications[change.doc.id]) {
                       processedNotifications[change.doc.id] = true;
-                      playNotification("ShopSupport", data.text);
+                      playNotification("ShopSupport", data.text || "📷 Image");
                   }
               }
           }
@@ -489,20 +528,25 @@
     });
   };
 
-  window.sendToFirestore = async function(text) {
+  window.sendToFirestore = async function(text, isAI = false, imgUrl = null) {
+    if(!text && !imgUrl) return;
     const { addDoc, doc, collection, serverTimestamp, setDoc } = window._fs;
-    const msgRef = await addDoc(collection(db,'chats',window.USER_ID,'messages'), {
-      text, sender:'user', timestamp: serverTimestamp(), read:false, deleted:false, edited:false
-    });
+    
+    const msgData = { sender:'user', timestamp: serverTimestamp(), read:false, deleted:false, edited:false };
+    if(text) msgData.text = text;
+    if(imgUrl) msgData.imageUrl = imgUrl;
+
+    const msgRef = await addDoc(collection(db,'chats',window.USER_ID,'messages'), msgData);
+    
     await setDoc(doc(db,'chats',window.USER_ID), {
       name: window._userName || 'ইউজার',
       photoURL: window._userPhoto || '',
-      lastMessage:text, lastMessageTime:serverTimestamp(), lastSender:'user',
+      lastMessage: imgUrl ? '📷 Image' : text, lastMessageTime:serverTimestamp(), lastSender:'user',
       unreadAdmin: (window._users?.find(u=>u.id===window.USER_ID)?.unreadAdmin||0)+1,
       online: true, userId: window.USER_ID
     },{merge:true});
 
-    if (!window._adminOnline && window._settings && window._settings.geminiApiKey) {
+    if (!window._adminOnline && window._settings && window._settings.geminiApiKey && text) {
         triggerAIAutoReply(text);
     }
     return msgRef.id;
@@ -561,11 +605,10 @@ let ctxMsgId = null;
 let editMsgId = null;
 let typingTimer = null;
 let isAtBottom = true;
-let isTyping = false; // পরিবর্তন ২: ইনপুট ল্যাগ ঠেকানোর জন্য টাইপিং স্টেট
+let isTyping = false; 
 
 const EMOJIS = ['😊','😂','❤️','👍','🎉','😍','🙏','✅','🔥','💯','😢','😮','🤔','👋','💬','🛒','📦','✨','⭐','💚'];
 
-// Request Notification Permission
 if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
     Notification.requestPermission();
 }
@@ -577,10 +620,11 @@ function playNotification(title, body) {
 
 function defaultSettings(){
   return {
-    welcomeMsg: 'স্বাগতম <user_name>! আমাদের সাপোর্ট টিমে আপনাকে স্বাগতম। কীভাবে সাহায্য করতে পারি?',
+    welcomeMsg: 'স্বাগতম! আমাদের সাপোর্ট টিমে আপনাকে স্বাগতম। কীভাবে সাহায্য করতে পারি?',
     faqs: [],
     autoReply: true,
     keywords: [],
+    imgApiKey: '',
     suggestedQueries: ['অর্ডার স্ট্যাটাস', 'ডেলিভারি চার্জ কত?', 'পণ্য ফেরত কীভাবে?', 'পেমেন্ট পদ্ধতি']
   };
 }
@@ -594,18 +638,22 @@ function renderMessages(){
   let rawWelcomeMsg = s.welcomeMsg || 'স্বাগতম! আমাদের সাপোর্ট টিমে আপনাকে স্বাগতম। কীভাবে সাহায্য করতে পারি?';
   let parsedWelcomeMsg = rawWelcomeMsg.replace(/<user_name>/g, window._userName || 'গ্রাহক');
 
+  // Welcome Bubble
   html += `
-    <div class="welcome-banner">
-      <div class="wb-icon"><i class="fa-solid fa-headset"></i></div>
-      <div class="wb-title">ShopSupport</div>
-      <div class="wb-text">${escHtml(parsedWelcomeMsg)}</div>
+    <div class="msg-row from-admin" style="margin-top: 10px;">
+      <div class="msg-avatar"><i class="fa-solid fa-headset"></i></div>
+      <div class="bubble-wrap">
+        <div class="bubble from-admin">
+          ${escHtml(parsedWelcomeMsg)}
+        </div>
+      </div>
     </div>`;
 
+  // FAQ Chips under Welcome Bubble
   if(s.faqs && s.faqs.length > 0){
     html += `
-      <div class="suggested-section">
-        <div class="sq-label"><i class="fa-solid fa-circle-question"></i> সাধারণ জিজ্ঞাসা (FAQ)</div>
-        <div class="sq-chips">
+      <div class="suggested-section" style="margin-left: 42px; margin-top: 4px; margin-bottom: 12px; align-items: flex-start; max-width: 80%;">
+        <div class="sq-chips" style="justify-content: flex-start;">
           ${s.faqs.map((faq, i) => `<div class="sq-chip" onclick="triggerFaq(${i})">${escHtml(faq.q)}</div>`).join('')}
         </div>
       </div>`;
@@ -616,8 +664,8 @@ function renderMessages(){
   if(userMsgs.length === 0 && s.suggestedQueries?.length){
     html += `
       <div class="suggested-section">
-        <div class="sq-label"><i class="fa-solid fa-lightbulb"></i> প্রায়শই জিজ্ঞাসিত</div>
-        <div class="sq-chips">
+        <div class="sq-label" style="text-align:center;"><i class="fa-solid fa-lightbulb"></i> প্রায়শই জিজ্ঞাসিত</div>
+        <div class="sq-chips" style="justify-content:center;">
           ${s.suggestedQueries.map(q=>`<div class="sq-chip" onclick="selectSuggested('${escAttr(q)}')">${escHtml(q)}</div>`).join('')}
         </div>
       </div>`;
@@ -643,6 +691,28 @@ function renderMessages(){
         else avatarHTML = `${(window._userName || 'আমি').charAt(0).toUpperCase()}`;
     }
 
+    // Double Checkmarks for Read Status
+    let readStatusHtml = '';
+    if (isUser && !m.deleted) {
+        readStatusHtml = m.read 
+            ? '<i class="fa-solid fa-check-double" style="color:var(--green-main)"></i>' 
+            : '<i class="fa-solid fa-check" style="color:var(--gray-400)"></i>';
+    }
+
+    // Link parsing <link>url</link>
+    let formattedText = escHtml(m.text||'');
+    formattedText = formattedText.replace(/&lt;link&gt;(.*?)&lt;\/?link&gt;/gi, '<a href="$1" target="_blank" class="link-btn"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open</a>');
+
+    // Image & Download button
+    let imgHtml = '';
+    if(m.imageUrl) {
+        imgHtml = `
+        <div class="img-wrap">
+            <img src="${m.imageUrl}" class="msg-image" onclick="openLightbox('${m.imageUrl}')">
+            <a href="${m.imageUrl}" download target="_blank" class="download-btn" title="Download"><i class="fa-solid fa-download"></i></a>
+        </div>`;
+    }
+
     html += `
       <div class="msg-row ${isUser?'from-user':'from-admin'}" data-id="${m.id}">
         ${!isUser?`<div class="msg-avatar"><i class="fa-solid fa-headset"></i></div>` : `<div class="msg-avatar">${avatarHTML}</div>`}
@@ -653,11 +723,14 @@ function renderMessages(){
             ontouchstart="onBubbleTouchStart(event,'${m.id}','${m.sender}')"
             ontouchend="onBubbleTouchEnd()"
             ontouchmove="onBubbleTouchEnd()">
-            ${aiTag} ${m.deleted ? '<i>এই বার্তাটি মুছে ফেলা হয়েছে</i>' : escHtml(m.text||'')}
+            ${aiTag} 
+            ${m.deleted ? '<i>এই বার্তাটি মুছে ফেলা হয়েছে</i>' : ''}
+            ${!m.deleted && imgHtml ? imgHtml : ''}
+            ${!m.deleted && formattedText ? `<div>${formattedText}</div>` : ''}
           </div>
           <div class="msg-meta">
             ${t}
-            ${isUser && !m.deleted ? `<span style="font-size:11px; margin-left:4px; font-weight:600; color:${m.read?'var(--green-main)':'var(--gray-400)'}">${m.read?'Read':'Unread'}</span>` : ''}
+            ${readStatusHtml ? `<span style="font-size:12px; margin-left:6px;">${readStatusHtml}</span>` : ''}
           </div>
         </div>
       </div>`;
@@ -677,6 +750,12 @@ function renderMessages(){
 
 function escHtml(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
 function escAttr(t){ return String(t).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+// Lightbox logic
+window.openLightbox = function(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').style.display = 'flex';
+};
 
 window.triggerFaq = async function(index) {
     const s = window._settings;
@@ -700,6 +779,45 @@ window.triggerFaq = async function(index) {
     }, 1000);
 };
 
+// Customer Image Upload
+window.handleImageUpload = async function(e) {
+    const file = e.target.files[0];
+    if(!file) return;
+    
+    const s = window._settings || {};
+    if(!s.imgApiKey) {
+        alert("Image upload API Key is not configured by admin.");
+        e.target.value = '';
+        return;
+    }
+    
+    document.getElementById('upload-banner').classList.add('show');
+    const formData = new FormData();
+    formData.append("image", file);
+    
+    try {
+        const res = await fetch(`https://api.imgbb.com/1/upload?key=${s.imgApiKey}`, {
+            method: "POST",
+            body: formData
+        });
+        const data = await res.json();
+        document.getElementById('upload-banner').classList.remove('show');
+        
+        if(data.success) {
+            const imgUrl = data.data.url;
+            if(window.sendToFirestore) {
+                await window.sendToFirestore('', false, imgUrl);
+            }
+        } else {
+            alert("ছবি আপলোড ব্যর্থ হয়েছে!");
+        }
+    } catch(err) {
+        document.getElementById('upload-banner').classList.remove('show');
+        alert("ইন্টারনেট সমস্যা, ছবি আপলোড সম্ভব হয়নি!");
+    }
+    e.target.value = '';
+};
+
 async function sendMessage(){
   const ta = document.getElementById('msg-input');
   const text = ta.value.trim();
@@ -711,7 +829,6 @@ async function sendMessage(){
   if(window.sendToFirestore) await window.sendToFirestore(text);
   checkAutoReply(text);
   
-  // পরিবর্তন ২: মেসেজ সেন্ড হবার পর টাইপিং স্ট্যাটাস রি-সেট হবে
   if(window.setTypingFirestore) {
       isTyping = false;
       window.setTypingFirestore(false);
@@ -738,7 +855,6 @@ function handleKey(e){
 }
 window.handleKey = handleKey;
 
-// পরিবর্তন ২: ল্যাগ ইস্যু ফিক্স করতে টাইপিং ইভেন্ট Debounce করা হয়েছে
 function onInputChange(el){
   el.style.height='auto';
   el.style.height=Math.min(el.scrollHeight,100)+'px';
@@ -818,7 +934,6 @@ window.selectSuggested = function(text){
 // CONTEXT MENU & EDITING
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 let holdTimer = null;
-let activeMsgText = '';
 
 function onBubbleContextMenu(e, msgId, sender){
   e.preventDefault();
@@ -846,7 +961,6 @@ function openCtxMenu(x, y, msgId, sender){
   const msg = window._messages.find(m=>m.id===msgId);
   if(!msg || msg.deleted) return;
 
-  activeMsgText = msg.text||'';
   editBtn.style.display = sender==='user' ? 'flex' : 'none';
   document.querySelector('.ctx-item.danger').style.display = sender==='user' ? 'flex' : 'none';
 
@@ -895,7 +1009,13 @@ window.confirmEdit = async function(){
   const msg = window._messages.find(m=>m.id===editMsgId);
   document.getElementById('edit-overlay').style.display='none';
   editMsgId=null;
-  if(window.updateMsgFirestore) await window.updateMsgFirestore(msg.id, {text:newText, edited:true});
+  if(window.updateMsgFirestore) {
+      await window.updateMsgFirestore(msg.id, {
+          text: newText, 
+          edited: true, 
+          previousText: msg.text // Tracking old message
+      });
+  }
 };
 
 window.ctxDelete = async function(){
