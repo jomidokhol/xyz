@@ -36,11 +36,8 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; font-family: 'Hind Siliguri', sans-serif; background: var(--gray-100); color: var(--gray-800); overflow: hidden; }
 
-  /* ── LAYOUT ── */
-  /* পরিবর্তন ২: 100vh এর পরিবর্তে 100% ব্যবহার করা হয়েছে যাতে মোবাইল ব্রাউজারে ইনপুট হাইড না হয় */
   #app { display: flex; height: 100%; width: 100%; }
 
-  /* ── LOGIN OVERLAY ── */
   #login-overlay {
     position: fixed; inset: 0; background: var(--gray-100);
     display: flex; align-items: center; justify-content: center; z-index: 9999;
@@ -52,14 +49,12 @@
   .login-title { font-size: 22px; font-weight: 700; color: var(--green-deep); text-align: center; margin-bottom: 24px; }
   .login-btn { width: 100%; margin-top: 10px; text-align: center; justify-content: center; padding: 12px; }
   
-  /* ── SIDEBAR OVERLAY FOR MOBILE ── */
   #sidebar-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.4);
     z-index: 900; opacity: 0; visibility: hidden; transition: var(--transition);
   }
   #sidebar-overlay.show { opacity: 1; visibility: visible; }
 
-  /* ── SIDEBAR ── */
   #sidebar {
     width: var(--sidebar-w); background: var(--green-deep);
     display: flex; flex-direction: column; flex-shrink: 0; position: relative; z-index: 1000;
@@ -109,18 +104,15 @@
   .logout-btn { color: var(--red); background: none; border: none; font-size: 16px; cursor: pointer; transition: 0.2s; }
   .logout-btn:hover { color: #fca5a5; transform: scale(1.1); }
 
-  /* ── MAIN AREA ── */
   #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
   .mobile-menu-btn {
     display: none; background: transparent; border: none; font-size: 20px;
     color: var(--gray-700); cursor: pointer; margin-right: 12px;
   }
 
-  /* ── VIEWS ── */
   .view { display: none; flex: 1; overflow: hidden; flex-direction: column; }
   .view.active { display: flex; }
 
-  /* ── CHAT LIST & WINDOW (SEPARATE PAGES) ── */
   #view-chatlist { position: relative; }
 
   .chat-list-panel {
@@ -186,7 +178,6 @@
   }
   .filter-tab.active { background: var(--green-main); border-color: var(--green-main); color: #fff; }
 
-  /* ── CHAT WINDOW (FULL OVERLAY) ── */
   #chat-window {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     display: none; flex-direction: column;
@@ -196,7 +187,7 @@
   .chat-header {
     background: var(--white); border-bottom: 1px solid var(--gray-200);
     padding: 12px 20px; display: flex; align-items: center; gap: 12px;
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-sm); position: relative; z-index: 60;
   }
   .back-btn {
     font-size: 20px; color: var(--gray-700); cursor: pointer;
@@ -227,9 +218,23 @@
     flex: 1; overflow-y: auto; padding: 20px;
     display: flex; flex-direction: column; gap: 12px;
     background: linear-gradient(180deg, var(--gray-50) 0%, #fff 100%);
+    position: relative;
   }
   .messages-area::-webkit-scrollbar { width: 5px; }
   .messages-area::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 5px; }
+
+  /* ── Loader Overlay (New) ── */
+  .chat-loader { 
+    position: absolute; inset: 0; background: rgba(249,250,251,0.85); 
+    z-index: 50; display: flex; align-items: center; justify-content: center; 
+    visibility: hidden; opacity: 0; transition: var(--transition); backdrop-filter: blur(2px);
+  }
+  .chat-loader.show { visibility: visible; opacity: 1; }
+  .spinner { 
+    width: 36px; height: 36px; border: 3px solid var(--gray-200); 
+    border-top-color: var(--green-main); border-radius: 50%; animation: spin 0.8s linear infinite; 
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
   .msg-row { display: flex; align-items: flex-end; gap: 8px; }
   .msg-row.from-admin { flex-direction: row-reverse; }
@@ -243,13 +248,13 @@
   .bubble {
     max-width: 68%; padding: 10px 14px; border-radius: 16px;
     font-size: 14px; line-height: 1.5; position: relative;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.07); animation: fadeUp 0.2s ease;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07); animation: fadeUp 0.2s ease; word-break: break-word;
   }
   @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
   .bubble.from-user { background: var(--white); color: var(--gray-800); border-bottom-left-radius: 4px; }
   .bubble.from-admin { background: var(--green-main); color: #fff; border-bottom-right-radius: 4px; }
-  .msg-meta { font-size: 10px; color: var(--gray-400); margin-top: 2px; padding: 0 4px; }
-  .msg-row.from-admin .msg-meta { text-align: right; }
+  .msg-meta { font-size: 10px; color: var(--gray-400); margin-top: 2px; padding: 0 4px; display: flex; align-items: center; }
+  .msg-row.from-admin .msg-meta { justify-content: flex-end; }
 
   .date-divider {
     text-align: center; margin: 8px 0; color: var(--gray-400); font-size: 11px; font-weight: 600;
@@ -257,8 +262,26 @@
   }
   .date-divider::before, .date-divider::after { content:''; flex:1; height:1px; background:var(--gray-200); }
 
-  /* ── ADMIN INPUT AREA ── */
-  /* পরিবর্তন ২: safe-area-inset-bottom যুক্ত করা হয়েছে যাতে নিচের অংশ হাইড না হয় */
+  /* ── Edited Badge & Links (New) ── */
+  .edit-badge { cursor: pointer; font-size: 11px; text-decoration: underline; margin-left: 6px; font-style: italic; color: inherit; opacity: 0.8; }
+  .edit-badge:hover { opacity: 1; }
+  .link-btn {
+    display: inline-flex; align-items: center; gap: 4px; background: rgba(0,0,0,0.05); 
+    border: 1px solid rgba(0,0,0,0.1); padding: 4px 10px; border-radius: 12px; 
+    color: inherit; text-decoration: none; font-size: 12px; font-weight: 600; 
+    margin-top: 4px; transition: var(--transition);
+  }
+  .link-btn:hover { background: rgba(0,0,0,0.1); transform: translateY(-1px); }
+  .msg-row.from-admin .link-btn { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3); }
+  .msg-row.from-admin .link-btn:hover { background: rgba(255,255,255,0.3); }
+
+  /* ── Image & Lightbox (New) ── */
+  .msg-image { max-width: 100%; border-radius: 8px; cursor: pointer; margin-top: 4px; border: 1px solid rgba(0,0,0,0.1); }
+  #lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 99999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+  #lightbox img { max-width: 90%; max-height: 90%; border-radius: 8px; box-shadow: 0 4px 24px rgba(0,0,0,0.3); }
+  .lightbox-close { position: absolute; top: 20px; right: 24px; color: #fff; font-size: 32px; cursor: pointer; transition: 0.2s; }
+  .lightbox-close:hover { color: var(--red); transform: scale(1.1); }
+
   .admin-input-area {
     background: var(--white); border-top: 1px solid var(--gray-200);
     padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)) 16px;
@@ -275,6 +298,11 @@
   .qr-chip:hover { background: var(--green-pale); border-color: var(--green-main); }
 
   .input-row { display: flex; align-items: flex-end; gap: 8px; }
+  
+  /* ── Attach Button (New) ── */
+  .attach-btn { background: transparent; border: none; font-size: 20px; color: var(--gray-500); cursor: pointer; padding: 8px; transition: var(--transition); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .attach-btn:hover { background: var(--gray-200); color: var(--green-main); }
+
   .admin-textarea {
     flex: 1; border: 1.5px solid var(--gray-200); border-radius: 10px;
     padding: 10px 14px; font-family: inherit; font-size: 14px;
@@ -290,7 +318,6 @@
   }
   .send-btn:hover { background: var(--green-deep); transform: scale(1.05); }
 
-  /* ── SETTINGS VIEW ── */
   #view-settings { background: var(--gray-50); overflow-y: auto; }
   .settings-container { max-width: 820px; margin: 0 auto; padding: 24px; }
   .settings-header { margin-bottom: 24px; display: flex; align-items: center; }
@@ -378,7 +405,6 @@
 </head>
 <body>
 
-<!-- Login Overlay -->
 <div id="login-overlay">
   <div class="login-box">
     <div class="login-title"><i class="fa-solid fa-user-shield"></i> Admin Login</div>
@@ -397,10 +423,8 @@
 </div>
 
 <div id="app">
-  <!-- Sidebar Backdrop for Mobile -->
   <div id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
 
-  <!-- SIDEBAR -->
   <nav id="sidebar">
     <div class="sidebar-logo">
       <div class="logo-icon"><i class="fa-solid fa-store"></i></div>
@@ -441,10 +465,7 @@
     </div>
   </nav>
 
-  <!-- MAIN -->
   <main id="main">
-
-    <!-- ── CHAT LIST VIEW (SEPARATE PAGE 1) ── -->
     <div class="view active" id="view-chatlist">
       <div class="chat-list-panel" id="chat-list-panel">
         <div class="panel-header">
@@ -465,9 +486,8 @@
         <div class="user-list" id="user-list"></div>
       </div>
 
-      <!-- ── CHAT WINDOW (SEPARATE PAGE 2) ── -->
       <div id="chat-window">
-        <div id="chat-content" style="display:flex;flex:1;flex-direction:column;overflow:hidden;">
+        <div id="chat-content" style="display:flex;flex:1;flex-direction:column;overflow:hidden;position:relative;">
           <div class="chat-header">
             <button class="back-btn" onclick="closeChat()"><i class="fa-solid fa-arrow-left"></i></button>
             <div class="chat-header-avatar" id="ch-avatar"></div>
@@ -482,11 +502,16 @@
             </div>
           </div>
 
+          <!-- Loading Animation -->
+          <div class="chat-loader" id="chat-loader"><div class="spinner"></div></div>
+
           <div class="messages-area" id="messages-area"></div>
 
           <div class="admin-input-area">
             <div class="quick-replies-bar" id="qr-bar"></div>
             <div class="input-row">
+              <input type="file" id="admin-file-input" accept="image/*" style="display:none" onchange="handleAdminImageUpload(event)">
+              <button class="attach-btn" onclick="document.getElementById('admin-file-input').click()" title="ছবি যুক্ত করুন"><i class="fa-solid fa-paperclip"></i></button>
               <textarea class="admin-textarea" id="admin-msg" placeholder="বার্তা লিখুন…" rows="1" onkeydown="handleAdminKey(event)" oninput="autoGrow(this)"></textarea>
               <button class="send-btn" onclick="sendAdminMsg()"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
@@ -495,7 +520,6 @@
       </div>
     </div>
 
-    <!-- ── SETTINGS VIEW ── -->
     <div class="view" id="view-settings">
       <div class="settings-container">
         <div class="settings-header">
@@ -507,7 +531,6 @@
         </div>
 
         <div class="settings-grid">
-          <!-- Welcome Message -->
           <div class="settings-card full">
             <div class="card-title"><span class="card-icon"><i class="fa-solid fa-hand-holding-heart"></i></span> ওয়েলকাম মেসেজ</div>
             <div class="form-group">
@@ -517,10 +540,9 @@
             <button class="btn-primary" onclick="saveSettings('welcome')"><i class="fa-solid fa-floppy-disk"></i> সেভ করুন</button>
           </div>
 
-          <!-- FAQ Buttons Section (Change 4) -->
           <div class="settings-card full">
             <div class="card-title"><span class="card-icon"><i class="fa-solid fa-circle-question"></i></span> FAQ বাটন (Q & A)</div>
-            <p style="font-size:12px;color:var(--gray-500);margin-bottom:14px">ওয়েলকাম বার্তার সাথে ব্যবহারকারীকে এই প্রশ্নগুলোর বাটন দেখানো হবে。</p>
+            <p style="font-size:12px;color:var(--gray-500);margin-bottom:14px">ওয়েলকাম বার্তার সাথে ব্যবহারকারীকে এই প্রশ্নগুলোর বাটন দেখানো হবে।</p>
             <div id="faq-list"></div>
             <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
               <input type="text" class="form-input" id="new-faq-q" placeholder="প্রশ্ন (যেমন: ডেলিভারি চার্জ কত?)" style="flex:0 0 200px">
@@ -531,25 +553,23 @@
             <button class="btn-primary" onclick="saveSettings('faqs')"><i class="fa-solid fa-floppy-disk"></i> FAQ সেভ করুন</button>
           </div>
 
-          <!-- Auto Reply & Gemini AI -->
           <div class="settings-card">
             <div class="card-title"><span class="card-icon"><i class="fa-solid fa-robot"></i></span> অটো রিপ্লাই ও AI সেটিংস</div>
             <div class="form-group">
               <label class="form-label">Google Gemini API Key (অফলাইন AI এর জন্য)</label>
               <input type="text" class="form-input" id="gemini-api" placeholder="AIzaSy...">
             </div>
+            <div class="form-group">
+              <label class="form-label">Image Upload API Key (যেমন: ImgBB)</label>
+              <input type="text" class="form-input" id="img-api" placeholder="ImgBB API Key...">
+            </div>
             <div class="toggle-row">
               <span class="toggle-label">অটো রিপ্লাই চালু</span>
               <label class="toggle"><input type="checkbox" id="auto-reply-toggle" checked onchange="settings.autoReply = this.checked"><span class="toggle-slider"></span></label>
             </div>
-            <div class="toggle-row">
-              <span class="toggle-label">অফলাইনে অটো রিপ্লাই</span>
-              <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-            </div>
             <button class="btn-primary" style="margin-top:10px" onclick="saveSettings('autoreply')"><i class="fa-solid fa-floppy-disk"></i> সেভ করুন</button>
           </div>
 
-          <!-- Keyword Rules -->
           <div class="settings-card full">
             <div class="card-title"><span class="card-icon"><i class="fa-solid fa-key"></i></span> কী-ওয়ার্ড অটো রিপ্লাই রুলস</div>
             <p style="font-size:12px;color:var(--gray-500);margin-bottom:14px">কী-ওয়ার্ড ম্যাচ করলে স্বয়ংক্রিয় উত্তর পাঠানো হবে।</p>
@@ -563,7 +583,6 @@
             <button class="btn-primary" onclick="saveSettings('keywords')"><i class="fa-solid fa-floppy-disk"></i> রুলস সেভ করুন</button>
           </div>
 
-          <!-- Quick Replies -->
           <div class="settings-card">
             <div class="card-title"><span class="card-icon"><i class="fa-solid fa-bolt"></i></span> কুইক রিপ্লাই</div>
             <div class="tag-list" id="qr-tags"></div>
@@ -574,7 +593,6 @@
             <button class="btn-primary" style="margin-top:15px" onclick="saveSettings('quickreplies')"><i class="fa-solid fa-floppy-disk"></i> সেভ করুন</button>
           </div>
 
-          <!-- Suggested Queries -->
           <div class="settings-card">
             <div class="card-title"><span class="card-icon"><i class="fa-solid fa-lightbulb"></i></span> Suggested Queries (ইউজার)</div>
             <div class="tag-list" id="sq-tags"></div>
@@ -588,7 +606,6 @@
       </div>
     </div>
 
-    <!-- ── STATS VIEW ── -->
     <div class="view" id="view-stats" style="align-items:center;justify-content:center;background:var(--gray-50)">
       <div style="text-align:center;color:var(--gray-400)">
         <div style="font-size:56px;margin-bottom:12px"><i class="fa-solid fa-chart-simple"></i></div>
@@ -597,6 +614,12 @@
     </div>
 
   </main>
+</div>
+
+<!-- Lightbox for Image Preview -->
+<div id="lightbox" onclick="this.style.display='none'">
+  <span class="lightbox-close">&times;</span>
+  <img id="lightbox-img" src="">
 </div>
 
 <div class="toast" id="toast"></div>
@@ -625,7 +648,6 @@
   window._firestore = { collection, doc, setDoc, getDoc, addDoc, onSnapshot, updateDoc, serverTimestamp, query, orderBy };
   window._db = db;
 
-  // ── Auth Guard ──
   onAuthStateChanged(auth, (user) => {
     if(user) {
       document.getElementById('login-overlay').style.display = 'none';
@@ -650,7 +672,6 @@
     signOut(auth);
   };
 
-  // ── Presence Tracking ──
   window.setAdminPresence = async function(isOnline) {
     const adminRef = doc(db, 'adminStatus', 'admin');
     await setDoc(adminRef, { online: isOnline, lastSeen: serverTimestamp() }, {merge:true});
@@ -662,7 +683,6 @@
   window.addEventListener("blur", handlePresence);
   window.addEventListener('pagehide', () => window.setAdminPresence(false));
   
-  // Reload Alert
   window.addEventListener('beforeunload', (e) => { 
       window.setAdminPresence(false);
       e.preventDefault();
@@ -688,7 +708,6 @@
     return date.toLocaleDateString('bn-BD');
   }
 
-  // Request Notification Permission
   if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
       Notification.requestPermission();
   }
@@ -722,7 +741,7 @@
 
                       playNotification(data.name || "নতুন ম্যাসেজ", data.lastMessage);
 
-                      // পরিবর্তন ১: অটো রিপ্লাই লজিক আপডেট করা হলো (শব্দের অংশ বা লাইন ম্যাচ করার জন্য)
+                      // Keyword Auto Reply logic
                       if (settings.autoReply && settings.keywords && settings.keywords.length > 0) {
                           const lowerMsg = (data.lastMessage || "").toLowerCase();
                           const matchedRule = settings.keywords.find(k => {
@@ -752,7 +771,14 @@
 
     const q = query(collection(db, 'chats', userId, 'messages'), orderBy('timestamp'));
     if(window._msgUnsub) window._msgUnsub();
+    
+    // Show Loader
+    document.getElementById('chat-loader').classList.add('show');
+
     window._msgUnsub = onSnapshot(q, (snap) => {
+      // Hide Loader
+      document.getElementById('chat-loader').classList.remove('show');
+      
       renderMessages(snap.docs.map(d => ({id:d.id, ...d.data()})));
       
       snap.docs.forEach(docSnap => {
@@ -776,11 +802,20 @@
     });
   };
 
-  window.sendMessage = async function(userId, text, isAI = false) {
-    if(!text.trim()) return;
+  window.sendMessage = async function(userId, text, isAI = false, imgUrl = null) {
+    if(!text.trim() && !imgUrl) return;
     const { addDoc, collection, updateDoc, doc, serverTimestamp } = window._firestore;
-    await addDoc(collection(db, 'chats', userId, 'messages'), { text, sender: 'admin', timestamp: serverTimestamp(), read: false, isAI: isAI });
-    await updateDoc(doc(db, 'chats', userId), { lastMessage: text, lastMessageTime: serverTimestamp(), lastSender: 'admin' });
+    
+    const msgData = { sender: 'admin', timestamp: serverTimestamp(), read: false, isAI: isAI };
+    if(text) msgData.text = text;
+    if(imgUrl) msgData.imageUrl = imgUrl;
+
+    await addDoc(collection(db, 'chats', userId, 'messages'), msgData);
+    await updateDoc(doc(db, 'chats', userId), { 
+      lastMessage: imgUrl ? '📷 Image' : text, 
+      lastMessageTime: serverTimestamp(), 
+      lastSender: 'admin' 
+    });
   };
 
   window.loadSettingsData = async function() {
@@ -815,6 +850,7 @@ let settings = {
   welcomeMsg: 'স্বাগতম! আমাদের সাপোর্ট টিমে আপনাকে স্বাগতম। কীভাবে সাহায্য করতে পারি?',
   faqs: [],
   geminiApiKey: '',
+  imgApiKey: '',
   autoReply: true,
   keywords: [],
   quickReplies: ['ধন্যবাদ', 'আমরা দেখছি', '১-২ দিনের মধ্যে সমাধান হবে'],
@@ -960,7 +996,7 @@ function updateChatHeader(userId, data) {
   `;
 }
 
-// ── Admin Message Edit Events (Change 2) ──
+// Edit Events
 let holdTimeout;
 window.startHold = function(id, text) {
   holdTimeout = setTimeout(() => {
@@ -973,6 +1009,17 @@ window.startHold = function(id, text) {
 };
 window.clearHold = function() {
   clearTimeout(holdTimeout);
+};
+
+// Open Lightbox
+window.openLightbox = function(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').style.display = 'flex';
+};
+
+// Show Edit History Modal/Alert
+window.showEditHistory = function(oldT, newT) {
+  alert(`পূর্বের লেখা:\n${decodeURIComponent(oldT)}\n\nবর্তমান লেখা:\n${decodeURIComponent(newT)}`);
 };
 
 function renderMessages(msgs) {
@@ -998,7 +1045,28 @@ function renderMessages(msgs) {
     if (user.photoURL) avatarHTML = `<img src="${user.photoURL}" class="msg-avatar-small" style="object-fit:cover;">`;
 
     const safeText = encodeURIComponent(m.text || '');
+    const oldSafeText = encodeURIComponent(m.previousText || '');
     const holdEvents = isAdmin ? `onmousedown="startHold('${m.id}', decodeURIComponent('${safeText}'))" onmouseup="clearHold()" onmouseleave="clearHold()" ontouchstart="startHold('${m.id}', decodeURIComponent('${safeText}'))" ontouchend="clearHold()" ontouchmove="clearHold()"` : '';
+
+    // Links parsing <link>url</link> or <link>url<link>
+    let formattedText = escHtml(m.text||'');
+    formattedText = formattedText.replace(/&lt;link&gt;(.*?)&lt;\/?link&gt;/gi, '<a href="$1" target="_blank" class="link-btn"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open</a>');
+
+    // Edited badge with history tracking
+    let editHtml = '';
+    if(m.edited) {
+      if(m.previousText) {
+         editHtml = `<span class="edit-badge" title="আগের লেখা দেখুন" onclick="showEditHistory('${oldSafeText}', '${safeText}')">(Edited)</span>`;
+      } else {
+         editHtml = `<span class="edit-badge">(Edited)</span>`;
+      }
+    }
+
+    // Media Image
+    let imgHtml = m.imageUrl ? `<img src="${m.imageUrl}" class="msg-image" onclick="openLightbox('${m.imageUrl}')">` : '';
+
+    // Status double check marks
+    let readStatusHtml = m.read ? '<i class="fa-solid fa-check-double" style="color:var(--green-main)"></i>' : '<i class="fa-solid fa-check" style="color:var(--gray-400)"></i>';
 
     html += `
       <div class="msg-row ${isAdmin?'from-admin':''}">
@@ -1006,11 +1074,12 @@ function renderMessages(msgs) {
         <div>
           <div class="bubble ${isAdmin?'from-admin':'from-user'}" ${holdEvents} style="${isAdmin?'cursor:pointer; -webkit-user-select:none; user-select:none;':''}">
             ${m.isAI ? '<span style="font-size:10px; background:var(--green-pale); color:var(--green-deep); padding:2px 6px; border-radius:10px; margin-bottom:4px; display:inline-block;">AI Auto Reply</span><br>' : ''}
-            ${escHtml(m.text||'')}
+            ${imgHtml}
+            ${formattedText ? `<div>${formattedText} ${editHtml}</div>` : editHtml}
           </div>
           <div class="msg-meta">
             ${t}
-            ${isAdmin ? `<span style="font-size:11px; margin-left:4px; font-weight:600; color:${m.read?'var(--green-main)':'var(--gray-400)'}">${m.read?'Read':'Unread'}</span>` : ''}
+            ${isAdmin ? `<span style="font-size:12px; margin-left:6px;">${readStatusHtml}</span>` : ''}
           </div>
         </div>
       </div>`;
@@ -1027,6 +1096,41 @@ window.sendAdminMsg = function() {
   if(!text || !currentUserId) return;
   ta.value=''; ta.style.height='';
   if(window.sendMessage) window.sendMessage(currentUserId, text, false);
+};
+
+// Admin Image Upload
+window.handleAdminImageUpload = async function(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+  
+  if(!settings.imgApiKey) {
+      showToast("API Key সেট করা নেই! দয়া করে সেটিংসে গিয়ে Image Upload API Key দিন।", false);
+      e.target.value = '';
+      return;
+  }
+  
+  showToast("ছবি আপলোড হচ্ছে...", true);
+  const formData = new FormData();
+  formData.append("image", file);
+  
+  try {
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${settings.imgApiKey}`, {
+          method: "POST",
+          body: formData
+      });
+      const data = await res.json();
+      if(data.success) {
+          const imgUrl = data.data.url;
+          if(window.sendMessage && currentUserId) {
+              window.sendMessage(currentUserId, '', false, imgUrl);
+          }
+      } else {
+          showToast("আপলোড ব্যর্থ হয়েছে!", false);
+      }
+  } catch(err) {
+      showToast("আপলোডে সমস্যা হয়েছে!", false);
+  }
+  e.target.value = '';
 };
 
 window.handleAdminKey = function(e) {
@@ -1050,12 +1154,12 @@ window.insertQuickReply = function(text){
 
 function renderSettingsPage(){
   document.getElementById('gemini-api').value = settings.geminiApiKey || '';
+  document.getElementById('img-api').value = settings.imgApiKey || '';
   document.getElementById('welcome-msg').value = settings.welcomeMsg || '';
   document.getElementById('auto-reply-toggle').checked = settings.autoReply !== false;
   renderFaqList(); renderKwList(); renderQrTags(); renderSqTags();
 }
 
-// ── FAQ Logic (Change 4) ──
 function renderFaqList(){
   const list = document.getElementById('faq-list');
   if(!settings.faqs || !settings.faqs.length){ list.innerHTML='<p style="color:var(--gray-400);font-size:13px">কোনো FAQ নেই।</p>'; return; }
@@ -1124,6 +1228,7 @@ window.addSuggestedQuery = function(){
 
 window.saveSettings = async function(type){
   settings.geminiApiKey = document.getElementById('gemini-api').value;
+  settings.imgApiKey = document.getElementById('img-api').value;
   settings.welcomeMsg = document.getElementById('welcome-msg').value;
 
   if(window.saveSettingsToFirestore) await window.saveSettingsToFirestore(settings);
@@ -1133,6 +1238,7 @@ window.saveSettings = async function(type){
 function applySettings(data){ 
   Object.assign(settings, data); 
   document.getElementById('gemini-api').value = settings.geminiApiKey || '';
+  document.getElementById('img-api').value = settings.imgApiKey || '';
   document.getElementById('welcome-msg').value = settings.welcomeMsg || '';
   document.getElementById('auto-reply-toggle').checked = settings.autoReply !== false;
   if(!settings.faqs) settings.faqs = [];
