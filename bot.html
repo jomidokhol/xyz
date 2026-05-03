@@ -33,10 +33,18 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; height: 100dvh; width: 100%; overflow: hidden; }
-  body { font-family: 'Hind Siliguri', sans-serif; background: var(--gray-100); color: var(--gray-800); display: flex; flex-direction: column; }
+  
+  /* ── STICKY LAYOUT (Mobile Keyboard Fix) ── */
+  html, body { 
+    height: 100%; height: 100dvh; width: 100%; 
+    overflow: hidden; position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+  }
+  body { font-family: 'Hind Siliguri', sans-serif; background: var(--gray-100); color: var(--gray-800); }
 
-  .phone-shell { width: 100%; height: 100%; flex: 1; background: var(--white); overflow: hidden; display: flex; flex-direction: column; position: relative; }
+  .phone-shell { 
+    width: 100%; height: 100%; position: absolute; inset: 0;
+    background: var(--white); overflow: hidden; display: flex; flex-direction: column; 
+  }
 
   /* ── HEADER ── */
   .chat-header {
@@ -88,8 +96,30 @@
   .copy-btn { margin-left: 8px; font-size: 11px; padding: 3px 8px; border-radius: 4px; border: 1px solid var(--green-main); background: var(--green-ghost); color: var(--green-deep); cursor: pointer; transition: 0.2s; }
   .copy-btn:hover { background: var(--green-main); color: white; }
 
+  /* ── BOT WAITING ANIMATION (SHIMMER + SLIDE UP) ── */
+  .wait-temp { margin-bottom: -15px; }
+  .wait-msg-anim {
+    background: linear-gradient(90deg, rgba(22,163,74,0.3) 0%, var(--green-deep) 25%, rgba(22,163,74,0.3) 50%, var(--green-main) 75%, rgba(22,163,74,0.3) 100%);
+    background-size: 200% auto;
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: shimmer 1.5s linear infinite, slide-up-exit 2.4s ease-in-out forwards;
+    font-size: 13.5px;
+    font-weight: 600;
+    font-style: italic;
+    display: inline-block;
+  }
+  @keyframes shimmer { 0% { background-position: 100% center; } 100% { background-position: -100% center; } }
+  @keyframes slide-up-exit {
+    0% { opacity: 0; transform: translateY(15px); }
+    15% { opacity: 1; transform: translateY(0); }
+    80% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-20px); }
+  }
+
   /* ── TYPING BUBBLE ── */
-  .typing-row { display: flex; align-items: flex-end; gap: 7px; max-width: 700px; margin: 0 auto; width: 100%; }
+  .typing-row { display: flex; align-items: flex-end; gap: 7px; max-width: 700px; margin: 0 auto; width: 100%; transition: all 0.3s ease; }
   .typing-bubble {
     background: var(--bubble-admin-bg); border-radius: 16px; border-bottom-left-radius: 4px;
     padding: 12px 16px; display: flex; align-items: center; gap: 5px; box-shadow: 0 1px 6px rgba(0,0,0,0.09);
@@ -271,6 +301,11 @@ const typingRow = document.getElementById('typing-row');
 const msgInput = document.getElementById('msg-input');
 const cmdMenu = document.getElementById('cmd-menu');
 
+/* Scroll To Bottom when Mobile Keyboard Opens */
+msgInput.addEventListener('focus', () => {
+    setTimeout(scrollToBottom, 300);
+});
+
 /* ── HUMANIZED PHRASES & TASK NAMES ── */
 const WAIT_PHRASES = [
     "একটু অপেক্ষা করুন, আমি চেক করছি...",
@@ -289,9 +324,17 @@ const TASK_NAMES = {
     "AWAIT_LOC_ID": "লোকেশন পরিবর্তন",
     "AWAIT_NEW_LOC": "লোকেশন পরিবর্তন",
     "AWAIT_PAYMENT_ISSUE": "পেমেন্ট জটিলতা সমাধান",
-    "AWAIT_PAY_NUMBER": "পেমেন্ট ডাটা এন্ট্রি",
-    "AWAIT_PAY_AMOUNT": "পেমেন্ট ডাটা এন্ট্রি",
-    "AWAIT_PAY_TRXID": "পেমেন্ট ডাটা এন্ট্রি"
+    "PAY_MFS_NUM": "পেমেন্ট ডাটা এন্ট্রি",
+    "PAY_MFS_AMT": "পেমেন্ট ডাটা এন্ট্রি",
+    "PAY_MFS_TRX": "পেমেন্ট ডাটা এন্ট্রি",
+    "PAY_BANK_NAME": "পেমেন্ট ডাটা এন্ট্রি",
+    "PAY_BANK_ACC": "পেমেন্ট ডাটা এন্ট্রি",
+    "PAY_BANK_AMT": "পেমেন্ট ডাটা এন্ট্রি",
+    "PAY_BANK_TRX": "পেমেন্ট ডাটা এন্ট্রি",
+    "PAY_CARD_DIGITS": "পেমেন্ট ডাটা এন্ট্রি",
+    "PAY_CARD_AMT": "পেমেন্ট ডাটা এন্ট্রি",
+    "PAY_GEN_TRX": "পেমেন্ট ডাটা এন্ট্রি",
+    "PAY_GEN_AMT": "পেমেন্ট ডাটা এন্ট্রি"
 };
 
 /* ── CORE UI FUNCTIONS ── */
@@ -427,6 +470,7 @@ window.handleOptionClick = function(value, label) {
     processBotLogic(value);
 };
 
+/* ── SIMULATE BOT THINKING & ANIMATION ── */
 function simulateBotThinking(finalReplyCallback, requiresWaitMsg = false) {
     if (isBotTyping) return;
     isBotTyping = true;
@@ -437,34 +481,28 @@ function simulateBotThinking(finalReplyCallback, requiresWaitMsg = false) {
 
     if (requiresWaitMsg) {
         const randomWait = WAIT_PHRASES[Math.floor(Math.random() * WAIT_PHRASES.length)];
+        const tempId = 'temp_msg_' + Date.now();
+        const tempHtml = `
+          <div class="msg-row from-admin wait-temp" id="${tempId}">
+            <div class="msg-avatar" style="background:transparent; color:transparent; border:none;"></div>
+            <div class="bubble-wrap" style="width:100%">
+              <div class="bubble from-admin" style="background:transparent; box-shadow:none; padding: 2px 13px;">
+                <span class="wait-msg-anim">${randomWait}</span>
+              </div>
+            </div>
+          </div>`;
+        
+        // Insert Shimmer Text just ABOVE the typing indicator
+        typingRow.insertAdjacentHTML('beforebegin', tempHtml);
+        scrollToBottom();
+        
         setTimeout(() => {
+            const tempEl = document.getElementById(tempId);
+            if(tempEl) tempEl.remove();
             typingRow.style.display = 'none';
-            const tempId = 'temp_msg_' + Date.now();
-            const tempHtml = `
-              <div class="msg-row from-admin" id="${tempId}">
-                <div class="msg-avatar" style="background:#fff; color:var(--green-main); border:1px solid var(--green-main)"><i class="fa-solid fa-robot"></i></div>
-                <div class="bubble-wrap" style="width:100%">
-                  <div class="bubble from-admin" style="color: var(--gray-500); font-style: italic;">
-                    ${randomWait}
-                  </div>
-                </div>
-              </div>`;
-            msgArea.insertAdjacentHTML('beforeend', tempHtml);
-            scrollToBottom();
-            
-            setTimeout(() => {
-                const tempEl = document.getElementById(tempId);
-                if(tempEl) tempEl.remove();
-                typingRow.style.display = 'flex';
-                msgArea.appendChild(typingRow);
-                scrollToBottom();
-                setTimeout(() => {
-                    typingRow.style.display = 'none';
-                    isBotTyping = false;
-                    finalReplyCallback();
-                }, 1000);
-            }, 1200);
-        }, 800);
+            isBotTyping = false;
+            finalReplyCallback();
+        }, 2400); // Waits right before the slide-up-exit animation ends
     } else {
         setTimeout(() => {
             typingRow.style.display = 'none';
@@ -552,6 +590,13 @@ function parseReturnTimeMs(timeStr) {
     return 0;
 }
 
+function finishPaymentFlow(summaryData) {
+    simulateBotThinking(async () => {
+        await sendRequestToSupport(summaryData);
+        showAfterTaskMenu(`আপনার রিকুয়েষ্টটি আমাদের প্রতিনিধির কাছে পাঠানো হয়েছে।<br><br>অনুগ্রহ করে এখন আমাদের <b>সাপোর্ট পেজে</b> যান এবং আপনার আসল ট্রাংজেকশনের একটি স্ক্রিনশট বা প্রমান পাঠিয়ে দিন।<br><br><a href="support.html" class="inline-btn" style="text-decoration:none;"><i class="fa-solid fa-headset"></i> সাপোর্ট পেজে যান</a>`);
+    }, true);
+}
+
 /* ── BOT LOGIC & STATE MACHINE ── */
 function getFullMenuOptions() {
     return [
@@ -635,13 +680,13 @@ async function processBotLogic(input) {
         else if (input === "ACTION_CONTACT") {
             simulateBotThinking(async () => {
                 try {
-                    const snap = await window._getDoc(window._doc(window._db, 'settings', 'config'));
+                    const snap = await window._getDoc(window._doc(window._db, 'settings', 'general'));
                     let phone = "+8801XXXXXXXXX", email = "support@example.com", address = "Dhaka, Bangladesh";
                     if (snap.exists()) {
                         const data = snap.data();
-                        if(data.contactPhone) phone = data.contactPhone;
-                        if(data.contactEmail) email = data.contactEmail;
-                        if(data.contactAddress) address = data.contactAddress;
+                        if(data.footerPhone) phone = data.footerPhone;
+                        if(data.footerEmail) email = data.footerEmail;
+                        if(data.footerAddress) address = data.footerAddress;
                     }
                     showAfterTaskMenu(`আমাদের সাথে যোগাযোগের তথ্য নিচে দেওয়া হলো:<br><br>
                     <b>ফোন নম্বর:</b> ${phone} <button class="copy-btn" onclick="copyToClipboard('${phone}', this)"><i class="fa-regular fa-copy"></i> কপি</button><br><br>
@@ -667,11 +712,12 @@ async function processBotLogic(input) {
             botState = "AWAIT_PAYMENT_ISSUE";
             simulateBotThinking(() => {
                 renderBotMsg("আপনার পেমেন্ট সংক্রান্ত সমস্যাটি নির্বাচন করুন:", [
-                    { label: "টাকা পাঠানোর পরও পেমেন্ট হয়নি", value: "PAY_ISSUE_1" },
-                    { label: "পেমেন্ট পেজ থেকে বের করে দিচ্ছে", value: "PAY_ISSUE_2" },
-                    { label: "পেমেন্ট নম্বরে টাকা যাচ্ছে না", value: "PAY_ISSUE_3" },
-                    { label: "ভুল করে টাকা বেশি/কম পাঠিয়ে ফেলেছি", value: "PAY_ISSUE_4" },
-                    { label: "ব্যাংক ট্রান্সফার হচ্ছে না", value: "PAY_ISSUE_5" }
+                    { label: "মোবাইল ব্যাংকিং (বিকাশ/নগদ) পেমেন্ট হয়নি", value: "PAY_ISSUE_MFS" },
+                    { label: "ব্যাংক ট্রান্সফার পেমেন্ট হয়নি", value: "PAY_ISSUE_BANK" },
+                    { label: "কার্ড পেমেন্ট (Card) ফেইল হয়েছে", value: "PAY_ISSUE_CARD" },
+                    { label: "ভুল করে টাকা বেশি/কম পাঠিয়ে ফেলেছি", value: "PAY_ISSUE_WRONG_AMT" },
+                    { label: "অ্যাকাউন্ট থেকে টাকা কেটেছে কিন্তু অর্ডার কনফার্ম হয়নি", value: "PAY_ISSUE_DEDUCTED" },
+                    { label: "পেমেন্ট পেজ থেকে বের করে দিচ্ছে", value: "PAY_ISSUE_PAGE_ERROR" }
                 ]);
             });
         }
@@ -683,43 +729,94 @@ async function processBotLogic(input) {
 
     // ── PAYMENT ISSUE FLOW ──
     if (botState === "AWAIT_PAYMENT_ISSUE") {
-        let ruleMsg = "", issueType = "";
-        if(input === "PAY_ISSUE_1") { issueType = "টাকা পাঠানোর পরও পেমেন্ট হয়নি"; ruleMsg = "পেমেন্ট গেটওয়ের সার্ভারজনিত কারণে অনেক সময় এমন হতে পারে। ২-৩ মিনিট অপেক্ষা করে স্ট্যাটাস চেক করুন।"; } 
-        else if(input === "PAY_ISSUE_2") { issueType = "পেমেন্ট পেজ থেকে বের করে দিচ্ছে"; ruleMsg = "ব্রাউজারের ক্যাশ ক্লিয়ার করে আবার চেষ্টা করুন অথবা অন্য কোনো ব্রাউজার ব্যবহার করুন।"; } 
-        else if(input === "PAY_ISSUE_3") { issueType = "পেমেন্ট নম্বরে টাকা যাচ্ছে না"; ruleMsg = "আমাদের নম্বরে কোনো লিমিট সমস্যা থাকতে পারে। দয়া করে বিকল্প পেমেন্ট মেথড বা কিছু সময় পর আবার চেষ্টা করুন।"; } 
-        else if(input === "PAY_ISSUE_4") { issueType = "ভুল করে টাকা বেশি/কম পাঠিয়ে ফেলেছি"; ruleMsg = "টাকার পরিমাণ একদম সঠিক না হওয়ার আপনার ট্রাংজেকশন আইডি গ্রহণ করা হয়নি এবং পেমেন্ট আটকে গেছে।"; } 
-        else if(input === "PAY_ISSUE_5") { issueType = "ব্যাংক ট্রান্সফার হচ্ছে না"; ruleMsg = "আপনার ব্যাংক অ্যাকাউন্ট ও আমাদের পেমেন্ট গেটওয়ের মধ্যে সংযোগজনিত ত্রুটি হতে পারে।"; } 
-        else { showMainMenu(); return; }
-
-        tempData.payIssueType = issueType;
-        botState = "AWAIT_PAY_NUMBER";
-        simulateBotThinking(() => { renderBotMsg(`${ruleMsg}<br><br>যাচাই করার জন্য অনুগ্রহ করে আপনার <b>টাকা পাঠানোর মোবাইল নম্বরটি (Send Number)</b> নিচে লিখুন:`); });
+        if(input === "PAY_ISSUE_PAGE_ERROR") {
+            simulateBotThinking(() => {
+                showAfterTaskMenu("ব্রাউজারের ক্যাশ ক্লিয়ার করে আবার চেষ্টা করুন অথবা অন্য কোনো ব্রাউজার ব্যবহার করুন। যদি এরপরও সমস্যা হয়, আমাদের সাপোর্ট পেজে যোগাযোগ করুন।");
+            });
+            return;
+        }
+        
+        if(input === "PAY_ISSUE_MFS") {
+            tempData.payIssueType = "মোবাইল ব্যাংকিং পেমেন্ট সমস্যা";
+            botState = "PAY_MFS_NUM";
+            simulateBotThinking(() => { renderBotMsg("যাচাই করার জন্য আপনার <b>মোবাইল ব্যাংকিং নম্বরটি (যে নম্বর থেকে টাকা পাঠিয়েছেন)</b> লিখুন:"); });
+        } else if(input === "PAY_ISSUE_BANK") {
+            tempData.payIssueType = "ব্যাংক ট্রান্সফার সমস্যা";
+            botState = "PAY_BANK_NAME";
+            simulateBotThinking(() => { renderBotMsg("আপনার <b>ব্যাংকের নাম</b> (যেমন: Islami Bank, Brac Bank) লিখুন:"); });
+        } else if(input === "PAY_ISSUE_CARD") {
+            tempData.payIssueType = "কার্ড পেমেন্ট সমস্যা";
+            botState = "PAY_CARD_DIGITS";
+            simulateBotThinking(() => { renderBotMsg("আপনার পেমেন্ট করা <b>কার্ডের শেষ ৪টি ডিজিট</b> লিখুন:"); });
+        } else if(input === "PAY_ISSUE_WRONG_AMT" || input === "PAY_ISSUE_DEDUCTED") {
+            tempData.payIssueType = input === "PAY_ISSUE_WRONG_AMT" ? "ভুল পরিমাণ টাকা পাঠানো হয়েছে" : "টাকা কেটেছে কিন্তু অর্ডার কনফার্ম হয়নি";
+            botState = "PAY_GEN_TRX";
+            simulateBotThinking(() => { renderBotMsg("অনুগ্রহ করে আপনার পেমেন্টের <b>ট্রাংজেকশন আইডি (TrxID)</b> টি লিখুন:"); });
+        } else {
+            showMainMenu();
+        }
         return;
     }
 
-    if (botState === "AWAIT_PAY_NUMBER") {
+    /* MFS Flow */
+    if (botState === "PAY_MFS_NUM") {
         tempData.payNumber = input;
-        botState = "AWAIT_PAY_AMOUNT";
-        simulateBotThinking(() => { renderBotMsg(`ধন্যবাদ। এবার আপনার পাঠানো <b>টাকার পরিমাণ (Amount)</b> লিখুন:`); });
-        return;
+        botState = "PAY_MFS_AMT";
+        simulateBotThinking(() => { renderBotMsg("আপনার পাঠানো <b>টাকার পরিমাণ (Amount)</b> লিখুন:"); }); return;
     }
-
-    if (botState === "AWAIT_PAY_AMOUNT") {
+    if (botState === "PAY_MFS_AMT") {
         tempData.payAmount = input;
-        botState = "AWAIT_PAY_TRXID";
-        simulateBotThinking(() => { renderBotMsg(`ধন্যবাদ। সবশেষে আপনার পেমেন্টের <b>ট্রাংজেকশন আইডি (TrxID)</b> টি লিখুন:`); });
-        return;
+        botState = "PAY_MFS_TRX";
+        simulateBotThinking(() => { renderBotMsg("আপনার পেমেন্টের <b>ট্রাংজেকশন আইডি (TrxID)</b> টি লিখুন:"); }); return;
+    }
+    if (botState === "PAY_MFS_TRX") {
+        tempData.trxId = input;
+        finishPaymentFlow(`[Payment Issue]\nসমস্যা: ${tempData.payIssueType}\nমোবাইল নম্বর: ${tempData.payNumber}\nপরিমাণ: ${tempData.payAmount}\nTrxID: ${tempData.trxId}`); return;
     }
 
-    if (botState === "AWAIT_PAY_TRXID") {
-        tempData.trxId = input;
-        simulateBotThinking(async () => {
-            const summaryData = `[Payment Support Request]\nসমস্যা: ${tempData.payIssueType}\nনম্বর: ${tempData.payNumber}\nপরিমাণ: ${tempData.payAmount}\nTrxID: ${tempData.trxId}`;
-            await sendRequestToSupport(summaryData);
-            showAfterTaskMenu(`আপনার রিকুয়েষ্টটি আমাদের প্রতিনিধির কাছে পাঠানো হয়েছে।<br><br>অনুগ্রহ করে এখন আমাদের <b>সাপোর্ট পেজে</b> যান এবং আপনার আসল ট্রাংজেকশনের একটি স্ক্রিনশট পাঠিয়ে দিন।<br><br><a href="support.html" class="inline-btn" style="text-decoration:none;"><i class="fa-solid fa-headset"></i> সাপোর্ট পেজে যান</a>`);
-        }, true);
-        return;
+    /* BANK Flow */
+    if (botState === "PAY_BANK_NAME") {
+        tempData.bankName = input;
+        botState = "PAY_BANK_ACC";
+        simulateBotThinking(() => { renderBotMsg("আপনার <b>অ্যাকাউন্ট নম্বরটি</b> লিখুন:"); }); return;
     }
+    if (botState === "PAY_BANK_ACC") {
+        tempData.bankAcc = input;
+        botState = "PAY_BANK_AMT";
+        simulateBotThinking(() => { renderBotMsg("আপনার পাঠানো <b>টাকার পরিমাণ (Amount)</b> লিখুন:"); }); return;
+    }
+    if (botState === "PAY_BANK_AMT") {
+        tempData.payAmount = input;
+        botState = "PAY_BANK_TRX";
+        simulateBotThinking(() => { renderBotMsg("ব্যাংক ট্রান্সফারের <b>রেফারেন্স নম্বর বা TrxID</b> লিখুন:"); }); return;
+    }
+    if (botState === "PAY_BANK_TRX") {
+        tempData.trxId = input;
+        finishPaymentFlow(`[Payment Issue]\nসমস্যা: ${tempData.payIssueType}\nব্যাংকের নাম: ${tempData.bankName}\nঅ্যাকাউন্ট: ${tempData.bankAcc}\nপরিমাণ: ${tempData.payAmount}\nRef/TrxID: ${tempData.trxId}`); return;
+    }
+
+    /* CARD Flow */
+    if (botState === "PAY_CARD_DIGITS") {
+        tempData.cardDigits = input;
+        botState = "PAY_CARD_AMT";
+        simulateBotThinking(() => { renderBotMsg("আপনার পেমেন্ট করা <b>টাকার পরিমাণ</b> লিখুন:"); }); return;
+    }
+    if (botState === "PAY_CARD_AMT") {
+        tempData.payAmount = input;
+        finishPaymentFlow(`[Payment Issue]\nসমস্যা: ${tempData.payIssueType}\nকার্ডের শেষ ৪ ডিজিট: ${tempData.cardDigits}\nপরিমাণ: ${tempData.payAmount}`); return;
+    }
+
+    /* GENERIC Flow (Wrong amount / Deducted) */
+    if (botState === "PAY_GEN_TRX") {
+        tempData.trxId = input;
+        botState = "PAY_GEN_AMT";
+        simulateBotThinking(() => { renderBotMsg("আপনার পেমেন্ট করা <b>টাকার পরিমাণ (Amount)</b> লিখুন:"); }); return;
+    }
+    if (botState === "PAY_GEN_AMT") {
+        tempData.payAmount = input;
+        finishPaymentFlow(`[Payment Issue]\nসমস্যা: ${tempData.payIssueType}\nTrxID: ${tempData.trxId}\nপরিমাণ: ${tempData.payAmount}`); return;
+    }
+
 
     // ── ORDER TRACKING ──
     if (botState === "AWAIT_TRACK_ID") {
