@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>অটো পেমেন্ট গেটওয়ে টেস্ট</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .payment-card {
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+        .payment-card h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .payment-card p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .amount-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e2136e; /* bKash Color */
+            margin-bottom: 25px;
+        }
+        .bkash-btn {
+            background-color: #e2136e;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s ease;
+        }
+        .bkash-btn:hover {
+            background-color: #b80c54;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="payment-card">
+        <h2>অটো পেমেন্ট টেস্ট</h2>
+        <p>নিচের বাটনে ক্লিক করে বিকাশ পেমেন্ট পরীক্ষা করুন।</p>
+        <div class="amount-display">৫০০.০০ টাকা</div>
+        <button class="bkash-btn" onclick="payWithBkash()">bKash দিয়ে পে করুন</button>
+    </div>
+
+    <script>
+        // কোর সিসটেম (আপডেট করা URL সহ)
+        const AutoPayCheckout = {
+            open: function(config) {
+                const payload = btoa(JSON.stringify({
+                    amount: config.amount,
+                    orderId: config.orderId,
+                    merchantId: config.merchantId,
+                    apiKey: config.apiKey, 
+                    method: config.method
+                }));
+
+                let endpoint = config.method === 'bkash' ? 'p2p/bkash-payment.html' : 'p2p/nagad-payment.html';
+                
+                // এখানে আপনার দেওয়া আপডেটেড URL যুক্ত করা হয়েছে
+                const paymentUrl = `https://pay-p2p.vercel.app/${endpoint}?data=${payload}`;
+
+                const popup = window.open(paymentUrl, "Payment", "width=400,height=650");
+
+                window.addEventListener("message", function(event) {
+                    // পেমেন্ট উইন্ডো থেকে আসা মেসেজ হ্যান্ডেল করা
+                    if (event.data.status === 'SUCCESS') {
+                        config.onSuccess(event.data.data);
+                    } else if(event.data.status === 'FAILED') {
+                        config.onFailure(event.data.message);
+                    }
+                });
+            }
+        };
+
+        // রিকুয়েষ্ট পাঠানো ফাংশন (আপনার API ও মার্চেন্ট আইডি সহ)
+        function payWithBkash() {
+            // ডুপ্লিকেট অর্ডার আইডি সমস্যা এড়াতে ডাইনামিক আইডি তৈরি করা হয়েছে
+            const uniqueOrderId = "ORD-" + Math.floor(100000 + Math.random() * 900000); 
+
+            AutoPayCheckout.open({
+                merchantId: "MER-2963863", // আপনার মার্চেন্ট আইডি
+                apiKey: "BK-R2SM7ZDGMQ",    // আপনার বিকাশ API Key
+                orderId: uniqueOrderId,     // ডাইনামিক অর্ডার আইডি
+                amount: 500,                // পেমেন্টের পরিমাণ
+                method: 'bkash',         
+
+                onSuccess: function(data) {
+                    alert("Success! TrxID: " + (data.trxID || data.transactionId || "N/A"));
+                },
+                onFailure: function(msg) {
+                    alert("Failed: " + msg);
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>
