@@ -27,6 +27,7 @@
             --primary-color: #3b82f6; 
             --primary-hover: #2563eb;
             --secondary-color: #6366f1;
+            --tertiary-color: #ffffff;
             --success-color: #10b981;
             --warning-color: #f59e0b;
             --danger-color: #ef4444;
@@ -43,6 +44,7 @@
             --border-radius: 12px;
             --font-main: 'Inter', sans-serif;
             --font-head: 'Poppins', sans-serif;
+            --progress-bar-color: #0f172a;
         }
 
         .dark-mode {
@@ -256,10 +258,10 @@
         /* Loader */
         .global-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); backdrop-filter: blur(5px); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; }
         .dark-mode .global-loader { background: rgba(15,23,42,0.8); }
-        .loader-bar-container { width: 250px; height: 15px; border: 2px solid var(--dark-color); border-radius: 4px; overflow: hidden; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .loader-bar { width: 100%; height: 100%; background: repeating-linear-gradient(45deg, var(--dark-color), var(--dark-color) 10px, transparent 10px, transparent 20px); animation: progress 1s linear infinite; }
+        .loader-bar-container { width: 250px; height: 15px; border: 2px solid var(--progress-bar-color, var(--dark-color)); border-radius: 4px; overflow: hidden; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .loader-bar { width: 100%; height: 100%; background: repeating-linear-gradient(45deg, var(--progress-bar-color, var(--dark-color)), var(--progress-bar-color, var(--dark-color)) 10px, transparent 10px, transparent 20px); animation: progress 1s linear infinite; }
         .dark-mode .loader-bar-container { border-color: #fff; background: var(--dark-color); }
-        .dark-mode .loader-bar { background: repeating-linear-gradient(45deg, #fff, #fff 10px, transparent 10px, transparent 20px); }
+        .dark-mode .loader-bar { background: repeating-linear-gradient(45deg, var(--progress-bar-color, #fff), var(--progress-bar-color, #fff) 10px, transparent 10px, transparent 20px); }
         @keyframes progress { 0% { background-position: 0 0; } 100% { background-position: 28px 0; } }
 
         /* Summernote UI Fixes */
@@ -326,9 +328,23 @@
     </style>
 </head>
 <body>
+    <script>
+        // Apply cached styles instantly to prevent UI flash
+        const cachedThemePrimary = localStorage.getItem('adminThemePrimary');
+        const cachedThemeSecondary = localStorage.getItem('adminThemeSecondary');
+        const cachedThemeTertiary = localStorage.getItem('adminThemeTertiary');
+        const cachedProgressBarColor = localStorage.getItem('adminProgressBarColor');
+        const cachedLoaderIconUrl = localStorage.getItem('adminLoaderIconUrl');
+        
+        if(cachedThemePrimary) document.documentElement.style.setProperty('--primary-color', cachedThemePrimary);
+        if(cachedThemeSecondary) document.documentElement.style.setProperty('--secondary-color', cachedThemeSecondary);
+        if(cachedThemeTertiary) document.documentElement.style.setProperty('--tertiary-color', cachedThemeTertiary);
+        if(cachedProgressBarColor) document.documentElement.style.setProperty('--progress-bar-color', cachedProgressBarColor);
+    </script>
 
     <!-- Global Loader -->
     <div id="globalLoader" class="global-loader hidden">
+        <img id="customLoaderIcon" src="" style="display:none; max-width: 80px; max-height: 80px; margin-bottom: 20px; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.1); object-fit: cover;">
         <div class="loader-bar-container"><div class="loader-bar"></div></div>
         <div style="margin-top: 10px; font-weight: 600; font-size: 14px; letter-spacing: 1px; color: var(--dark-color);">PROCESSING...</div>
     </div>
@@ -551,7 +567,9 @@
                         </table>
                     </div>
                 </div>
-                
+
+Part 2: HTML এর বাকী অংশ ও মোডাল সমূহ
+
                 <!-- Invoice Creator Page -->
                 <div id="invoiceCreatorPage" class="page-content hidden">
                     <div class="table-header">
@@ -794,12 +812,50 @@
                             <div class="form-row">
                                 <div class="form-group"><label>Site/Store Name</label><input type="text" id="siteName" class="form-control" required></div>
                                 <div class="form-group"><label>Domain Name</label><input type="text" id="domainName" class="form-control" placeholder="https://example.com" required></div>
-                                <div class="form-group">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group upload-wrapper">
                                     <label>Site Logo URL</label>
                                     <div style="display:flex; gap:5px;">
-                                        <input type="text" id="logoUrl" class="form-control">
+                                        <input type="text" id="logoUrl" class="form-control" oninput="updatePreview(this)">
                                         <button type="button" class="btn btn-secondary" style="margin:0; width:auto; padding:0 15px; border-radius: 6px;" onclick="triggerUpload(this)"><i class="fas fa-upload"></i></button>
                                     </div>
+                                    <img class="img-preview" src="" style="display:none; max-width: 100px; max-height: 100px; margin-top: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                </div>
+                                <div class="form-group">
+                                    <label>Site Logo Text (Optional)</label>
+                                    <input type="text" id="logoText" class="form-control" placeholder="e.g. MyBrand">
+                                </div>
+                            </div>
+                            
+                            <h4 style="margin: 25px 0 15px; color: var(--primary-color); font-size: 15px;">Theme & Appearance Settings</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Primary Color</label>
+                                    <input type="color" id="themePrimary" class="form-control" value="#3b82f6" required style="height: 45px; padding: 5px; cursor: pointer;">
+                                </div>
+                                <div class="form-group">
+                                    <label>Secondary Color</label>
+                                    <input type="color" id="themeSecondary" class="form-control" value="#6366f1" required style="height: 45px; padding: 5px; cursor: pointer;">
+                                </div>
+                                <div class="form-group">
+                                    <label>Tertiary Color (Optional)</label>
+                                    <input type="color" id="themeTertiary" class="form-control" value="#ffffff" style="height: 45px; padding: 5px; cursor: pointer;">
+                                </div>
+                                <div class="form-group">
+                                    <label>Progress Bar Color</label>
+                                    <input type="color" id="progressBarColor" class="form-control" value="#0f172a" style="height: 45px; padding: 5px; cursor: pointer;">
+                                </div>
+                            </div>
+                            
+                            <div class="form-full upload-wrapper">
+                                <div class="form-group">
+                                    <label>Global Loader Icon (Replaces Default Loader)</label>
+                                    <div style="display:flex; gap:5px;">
+                                        <input type="text" id="loaderIconUrl" class="form-control" oninput="updatePreview(this)">
+                                        <button type="button" class="btn btn-secondary" style="margin:0; width:auto; padding:0 15px; border-radius: 6px;" onclick="triggerUpload(this)"><i class="fas fa-upload"></i></button>
+                                    </div>
+                                    <img class="img-preview" src="" style="display:none; max-width: 100px; max-height: 100px; margin-top: 10px; border-radius: 8px; border: 1px solid var(--border-color); object-fit: contain;">
                                 </div>
                             </div>
                             
@@ -1239,12 +1295,13 @@
                     <input type="text" id="categoryIcon" class="form-control" placeholder="e.g. fas fa-mobile-alt">
                 </div>
                 
-                <div class="form-group hidden" id="catImageGroup">
+                <div class="form-group hidden upload-wrapper" id="catImageGroup">
                     <label for="categoryImage">Category Image URL/Text</label>
                     <div style="display:flex; gap:5px;">
-                        <input type="text" id="categoryImage" class="form-control" placeholder="Image info or https://...">
+                        <input type="text" id="categoryImage" class="form-control" placeholder="Image info or https://..." oninput="updatePreview(this)">
                         <button type="button" class="btn btn-secondary" style="margin:0; width:auto; padding:0 15px; border-radius: 6px;" onclick="triggerUpload(this)"><i class="fas fa-upload"></i></button>
                     </div>
+                    <img class="img-preview" src="" style="display:none; max-width: 100px; max-height: 100px; margin-top: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
                 </div>
 
                 <div class="form-row" style="margin-top: 30px;">
@@ -1314,12 +1371,13 @@
                         <input type="text" id="popUpName" class="form-control" placeholder="Enter pop up internal name">
                     </div>
                     
-                    <div class="form-group">
+                    <div class="form-group upload-wrapper">
                         <label for="popUpBannerLogo">Visual Media (Image URL/Text)</label>
                         <div style="display:flex; gap:5px;">
-                            <input type="text" id="popUpBannerLogo" class="form-control">
+                            <input type="text" id="popUpBannerLogo" class="form-control" oninput="updatePreview(this)">
                             <button type="button" class="btn btn-secondary" style="margin:0; width:auto; padding:0 15px; border-radius: 6px;" onclick="triggerUpload(this)"><i class="fas fa-upload"></i></button>
                         </div>
+                        <img class="img-preview" src="" style="display:none; max-width: 100px; max-height: 100px; margin-top: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
                     </div>
                     
                     <div class="form-row" id="popUpAdPrices" style="margin-top: 15px;">
@@ -1377,12 +1435,13 @@
                 </div>
 
                 <!-- Common Fields -->
-                <div class="form-group">
+                <div class="form-group upload-wrapper">
                     <label for="gatewayLogo">Logo (URL/Text)</label>
                     <div style="display:flex; gap:5px;">
-                        <input type="text" id="gatewayLogo" class="form-control" required>
+                        <input type="text" id="gatewayLogo" class="form-control" required oninput="updatePreview(this)">
                         <button type="button" class="btn btn-secondary" style="margin:0; width:auto; padding:0 15px; border-radius: 6px;" onclick="triggerUpload(this)"><i class="fas fa-upload"></i></button>
                     </div>
+                    <img class="img-preview" src="" style="display:none; max-width: 100px; max-height: 100px; margin-top: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
                 </div>
                 
                 <div class="form-group">
@@ -1464,10 +1523,28 @@
         </div>
     </div>
 
+Part 3: Script অংশ এবং ফাইলের শেষাংশ
+
     <script>
         // Global Loader Functions
         function showLoader() { document.getElementById('globalLoader').classList.remove('hidden'); }
         function hideLoader() { document.getElementById('globalLoader').classList.add('hidden'); }
+
+        // Global Image Preview Updater
+        window.updatePreview = function(input) {
+            const container = input.closest('.upload-wrapper');
+            if(!container) return;
+            const previewImg = container.querySelector('.img-preview');
+            if(previewImg) {
+                if(input.value.trim() !== '') {
+                    previewImg.src = input.value;
+                    previewImg.style.display = 'block';
+                } else {
+                    previewImg.src = '';
+                    previewImg.style.display = 'none';
+                }
+            }
+        };
 
         // Firebase Configuration
         const firebaseConfig = {
@@ -1935,6 +2012,7 @@
                 document.getElementById('popUpSection').value = 'opening';
                 togglePopUpFields();
                 document.getElementById('popUpActionButtonFields').classList.add('hidden');
+                updatePreview(document.getElementById('popUpBannerLogo')); // reset preview
                 openModal('popUpModal');
             });
             
@@ -1946,6 +2024,7 @@
                 gatewayForm.reset();
                 document.getElementById('gatewayType').value = 'p2p';
                 toggleGatewayFields();
+                updatePreview(document.getElementById('gatewayLogo')); // reset preview
                 openModal('gatewayModal');
             });
 
@@ -2220,6 +2299,41 @@
                     document.getElementById('siteName').value = data.siteName || '';
                     document.getElementById('domainName').value = data.domainName || '';
                     document.getElementById('logoUrl').value = data.logoUrl || '';
+                    document.getElementById('logoText').value = data.logoText || '';
+                    updatePreview(document.getElementById('logoUrl'));
+                    
+                    // Colors
+                    if(data.themePrimary) {
+                        document.getElementById('themePrimary').value = data.themePrimary;
+                        document.documentElement.style.setProperty('--primary-color', data.themePrimary);
+                        localStorage.setItem('adminThemePrimary', data.themePrimary);
+                    }
+                    if(data.themeSecondary) {
+                        document.getElementById('themeSecondary').value = data.themeSecondary;
+                        document.documentElement.style.setProperty('--secondary-color', data.themeSecondary);
+                        localStorage.setItem('adminThemeSecondary', data.themeSecondary);
+                    }
+                    if(data.themeTertiary) {
+                        document.getElementById('themeTertiary').value = data.themeTertiary;
+                        document.documentElement.style.setProperty('--tertiary-color', data.themeTertiary);
+                        localStorage.setItem('adminThemeTertiary', data.themeTertiary);
+                    }
+                    if(data.progressBarColor) {
+                        document.getElementById('progressBarColor').value = data.progressBarColor;
+                        document.documentElement.style.setProperty('--progress-bar-color', data.progressBarColor);
+                        localStorage.setItem('adminProgressBarColor', data.progressBarColor);
+                    }
+                    if(data.loaderIconUrl) {
+                        document.getElementById('loaderIconUrl').value = data.loaderIconUrl;
+                        document.getElementById('customLoaderIcon').src = data.loaderIconUrl;
+                        document.getElementById('customLoaderIcon').style.display = 'block';
+                        localStorage.setItem('adminLoaderIconUrl', data.loaderIconUrl);
+                    } else {
+                        document.getElementById('customLoaderIcon').style.display = 'none';
+                        localStorage.removeItem('adminLoaderIconUrl');
+                    }
+                    updatePreview(document.getElementById('loaderIconUrl'));
+
                     document.getElementById('heroTitle').value = data.heroTitle || '';
                     $('#heroDesc').summernote('code', data.heroDesc || '');
                     document.getElementById('codHandlingFee').value = data.codHandlingFee || 0;
@@ -2248,6 +2362,9 @@
                     const s = d.data();
                     addBannerField(s.src, d.id);
                 });
+                setTimeout(() => {
+                    document.querySelectorAll('#bannerContainer .banner-url').forEach(inp => updatePreview(inp));
+                }, 100);
 
                 const socialsSnap = await db.collection('socials').get();
                 const socialsContainer = document.getElementById('socialsContainer');
@@ -3463,6 +3580,12 @@
                 });
 
                 const payload = {
+                    logoText: document.getElementById('logoText').value,
+                    themePrimary: document.getElementById('themePrimary').value,
+                    themeSecondary: document.getElementById('themeSecondary').value,
+                    themeTertiary: document.getElementById('themeTertiary').value,
+                    progressBarColor: document.getElementById('progressBarColor').value,
+                    loaderIconUrl: document.getElementById('loaderIconUrl').value,
                     uploadApiKey: document.getElementById('uploadApiKey').value,
                     uploadFolder: document.getElementById('uploadFolder').value,
                     siteName: document.getElementById('siteName').value,
@@ -3478,7 +3601,27 @@
                     footerCopyright: document.getElementById('footerCopyright').value,
                     quickLinks: quickLinks
                 };
+                
                 await db.collection('settings').doc('general').set(payload, {merge:true});
+                
+                localStorage.setItem('adminThemePrimary', payload.themePrimary);
+                localStorage.setItem('adminThemeSecondary', payload.themeSecondary);
+                localStorage.setItem('adminThemeTertiary', payload.themeTertiary);
+                localStorage.setItem('adminProgressBarColor', payload.progressBarColor);
+                if(payload.loaderIconUrl) {
+                    localStorage.setItem('adminLoaderIconUrl', payload.loaderIconUrl);
+                    document.getElementById('customLoaderIcon').src = payload.loaderIconUrl;
+                    document.getElementById('customLoaderIcon').style.display = 'block';
+                } else {
+                    localStorage.removeItem('adminLoaderIconUrl');
+                    document.getElementById('customLoaderIcon').style.display = 'none';
+                }
+                
+                document.documentElement.style.setProperty('--primary-color', payload.themePrimary);
+                document.documentElement.style.setProperty('--secondary-color', payload.themeSecondary);
+                document.documentElement.style.setProperty('--tertiary-color', payload.themeTertiary);
+                document.documentElement.style.setProperty('--progress-bar-color', payload.progressBarColor);
+                
                 alert('Settings Saved Successfully!');
             } finally { hideLoader(); }
         }
@@ -3609,6 +3752,10 @@
             }
 
             renderProductGateways(p.allowedGateways || null);
+            
+            setTimeout(() => {
+                document.querySelectorAll('#mediaContainer .product-media-input, #sizeColorContainer .var-image').forEach(inp => updatePreview(inp));
+            }, 100);
 
             isEditingProduct = true; editingProductId = id;
             document.getElementById('modalTitle').textContent = 'Modify Product Details';
@@ -3631,6 +3778,8 @@
                 document.getElementById('categoryImage').value = c.imageUrl || '';
                 document.getElementById('categoryIcon').value = '';
             }
+            
+            updatePreview(document.getElementById('categoryImage'));
 
             isEditingCategory = true;
             editingCategoryId = id;
@@ -3691,6 +3840,8 @@
                 }
             }
             
+            updatePreview(document.getElementById('popUpBannerLogo'));
+            
             isEditingPopUp = true; editingPopUpId = id;
             document.getElementById('popUpModalTitle').textContent = 'Update Pop Up Config';
             openModal('popUpModal');
@@ -3712,6 +3863,8 @@
             } else {
                 document.getElementById('gatewayTextBox').value = g.textBox || '';
             }
+            
+            updatePreview(document.getElementById('gatewayLogo'));
 
             isEditingGateway = true; editingGatewayId = id;
             document.getElementById('gatewayModalTitle').textContent = 'Modify Payment Gateway';
@@ -3852,204 +4005,213 @@
 
         // Dynamic Field Generators
         window.addMediaField = function(url='', type='image') {
-            const html = `<div class="dynamic-item media-item">
-                <select class="form-control media-type" style="width: 100px; flex: none;">
-                    <option value="image" ${type==='image'?'selected':''}>Image</option>
-                    <option value="video" ${type==='video'?'selected':''}>Video URL</option>
-                    <option value="embed" ${type==='embed'?'selected':''}>Embed Code</option>
-                </select>
-                <div style="display:flex; flex:1; gap:5px;">
-                    <input type="text" class="form-control product-media-input" placeholder="Media URL / Embed Code" value="${url.replace(/"/g, '&quot;')}" style="flex:1;">
-                    <button type="button" class="btn btn-secondary" style="margin:0; width:auto; padding:0 15px; border-radius: 6px;" onclick="triggerUpload(this)"><i class="fas fa-upload"></i></button>
+            const html = `<div class="dynamic-item media-item upload-wrapper" style="flex-direction:column; align-items:flex-start;">
+                <div style="display:flex; width: 100%; gap: 10px; align-items: center;">
+                    <select class="form-control media-type" style="width: 100px; flex: none;" onchange="updatePreview(this.parentElement.parentElement.querySelector('.product-media-input'))">
+                        <option value="image" ${type==='image'?'selected':''}>Image</option>
+                        <option value="video" ${type==='video'?'selected':''}>Video URL</option>
+                        <option value="embed" ${type==='embed'?'selected':''}>Embed Code</option>
+                    </select>
+                    <div style="display:flex; flex:1; gap:5px;">
+                        <input type="text" class="form-control product-media-input" placeholder="Media URL / Embed Code" value="${url.replace(/"/g, '&quot;')}" style="flex:1;" oninput="updatePreview(this)">
+                        <button type="button" class="btn btn-secondary" style="margin:0; width:auto; padding:0 15px; border-radius: 6px;" onclick="triggerUpload(this)"><i class="fas fa-upload"></i></button>
+                    </div>
+                    <button type="button" class="btn-icon-remove" onclick="this.closest('.dynamic-item').remove()">-</button>
                 </div>
-                <button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button>
-            </div>`;
-            document.getElementById('mediaContainer').insertAdjacentHTML('beforeend', html);
-        };
-        
-        window.addSizeOnlyField = function(sizeName = '', stock = '') {
-            const html = `<div class="dynamic-item size-only-item" style="display: flex; gap: 10px; align-items: center;">
+                <img class="img-preview" src="" style="display:none; max-width: 100px; max-height: 100px; margin-top: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                </div>`;
+                document.getElementById('mediaContainer').insertAdjacentHTML('beforeend', html);
+                };
+                
+                window.addSizeOnlyField = function(sizeName = '', stock = '') {
+                const html = `<div class="dynamic-item size-only-item" style="display: flex; gap: 10px; align-items: center;">
                 <input type="text" class="form-control so-size-name" placeholder="Size Name (e.g. M, L, XL)" value="${sizeName}" style="flex: 2;">
                 <input type="number" class="form-control so-stock" placeholder="Stock Qty" value="${stock}" style="flex: 1;">
                 <button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button>
-            </div>`;
-            document.getElementById('sizeOnlyContainer').insertAdjacentHTML('beforeend', html);
-        };
-        
-        let variantCounter = 0;
-        window.addSizeColorField = function(colorName = '', origPrice = '', currPrice = '', stock = '', image = '', sizes = []) {
-            variantCounter++;
-            const varId = `var_${variantCounter}`;
-            let sizesHtml = '';
-            
-            if(sizes && sizes.length > 0) {
+                </div>`;
+                document.getElementById('sizeOnlyContainer').insertAdjacentHTML('beforeend', html);
+                };
+                
+                let variantCounter = 0;
+                window.addSizeColorField = function(colorName = '', origPrice = '', currPrice = '', stock = '', image = '', sizes = []) {
+                variantCounter++;
+                const varId = `var_${variantCounter}`;
+                let sizesHtml = '';
+                
+                if(sizes && sizes.length > 0) {
                 sizes.forEach(s => {
-                    sizesHtml += `<div class="dynamic-item size-item" style="margin-top: 5px; gap: 10px; display: flex;">
-                        <input type="text" class="form-control var-size-name" placeholder="Size Name (e.g. M, L)" value="${s.size}" style="flex:2;">
-                        <input type="number" class="form-control var-size-stock" placeholder="Stock Qty" value="${s.stock}" style="flex:1;">
-                        <button type="button" class="btn-icon-remove" onclick="removeSizeField(this, 'sizes_${varId}')">-</button>
-                    </div>`;
+                sizesHtml += `<div class="dynamic-item size-item" style="margin-top: 5px; gap: 10px; display: flex;">
+                <input type="text" class="form-control var-size-name" placeholder="Size Name (e.g. M, L)" value="${s.size}" style="flex:2;">
+                <input type="number" class="form-control var-size-stock" placeholder="Stock Qty" value="${s.stock}" style="flex:1;">
+                <button type="button" class="btn-icon-remove" onclick="removeSizeField(this, 'sizes_${varId}')">-</button>
+                </div>`;
                 });
-            }
-
-            const stockDisplay = (sizes && sizes.length > 0) ? 'display:none;' : '';
-
-            const html = `
-            <div class="variant-block dynamic-item" style="flex-direction: column; align-items: stretch; border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; margin-bottom: 15px; background: var(--light-color);">
+                }
+                
+                const stockDisplay = (sizes && sizes.length > 0) ? 'display:none;' : '';
+                
+                const html = `
+                <div class="variant-block dynamic-item" style="flex-direction: column; align-items: stretch; border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; margin-bottom: 15px; background: var(--light-color);">
                 <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
-                    <input type="text" class="form-control var-color-name" placeholder="Variant Name (e.g. Red, XL)" value="${colorName}" style="flex: 2; min-width: 120px;">
-                    <input type="number" class="form-control var-orig-price" placeholder="Orig. Price (৳)" value="${origPrice}" style="flex: 1; min-width: 90px;">
-                    <input type="number" class="form-control var-curr-price" placeholder="Discount Price (৳)" value="${currPrice}" style="flex: 1; min-width: 90px;">
-                    <input type="number" class="form-control var-stock" placeholder="Stock Qty" value="${stock}" style="flex: 1; min-width: 80px; ${stockDisplay}">
-                    <div style="display:flex; flex: 2; min-width: 150px; gap:5px;">
-                        <input type="text" class="form-control var-image" placeholder="Image URL (Optional)" value="${image}" style="flex:1;">
-                        <button type="button" class="btn btn-secondary" style="margin:0; width:auto; padding:0 10px; border-radius: 6px;" onclick="triggerUpload(this)"><i class="fas fa-upload"></i></button>
-                    </div>
-                    <button type="button" class="btn-icon-remove" onclick="this.closest('.variant-block').remove()" style="margin-top: 2px;">-</button>
+                <input type="text" class="form-control var-color-name" placeholder="Variant Name (e.g. Red, XL)" value="${colorName}" style="flex: 2; min-width: 120px;">
+                <input type="number" class="form-control var-orig-price" placeholder="Orig. Price (৳)" value="${origPrice}" style="flex: 1; min-width: 90px;">
+                <input type="number" class="form-control var-curr-price" placeholder="Discount Price (৳)" value="${currPrice}" style="flex: 1; min-width: 90px;">
+                <input type="number" class="form-control var-stock" placeholder="Stock Qty" value="${stock}" style="flex: 1; min-width: 80px; ${stockDisplay}">
+                
+                <div class="upload-wrapper" style="display:flex; flex-direction:column; flex: 2; min-width: 150px; gap:5px;">
+                <div style="display:flex; gap:5px;">
+                <input type="text" class="form-control var-image" placeholder="Image URL (Optional)" value="${image}" style="flex:1;" oninput="updatePreview(this)">
+                <button type="button" class="btn btn-secondary" style="margin:0; width:auto; padding:0 10px; border-radius: 6px;" onclick="triggerUpload(this)"><i class="fas fa-upload"></i></button>
+                </div>
+                <img class="img-preview" src="" style="display:none; max-width: 60px; max-height: 60px; margin-top: 5px; border-radius: 6px; border: 1px solid var(--border-color);">
+                </div>
+                
+                <button type="button" class="btn-icon-remove" onclick="this.closest('.variant-block').remove()" style="margin-top: 2px;">-</button>
                 </div>
                 <div class="sizes-container" id="sizes_${varId}" style="padding-left: 15px; border-left: 2px solid var(--primary-color);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px; font-size: 13px; font-weight: 600; color: var(--gray-color);">
-                        <span><i class="fas fa-ruler"></i> Sizes (Overrides Variant Stock)</span>
-                        <button type="button" class="btn-add" style="padding: 4px 10px; font-size: 12px; border-radius: 4px;" onclick="addSizeField('sizes_${varId}')"><i class="fas fa-plus"></i> Add Size</button>
-                    </div>
-                    <div class="sizes-list" style="display: flex; flex-direction: column; gap: 8px;">
-                        ${sizesHtml}
-                    </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px; font-size: 13px; font-weight: 600; color: var(--gray-color);">
+                <span><i class="fas fa-ruler"></i> Sizes (Overrides Variant Stock)</span>
+                <button type="button" class="btn-add" style="padding: 4px 10px; font-size: 12px; border-radius: 4px;" onclick="addSizeField('sizes_${varId}')"><i class="fas fa-plus"></i> Add Size</button>
                 </div>
-            </div>`;
-            document.getElementById('sizeColorContainer').insertAdjacentHTML('beforeend', html);
-        };
-        
-        window.addSizeField = function(containerId) {
-            const html = `<div class="dynamic-item size-item" style="margin-top: 5px; gap: 10px; display: flex;">
+                <div class="sizes-list" style="display: flex; flex-direction: column; gap: 8px;">
+                ${sizesHtml}
+                </div>
+                </div>
+                </div>`;
+                document.getElementById('sizeColorContainer').insertAdjacentHTML('beforeend', html);
+                };
+                
+                window.addSizeField = function(containerId) {
+                const html = `<div class="dynamic-item size-item" style="margin-top: 5px; gap: 10px; display: flex;">
                 <input type="text" class="form-control var-size-name" placeholder="Size Name (e.g. M, L)" style="flex:2;">
                 <input type="number" class="form-control var-size-stock" placeholder="Stock Qty" style="flex:1;">
                 <button type="button" class="btn-icon-remove" onclick="removeSizeField(this, '${containerId}')">-</button>
-            </div>`;
-            document.querySelector(`#${containerId} .sizes-list`).insertAdjacentHTML('beforeend', html);
-            
-            document.getElementById(containerId).closest('.variant-block').querySelector('.var-stock').style.display = 'none';
-        };
-
-        window.removeSizeField = function(btn, containerId) {
-            btn.parentElement.remove();
-            const container = document.getElementById(containerId);
-            if (container.querySelectorAll('.size-item').length === 0) {
+                </div>`;
+                document.querySelector(`#${containerId} .sizes-list`).insertAdjacentHTML('beforeend', html);
+                
+                document.getElementById(containerId).closest('.variant-block').querySelector('.var-stock').style.display = 'none';
+                };
+                
+                window.removeSizeField = function(btn, containerId) {
+                btn.parentElement.remove();
+                const container = document.getElementById(containerId);
+                if (container.querySelectorAll('.size-item').length === 0) {
                 container.closest('.variant-block').querySelector('.var-stock').style.display = '';
-            }
-        };
-        
-        window.addBannerField = function(src="", id="") {
-            const html = `<div class="dynamic-item" data-id="${id}">
-                <div style="display:flex; flex:1; gap:5px;">
-                    <input type="text" class="form-control banner-url" placeholder="Image URL Source" value="${src}" style="flex:1;">
-                    <button type="button" class="btn btn-secondary" style="margin:0; width:auto; padding:0 15px; border-radius: 6px;" onclick="triggerUpload(this)"><i class="fas fa-upload"></i></button>
+                }
+                };
+                
+                window.addBannerField = function(src="", id="") {
+                const html = `<div class="dynamic-item upload-wrapper" data-id="${id}" style="flex-direction:column; align-items:flex-start;">
+                <div style="display:flex; width: 100%; gap:5px;">
+                <input type="text" class="form-control banner-url" placeholder="Image URL Source" value="${src}" style="flex:1;" oninput="updatePreview(this)">
+                <button type="button" class="btn btn-secondary" style="margin:0; width:auto; padding:0 15px; border-radius: 6px;" onclick="triggerUpload(this)"><i class="fas fa-upload"></i></button>
+                <button type="button" class="btn-icon-remove" onclick="this.closest('.dynamic-item').remove()">-</button>
                 </div>
-                <button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button>
-            </div>`;
-            document.getElementById('bannerContainer').insertAdjacentHTML('beforeend', html);
-        };
-        
-        window.addSocialField = function(icon="", url="", id="") {
-            const html = `<div class="dynamic-item" data-id="${id}"><input type="text" class="form-control social-icon-input" placeholder="Icon (e.g. fab fa-facebook)" value="${icon}" style="flex:1;"><input type="text" class="form-control social-url" placeholder="Link URL" value="${url}" style="flex:2;"><button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button></div>`;
-            document.getElementById('socialsContainer').insertAdjacentHTML('beforeend', html);
-        };
-        
-        window.addQuickLinkField = function(name = "", link = "") {
-            const html = `<div class="dynamic-item quick-link-item">
+                <img class="img-preview" src="" style="display:none; max-width: 100px; max-height: 100px; margin-top: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                </div>`;
+                document.getElementById('bannerContainer').insertAdjacentHTML('beforeend', html);
+                };
+                
+                window.addSocialField = function(icon="", url="", id="") {
+                const html = `<div class="dynamic-item" data-id="${id}"><input type="text" class="form-control social-icon-input" placeholder="Icon (e.g. fab fa-facebook)" value="${icon}" style="flex:1;"><input type="text" class="form-control social-url" placeholder="Link URL" value="${url}" style="flex:2;"><button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button></div>`;
+                document.getElementById('socialsContainer').insertAdjacentHTML('beforeend', html);
+                };
+                
+                window.addQuickLinkField = function(name = "", link = "") {
+                const html = `<div class="dynamic-item quick-link-item">
                 <input type="text" class="form-control ql-name" placeholder="Link Name / Title" value="${name}" style="flex:1;">
                 <input type="text" class="form-control ql-url" placeholder="URL / Action Text" value="${link}" style="flex:2;">
                 <button type="button" class="btn-icon-remove" onclick="this.parentElement.remove()">-</button>
-            </div>`;
-            document.getElementById('quickLinksContainer').insertAdjacentHTML('beforeend', html);
-        };
-        
-        window.addSeoKeyword = function() {
-            const input = document.getElementById('seoInput');
-            const val = input.value.replace(/,/g, '').trim();
-            if (val && !adminSeoKeywords.includes(val)) {
+                </div>`;
+                document.getElementById('quickLinksContainer').insertAdjacentHTML('beforeend', html);
+                };
+                
+                window.addSeoKeyword = function() {
+                const input = document.getElementById('seoInput');
+                const val = input.value.replace(/,/g, '').trim();
+                if (val && !adminSeoKeywords.includes(val)) {
                 adminSeoKeywords.push(val); 
                 renderTags();
-            }
-            input.value = '';
-        };
-
-        function handleSeoInput(e) {
-            if (e.key === ',' || e.key === 'Enter') {
+                }
+                input.value = '';
+                };
+                
+                function handleSeoInput(e) {
+                if (e.key === ',' || e.key === 'Enter') {
                 e.preventDefault();
                 addSeoKeyword();
-            }
-        }
-
-        function renderTags() {
-            const tags = seoTagsContainer.querySelectorAll('.tag');
-            tags.forEach(t => t.remove());
-            adminSeoKeywords.forEach((tag, idx) => {
+                }
+                }
+                
+                function renderTags() {
+                const tags = seoTagsContainer.querySelectorAll('.tag');
+                tags.forEach(t => t.remove());
+                adminSeoKeywords.forEach((tag, idx) => {
                 const el = document.createElement('div'); el.className = 'tag';
-                el.innerHTML = `${tag} <i class="fas fa-times" onclick="adminSeoKeywords.splice(${idx},1); renderTags()"></i>`;
+                el.innerHTML = `${tag} <i class="fas fa-times" onclick="removeTag(${idx})"></i>`;
                 seoTagsContainer.insertBefore(el, document.getElementById('seoInputWrapper'));
-            });
-        }
-        window.removeTag = function(index) { adminSeoKeywords.splice(index, 1); renderTags(); }
-        function resetSEO() { adminSeoKeywords = []; renderTags(); }
-
-        window.addRestrictedKeyword = function() {
-            const input = document.getElementById('restrictedInput');
-            const val = input.value.replace(/,/g, '').trim();
-            if (val && !adminRestrictedKeywords.includes(val)) {
+                });
+                }
+                window.removeTag = function(index) { adminSeoKeywords.splice(index, 1); renderTags(); }
+                function resetSEO() { adminSeoKeywords = []; renderTags(); }
+                
+                window.addRestrictedKeyword = function() {
+                const input = document.getElementById('restrictedInput');
+                const val = input.value.replace(/,/g, '').trim();
+                if (val && !adminRestrictedKeywords.includes(val)) {
                 adminRestrictedKeywords.push(val); 
                 renderRestrictedTags();
-            }
-            input.value = '';
-        };
-
-        function handleRestrictedInput(e) {
-            if (e.key === ',' || e.key === 'Enter') {
+                }
+                input.value = '';
+                };
+                
+                function handleRestrictedInput(e) {
+                if (e.key === ',' || e.key === 'Enter') {
                 e.preventDefault();
                 addRestrictedKeyword();
-            }
-        }
-
-        function renderRestrictedTags() {
-            const tags = restrictedTagsContainer.querySelectorAll('.tag');
-            tags.forEach(t => t.remove());
-            adminRestrictedKeywords.forEach((tag, idx) => {
+                }
+                }
+                
+                function renderRestrictedTags() {
+                const tags = restrictedTagsContainer.querySelectorAll('.tag');
+                tags.forEach(t => t.remove());
+                adminRestrictedKeywords.forEach((tag, idx) => {
                 const el = document.createElement('div'); el.className = 'tag';
                 el.innerHTML = `${tag} <i class="fas fa-times" onclick="removeRestrictedTag(${idx})"></i>`;
                 restrictedTagsContainer.insertBefore(el, document.getElementById('restrictedInputWrapper'));
-            });
-        }
-        window.removeRestrictedTag = function(index) { adminRestrictedKeywords.splice(index, 1); renderRestrictedTags(); }
-        
-        window.toggleSizeOnly = function() {
-            const sec = document.getElementById('sizeOnlySection');
-            const pStock = document.getElementById('productStock');
-            
-            if(document.getElementById('sizeOnlyToggle').checked) {
+                });
+                }
+                window.removeRestrictedTag = function(index) { adminRestrictedKeywords.splice(index, 1); renderRestrictedTags(); }
+                
+                window.toggleSizeOnly = function() {
+                const sec = document.getElementById('sizeOnlySection');
+                const pStock = document.getElementById('productStock');
+                
+                if(document.getElementById('sizeOnlyToggle').checked) {
                 sec.classList.remove('hidden');
                 pStock.removeAttribute('required');
                 if(document.getElementById('sizeOnlyContainer').children.length === 0) addSizeOnlyField();
                 
                 // Disable sizeColor toggle to prevent conflict
                 if(document.getElementById('sizeColorToggle').checked) {
-                    document.getElementById('sizeColorToggle').checked = false;
-                    toggleSizeColor();
+                document.getElementById('sizeColorToggle').checked = false;
+                toggleSizeColor();
                 }
-            } else {
+                } else {
                 sec.classList.add('hidden');
                 if(!document.getElementById('sizeColorToggle').checked) {
-                    pStock.setAttribute('required', 'true');
+                pStock.setAttribute('required', 'true');
                 }
-            }
-        }
-
-        window.toggleSizeColor = function() {
-            const sec = document.getElementById('sizeColorSection');
-            const mainPricing = document.getElementById('mainPricingStock');
-            const pPrice = document.getElementById('productPrice');
-            const pStock = document.getElementById('productStock');
-            
-            if(document.getElementById('sizeColorToggle').checked) {
+                }
+                }
+                
+                window.toggleSizeColor = function() {
+                const sec = document.getElementById('sizeColorSection');
+                const mainPricing = document.getElementById('mainPricingStock');
+                const pPrice = document.getElementById('productPrice');
+                const pStock = document.getElementById('productStock');
+                
+                if(document.getElementById('sizeColorToggle').checked) {
                 sec.classList.remove('hidden');
                 mainPricing.classList.add('hidden');
                 pPrice.removeAttribute('required');
@@ -4058,300 +4220,301 @@
                 
                 // Disable sizeOnly toggle to prevent conflict
                 if(document.getElementById('sizeOnlyToggle').checked) {
-                    document.getElementById('sizeOnlyToggle').checked = false;
-                    toggleSizeOnly();
+                document.getElementById('sizeOnlyToggle').checked = false;
+                toggleSizeOnly();
                 }
-            } else {
+                } else {
                 sec.classList.add('hidden');
                 mainPricing.classList.remove('hidden');
                 pPrice.setAttribute('required', 'true');
                 if(!document.getElementById('sizeOnlyToggle').checked) {
-                    pStock.setAttribute('required', 'true');
+                pStock.setAttribute('required', 'true');
                 }
-            }
-        }
-
-        window.toggleReturnRefund = function() {
-            const sec = document.getElementById('returnRefundSection');
-            if(document.getElementById('returnRefundToggle').checked) {
+                }
+                }
+                
+                window.toggleReturnRefund = function() {
+                const sec = document.getElementById('returnRefundSection');
+                if(document.getElementById('returnRefundToggle').checked) {
                 sec.classList.remove('hidden');
-            } else {
+                } else {
                 sec.classList.add('hidden');
-            }
-        }
-
-        window.toggleOrderCancellation = function() {
-            const sec = document.getElementById('orderCancellationSection');
-            if(document.getElementById('orderCancellationToggle').checked) {
+                }
+                }
+                
+                window.toggleOrderCancellation = function() {
+                const sec = document.getElementById('orderCancellationSection');
+                if(document.getElementById('orderCancellationToggle').checked) {
                 sec.classList.remove('hidden');
-            } else {
+                } else {
                 sec.classList.add('hidden');
-            }
-        }
-        
-        window.togglePopUpActionButton = function() {
-            if (document.getElementById('popUpActionButtonToggle').checked) document.getElementById('popUpActionButtonFields').classList.remove('hidden');
-            else document.getElementById('popUpActionButtonFields').classList.add('hidden');
-        }
-
-        // Modals Logic
-        function openModal(id) { document.getElementById(id).classList.add('show'); }
-        window.closeModal = function(id) { 
-            document.getElementById(id).classList.remove('show'); 
-            if(id === 'productModal') { isEditingProduct = false; editingProductId = null; }
-            if(id === 'categoryModal') { isEditingCategory = false; editingCategoryId = null; }
-            if(id === 'popUpModal') { isEditingPopUp = false; editingPopUpId = null; }
-            if(id === 'gatewayModal') { isEditingGateway = false; editingGatewayId = null; }
-            if(id === 'offerModal') { offerForm.removeAttribute('data-editing-id'); document.querySelector('#offerForm button[type="submit"]').textContent = 'Save Offer'; }
-        };
-        
-        window.switchOrderTab = function(status, btn) {
-            currentOrderFilter = status;
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            populateOrdersTable();
-        }
-        
-        window.viewOrderDetails = function(id) {
-            const o = adminOrders.find(x => x.id === id);
-            if(!o) return;
-            
-            let productsDetailHtml = o.products || 'N/A';
-            let itemsArray = Array.isArray(o.cartItems) ? o.cartItems : (Array.isArray(o.products) ? o.products : null);
-            if (itemsArray) {
+                }
+                }
+                
+                window.togglePopUpActionButton = function() {
+                if (document.getElementById('popUpActionButtonToggle').checked) document.getElementById('popUpActionButtonFields').classList.remove('hidden');
+                else document.getElementById('popUpActionButtonFields').classList.add('hidden');
+                }
+                
+                // Modals Logic
+                function openModal(id) { document.getElementById(id).classList.add('show'); }
+                window.closeModal = function(id) { 
+                document.getElementById(id).classList.remove('show'); 
+                if(id === 'productModal') { isEditingProduct = false; editingProductId = null; }
+                if(id === 'categoryModal') { isEditingCategory = false; editingCategoryId = null; }
+                if(id === 'popUpModal') { isEditingPopUp = false; editingPopUpId = null; }
+                if(id === 'gatewayModal') { isEditingGateway = false; editingGatewayId = null; }
+                if(id === 'offerModal') { offerForm.removeAttribute('data-editing-id'); document.querySelector('#offerForm button[type="submit"]').textContent = 'Save Offer'; }
+                };
+                
+                window.switchOrderTab = function(status, btn) {
+                currentOrderFilter = status;
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                populateOrdersTable();
+                }
+                
+                window.viewOrderDetails = function(id) {
+                const o = adminOrders.find(x => x.id === id);
+                if(!o) return;
+                
+                let productsDetailHtml = o.products || 'N/A';
+                let itemsArray = Array.isArray(o.cartItems) ? o.cartItems : (Array.isArray(o.products) ? o.products : null);
+                if (itemsArray) {
                 productsDetailHtml = itemsArray.map(item => {
-                    let v = [];
-                    if (item.color && item.color !== 'N/A') v.push(item.color);
-                    if (item.size && item.size !== 'N/A') v.push(item.size);
-                    return `<div style="padding-bottom: 8px; border-bottom: 1px dashed var(--border-color); margin-bottom: 8px;"><strong>${item.name}</strong> (x${item.qty||1}) <br> <span style="color:var(--primary-color); font-size:13px; font-weight:600;">${item.pid||'PID: N/A'}</span> ${v.length ? `<span style="font-size:13px; color:var(--gray-color);"> | [${v.join(', ')}]</span>` : ''}</div>`;
+                let v = [];
+                if (item.color && item.color !== 'N/A') v.push(item.color);
+                if (item.size && item.size !== 'N/A') v.push(item.size);
+                return `<div style="padding-bottom: 8px; border-bottom: 1px dashed var(--border-color); margin-bottom: 8px;"><strong>${item.name}</strong> (x${item.qty||1}) <br> <span style="color:var(--primary-color); font-size:13px; font-weight:600;">${item.pid||'PID: N/A'}</span> ${v.length ? `<span style="font-size:13px; color:var(--gray-color);"> | [${v.join(', ')}]</span>` : ''}</div>`;
                 }).join('');
-            }
-
-            document.getElementById('detailOrderId').innerText = `#${id.substring(0,8)}`;
-            document.getElementById('orderDetailsContent').innerHTML = `
+                }
+                
+                document.getElementById('detailOrderId').innerText = `#${id.substring(0,8)}`;
+                document.getElementById('orderDetailsContent').innerHTML = `
                 <div class="detail-row"><div class="detail-label">Cart Items:</div><div class="detail-value" style="line-height:1.6;">${productsDetailHtml}</div></div>
                 <div class="detail-row"><div class="detail-label">Total Payable:</div><div class="detail-value" style="font-size: 16px; font-weight: 700; color: var(--primary-color);">৳${o.amount}</div></div>
                 <div class="detail-row"><div class="detail-label">Address:</div><div class="detail-value" style="font-weight: 500;">${o.address || 'N/A'}</div></div>
                 <div class="detail-row"><div class="detail-label">Payment Mode:</div><div class="detail-value"><span style="background:var(--light-color); border:1px solid var(--border-color); padding: 4px 8px; border-radius: 6px; font-weight: 600;">${o.payment || 'N/A'}</span> ${o.trxId ? `<br><small style="color:var(--success-color);font-weight:600; display:inline-block; margin-top:5px;">TrxID: ${o.trxId}</small>` : ''}</div></div>
                 <div class="detail-row"><div class="detail-label">Customer Name:</div><div class="detail-value" style="font-weight: 600;">${o.customer || 'N/A'}</div></div>
                 <div class="detail-row"><div class="detail-label">Order Date:</div><div class="detail-value" style="color: var(--gray-color);">${o.date || 'N/A'}</div></div>
-            `;
-            openModal('orderDetailsModal');
-        };
-
-        // Copy Invoice Data function replaces generating invoice inside the table
-        window.copyInvoiceData = function(id) {
-            const o = adminOrders.find(x => x.id === id);
-            if(!o) return;
-            const dataToCopy = JSON.stringify(o);
-            navigator.clipboard.writeText(dataToCopy).then(() => {
+                `;
+                openModal('orderDetailsModal');
+                };
+                
+                // Copy Invoice Data function replaces generating invoice inside the table
+                window.copyInvoiceData = function(id) {
+                const o = adminOrders.find(x => x.id === id);
+                if(!o) return;
+                const dataToCopy = JSON.stringify(o);
+                navigator.clipboard.writeText(dataToCopy).then(() => {
                 alert('Invoice data copied! Go to the "Invoice Creator" page to paste and generate.');
-            }).catch(err => {
+                }).catch(err => {
                 alert('Failed to copy. Try again.');
-            });
-        };
-
-        window.generatePastedInvoice = function() {
-            const dataStr = document.getElementById('pasteInvoiceData').value.trim();
-            if(!dataStr) { alert('Please paste the copied order data first!'); return; }
-            try {
+                });
+                };
+                
+                window.generatePastedInvoice = function() {
+                const dataStr = document.getElementById('pasteInvoiceData').value.trim();
+                if(!dataStr) { alert('Please paste the copied order data first!'); return; }
+                try {
                 const o = JSON.parse(dataStr);
                 renderInvoiceLayout(o);
                 document.getElementById('invoiceActions').classList.remove('hidden');
                 document.getElementById('invoicePrintArea').style.display = 'block';
-            } catch(e) {
+                } catch(e) {
                 alert('Invalid data pasted! Ensure you copied it correctly from the Orders table.');
-            }
-        };
-
-        function renderInvoiceLayout(o) {
-            const siteName = document.getElementById('siteName').value || 'My Store';
-            const domainName = document.getElementById('domainName').value || 'www.example.com';
-
-            let itemsHtml = '';
-            let itemsArray = Array.isArray(o.cartItems) ? o.cartItems : (Array.isArray(o.products) ? o.products : []);
-            let subTotal = 0;
-
-            if (itemsArray.length) {
+                }
+                };
+                
+                function renderInvoiceLayout(o) {
+                const siteName = document.getElementById('siteName').value || 'My Store';
+                const domainName = document.getElementById('domainName').value || 'www.example.com';
+                
+                let itemsHtml = '';
+                let itemsArray = Array.isArray(o.cartItems) ? o.cartItems : (Array.isArray(o.products) ? o.products : []);
+                let subTotal = 0;
+                
+                if (itemsArray.length) {
                 itemsArray.forEach(item => {
-                    let v = [];
-                    if (item.color && item.color !== 'N/A') v.push(item.color);
-                    if (item.size && item.size !== 'N/A') v.push(item.size);
-                    let variantStr = v.length ? `(${v.join(', ')})` : '';
-                    let itemTotal = (item.price || 0) * (item.qty || 1);
-                    subTotal += itemTotal;
-
-                    itemsHtml += `
-                        <tr style="border-bottom: 1px dashed #eee;">
-                            <td style="padding: 12px 5px; text-align:left;">
-                                <strong>${item.name}</strong><br>
-                                <small style="color:#666;">PID: ${item.pid || 'N/A'} ${variantStr}</small>
-                            </td>
-                            <td style="padding: 12px 5px; text-align:center;">${item.qty || 1}</td>
-                            <td style="padding: 12px 5px; text-align:right;">৳${item.price || 0}</td>
-                            <td style="padding: 12px 5px; text-align:right;">৳${itemTotal}</td>
-                        </tr>
-                    `;
+                let v = [];
+                if (item.color && item.color !== 'N/A') v.push(item.color);
+                if (item.size && item.size !== 'N/A') v.push(item.size);
+                let variantStr = v.length ? `(${v.join(', ')})` : '';
+                let itemTotal = (item.price || 0) * (item.qty || 1);
+                subTotal += itemTotal;
+                
+                itemsHtml += `
+                <tr style="border-bottom: 1px dashed #eee;">
+                <td style="padding: 12px 5px; text-align:left;">
+                <strong>${item.name}</strong><br>
+                <small style="color:#666;">PID: ${item.pid || 'N/A'} ${variantStr}</small>
+                </td>
+                <td style="padding: 12px 5px; text-align:center;">${item.qty || 1}</td>
+                <td style="padding: 12px 5px; text-align:right;">৳${item.price || 0}</td>
+                <td style="padding: 12px 5px; text-align:right;">৳${itemTotal}</td>
+                </tr>
+                `;
                 });
-            }
-
-            let total = parseFloat(o.amount) || 0;
-            let deliveryFee = parseFloat(o.deliveryFee) || 0;
-            let discountAmt = parseFloat(o.discount) || 0;
-            
-            if (!o.deliveryFee && !o.discount) {
+                }
+                
+                let total = parseFloat(o.amount) || 0;
+                let deliveryFee = parseFloat(o.deliveryFee) || 0;
+                let discountAmt = parseFloat(o.discount) || 0;
+                
+                if (!o.deliveryFee && !o.discount) {
                 let diff = total - subTotal;
                 if (diff >= 0) {
-                    deliveryFee = diff;
-                    discountAmt = 0;
+                deliveryFee = diff;
+                discountAmt = 0;
                 } else {
-                    deliveryFee = 0;
-                    discountAmt = Math.abs(diff);
+                deliveryFee = 0;
+                discountAmt = Math.abs(diff);
                 }
-            }
-
-            document.getElementById('invoicePrintArea').innerHTML = `
+                }
+                
+                document.getElementById('invoicePrintArea').innerHTML = `
                 <div style="text-align: center; margin-bottom: 25px; border-bottom: 2px solid #333; padding-bottom: 20px;">
-                    <h1 style="margin: 0; font-size: 28px; color: #000; font-weight: 700;">${siteName}</h1>
-                    <p style="margin: 5px 0 0; color: #555;">${domainName}</p>
+                <h1 style="margin: 0; font-size: 28px; color: #000; font-weight: 700;">${siteName}</h1>
+                <p style="margin: 5px 0 0; color: #555;">${domainName}</p>
                 </div>
                 
                 <div style="display: flex; justify-content: space-between; margin-bottom: 30px; line-height: 1.6;">
-                    <div style="text-align: left;">
-                        <strong style="font-size: 16px;">Billed To:</strong><br>
-                        <span style="font-weight: 600;">${o.customer || 'N/A'}</span><br>
-                        ${o.address || ''}<br>
-                        Phone: ${o.phone || 'N/A'}
-                    </div>
-                    <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
-                        <div><strong>Order ID:</strong> #${(o.id || '').substring(0,8)}</div>
-                        <div><strong>Order Date:</strong> ${o.date || new Date().toLocaleDateString()}</div>
-                        <div><strong>Status:</strong> ${o.status || 'Pending'}</div>
-                        <div><strong>Payment:</strong> ${o.payment || 'N/A'}</div>
-                    </div>
+                <div style="text-align: left;">
+                <strong style="font-size: 16px;">Billed To:</strong><br>
+                <span style="font-weight: 600;">${o.customer || 'N/A'}</span><br>
+                ${o.address || ''}<br>
+                Phone: ${o.phone || 'N/A'}
                 </div>
-
+                <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
+                <div><strong>Order ID:</strong> #${(o.id || '').substring(0,8)}</div>
+                <div><strong>Order Date:</strong> ${o.date || new Date().toLocaleDateString()}</div>
+                <div><strong>Status:</strong> ${o.status || 'Pending'}</div>
+                <div><strong>Payment:</strong> ${o.payment || 'N/A'}</div>
+                </div>
+                </div>
+                
                 <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
-                    <thead>
-                        <tr style="background: #f8f8f8; border-bottom: 2px solid #ccc;">
-                            <th style="padding: 12px 5px; text-align:left;">Item Description</th>
-                            <th style="padding: 12px 5px; text-align:center;">Qty</th>
-                            <th style="padding: 12px 5px; text-align:right;">Unit Price</th>
-                            <th style="padding: 12px 5px; text-align:right;">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${itemsHtml}
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="3" style="text-align: right; padding: 10px 5px; font-weight: bold;">Subtotal:</td>
-                            <td style="text-align: right; padding: 10px 5px; font-weight: bold;">৳${subTotal.toFixed(2)}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="3" style="text-align: right; padding: 5px 5px; color: #555;">Delivery Charge:</td>
-                            <td style="text-align: right; padding: 5px 5px; color: #555;">+ ৳${deliveryFee.toFixed(2)}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="3" style="text-align: right; padding: 5px 5px; color: #555;">Discount:</td>
-                            <td style="text-align: right; padding: 5px 5px; color: #555;">- ৳${discountAmt.toFixed(2)}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="3" style="text-align: right; padding: 15px 5px; font-weight: bold; font-size: 18px; border-top: 2px solid #333;">Grand Total:</td>
-                            <td style="text-align: right; padding: 15px 5px; font-weight: bold; font-size: 18px; border-top: 2px solid #333;">৳${total.toFixed(2)}</td>
-                        </tr>
-                    </tfoot>
+                <thead>
+                <tr style="background: #f8f8f8; border-bottom: 2px solid #ccc;">
+                <th style="padding: 12px 5px; text-align:left;">Item Description</th>
+                <th style="padding: 12px 5px; text-align:center;">Qty</th>
+                <th style="padding: 12px 5px; text-align:right;">Unit Price</th>
+                <th style="padding: 12px 5px; text-align:right;">Total</th>
+                </tr>
+                </thead>
+                <tbody>
+                ${itemsHtml}
+                </tbody>
+                <tfoot>
+                <tr>
+                <td colspan="3" style="text-align: right; padding: 10px 5px; font-weight: bold;">Subtotal:</td>
+                <td style="text-align: right; padding: 10px 5px; font-weight: bold;">৳${subTotal.toFixed(2)}</td>
+                </tr>
+                <tr>
+                <td colspan="3" style="text-align: right; padding: 5px 5px; color: #555;">Delivery Charge:</td>
+                <td style="text-align: right; padding: 5px 5px; color: #555;">+ ৳${deliveryFee.toFixed(2)}</td>
+                </tr>
+                <tr>
+                <td colspan="3" style="text-align: right; padding: 5px 5px; color: #555;">Discount:</td>
+                <td style="text-align: right; padding: 5px 5px; color: #555;">- ৳${discountAmt.toFixed(2)}</td>
+                </tr>
+                <tr>
+                <td colspan="3" style="text-align: right; padding: 15px 5px; font-weight: bold; font-size: 18px; border-top: 2px solid #333;">Grand Total:</td>
+                <td style="text-align: right; padding: 15px 5px; font-weight: bold; font-size: 18px; border-top: 2px solid #333;">৳${total.toFixed(2)}</td>
+                </tr>
+                </tfoot>
                 </table>
-
+                
                 <div style="text-align: center; margin-top: 40px;">
-                    <svg id="invoiceBarcode"></svg>
-                    <p style="margin-top: 10px; font-size: 12px; color: #888;">Thank you for your purchase!</p>
+                <svg id="invoiceBarcode"></svg>
+                <p style="margin-top: 10px; font-size: 12px; color: #888;">Thank you for your purchase!</p>
                 </div>
-            `;
-            
-            JsBarcode("#invoiceBarcode", o.id, {
+                `;
+                
+                JsBarcode("#invoiceBarcode", o.id, {
                 format: "CODE128",
                 width: 1.5,
                 height: 40,
                 displayValue: true,
                 fontSize: 14,
                 margin: 0
-            });
-        }
-
-        window.printInvoice = function() {
-            window.print();
-        };
-
-        window.downloadInvoice = function() {
-            showLoader();
-            const element = document.getElementById('invoicePrintArea');
-            
-            const opt = {
+                });
+                }
+                
+                window.printInvoice = function() {
+                window.print();
+                };
+                
+                window.downloadInvoice = function() {
+                showLoader();
+                const element = document.getElementById('invoicePrintArea');
+                
+                const opt = {
                 margin:       [0.5, 0.5, 0.5, 0.5],
                 filename:     'Invoice_Order.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true },
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
-            
-            html2pdf().set(opt).from(element).save().then(() => {
+                };
+                
+                html2pdf().set(opt).from(element).save().then(() => {
                 hideLoader();
-            });
-        };
-
-        // --- GLOBAL API IMAGE UPLOAD SYSTEM ---
-        let currentUploadTarget = null;
-        const hiddenFileInput = document.createElement('input');
-        hiddenFileInput.type = 'file';
-        hiddenFileInput.accept = 'image/*,video/*';
-        hiddenFileInput.style.display = 'none';
-        document.body.appendChild(hiddenFileInput);
-
-        window.triggerUpload = function(btnElement) {
-            currentUploadTarget = btnElement.parentElement.querySelector('input[type="text"]');
-            hiddenFileInput.click();
-        };
-
-        hiddenFileInput.addEventListener('change', async function(e) {
-            const file = e.target.files[0];
-            if(!file || !currentUploadTarget) return;
-
-            showLoader();
-            try {
+                });
+                };
+                
+                // --- GLOBAL API IMAGE UPLOAD SYSTEM ---
+                let currentUploadTarget = null;
+                const hiddenFileInput = document.createElement('input');
+                hiddenFileInput.type = 'file';
+                hiddenFileInput.accept = 'image/*,video/*';
+                hiddenFileInput.style.display = 'none';
+                document.body.appendChild(hiddenFileInput);
+                
+                window.triggerUpload = function(btnElement) {
+                currentUploadTarget = btnElement.parentElement.querySelector('input[type="text"]');
+                hiddenFileInput.click();
+                };
+                
+                hiddenFileInput.addEventListener('change', async function(e) {
+                const file = e.target.files[0];
+                if(!file || !currentUploadTarget) return;
+                
+                showLoader();
+                try {
                 const doc = await db.collection('settings').doc('general').get();
                 let apiKey = doc.exists ? (doc.data().uploadApiKey || '') : '';
                 let folder = doc.exists ? (doc.data().uploadFolder || '') : '';
-
+                
                 if(!apiKey) {
-                    alert("Please add Upload API Key in General Settings.");
-                    hideLoader();
-                    return;
+                alert("Please add Upload API Key in General Settings.");
+                hideLoader();
+                return;
                 }
-
+                
                 const formData = new FormData();
                 formData.append('image', file);
                 if(folder) formData.append('name', folder + '_' + file.name.split('.')[0]);
-
+                
                 // Default ImgBB API Endpoint
                 const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-                    method: 'POST',
-                    body: formData
+                method: 'POST',
+                body: formData
                 });
                 
                 const result = await response.json();
                 if(result.success) {
-                    currentUploadTarget.value = result.data.url;
+                currentUploadTarget.value = result.data.url;
+                updatePreview(currentUploadTarget); // প্রিভিউ আপডেট করার ফাংশন কল
                 } else {
-                    alert("Upload Failed: " + result.error.message);
+                alert("Upload Failed: " + result.error.message);
                 }
-            } catch(err) {
+                } catch(err) {
                 alert("Upload Error: " + err.message);
-            } finally {
+                } finally {
                 hiddenFileInput.value = ''; // reset file
                 hideLoader();
-            }
-        });
-    </script>
-</body>
-</html>
+                }
+                });
+                </script>
+                </body>
+                </html>
