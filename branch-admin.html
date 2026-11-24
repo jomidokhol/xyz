@@ -1,0 +1,2179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NurTech Branch Admin Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-canvas: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-muted: #f1f5f9;
+      --ink: #0f172a;
+      --ink-secondary: #475569;
+      --ink-muted: #64748b;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --accent: #0f766e;
+      --accent-hover: #0d9488;
+      --accent-soft: #f0fdfa;
+      --blue: #2563eb;
+      --success-bg: #dcfce7;
+      --success-fg: #166534;
+      --warn-bg: #fef3c7;
+      --warn-fg: #92400e;
+      --danger-bg: #fee2e2;
+      --danger-fg: #991b1b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg-canvas);
+      color: var(--ink);
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13.5px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    .mono, code {
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: #0f172a;
+      color: #fff;
+      padding: 0 20px;
+      min-height: 58px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #1e293b;
+    }
+    .brand-bar { display: flex; align-items: center; gap: 10px; }
+    .brand-mark {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 14px; color: #fff;
+    }
+    .branch-pill {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 999px;
+      background: rgba(20, 184, 166, 0.18);
+      border: 1px solid rgba(45, 212, 191, 0.35);
+      color: #99f6e4;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .mgr-avatar {
+      width: 28px; height: 28px; border-radius: 999px;
+      object-fit: cover; border: 1.5px solid #2dd4bf; background: #1e293b;
+    }
+    #branchShell {
+      display: grid;
+      grid-template-columns: 248px minmax(0, 1fr);
+      min-height: calc(100vh - 58px);
+      align-items: start;
+    }
+    #branchNav {
+      position: sticky;
+      top: 58px;
+      height: calc(100vh - 58px);
+      overflow-y: auto;
+      background: #fff;
+      border-right: 1px solid var(--border);
+      padding: 14px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .nav-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-muted);
+      padding: 10px 10px 4px;
+    }
+    #branchNav button {
+      border: none;
+      background: transparent;
+      color: var(--ink-secondary);
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+    #branchNav button:hover { background: var(--bg-muted); color: var(--ink); }
+    #branchNav button.active { background: var(--accent); color: #fff; }
+    main { max-width: 1280px; width: 100%; margin: 0 auto; padding: 24px 26px 56px; }
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+    h1, h2, h3 { margin: 0 0 10px; letter-spacing: -0.02em; }
+    h1 { font-size: 20px; font-weight: 800; }
+    h2 { font-size: 16px; font-weight: 700; }
+    h3 { font-size: 14px; font-weight: 700; }
+    .sub { color: var(--ink-muted); font-size: 12.5px; margin: 0 0 14px; }
+    .grid { display: grid; gap: 14px; }
+    .g2 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .g3 { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+    .g4 { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+    label { display: block; font-size: 11px; font-weight: 700; color: var(--ink-secondary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.04em; }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--ink);
+      background: #fff;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
+    }
+    .btn {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 8px;
+      background: var(--ink);
+      color: #fff;
+      font-weight: 600;
+      font-size: 12.5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .btn:hover { background: #1e293b; }
+    .btn.teal { background: var(--accent); }
+    .btn.teal:hover { background: var(--accent-hover); }
+    .btn.blue { background: var(--blue); }
+    .btn.blue:hover { background: #1d4ed8; }
+    .btn.green { background: #059669; color: #fff; }
+    .btn.green:hover { background: #047857; }
+    .btn.light { background: #fff; color: var(--ink); border: 1px solid var(--border-strong); }
+    .btn.light:hover { background: var(--bg-muted); }
+    .btn.danger { background: #dc2626; color: #fff; }
+    .btn.sm { padding: 5px 10px; font-size: 11.5px; }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .kpi {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .kpi .label { font-size: 11px; color: var(--ink-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+    .kpi .val { font-size: 24px; font-weight: 800; font-family: 'JetBrains Mono', monospace; margin-top: 6px; }
+    .badge {
+      display: inline-flex; align-items: center; padding: 2px 8px;
+      border-radius: 999px; font-size: 11px; font-weight: 700;
+    }
+    .badge.ok { background: var(--success-bg); color: var(--success-fg); }
+    .badge.warn { background: var(--warn-bg); color: var(--warn-fg); }
+    .badge.err { background: var(--danger-bg); color: var(--danger-fg); }
+    .badge.info { background: #dbeafe; color: #1e40af; }
+    .badge.teal { background: #ccfbf1; color: #0f766e; }
+    .badge.slate { background: #f1f5f9; color: #334155; }
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    th, td { padding: 10px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+    th { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-muted); background: #f8fafc; }
+    .hidden { display: none !important; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .toast {
+      position: fixed; bottom: 20px; right: 20px; z-index: 90;
+      background: #0f172a; color: #fff; padding: 10px 16px;
+      border-radius: 10px; font-size: 12.5px; font-weight: 600;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.25);
+    }
+    .pw-wrap { position: relative; }
+    .pw-wrap input { padding-right: 46px; }
+    .pw-toggle {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      border: none; background: transparent; color: var(--ink-muted);
+      font-size: 11px; font-weight: 700; cursor: pointer; padding: 4px 6px;
+    }
+    .login-shell {
+      min-height: calc(100vh - 58px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 28px 16px;
+    }
+    .login-card {
+      width: 100%; max-width: 440px;
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px;
+      box-shadow: 0 16px 36px -12px rgba(15, 23, 42, 0.12);
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 7px; border-radius: 6px; background: #f1f5f9;
+      border: 1px solid #e2e8f0; font-size: 11px; color: #334155;
+      margin: 2px 3px 2px 0;
+    }
+    .chip.hi { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
+    .msg-box {
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 8px 10px; margin-top: 8px; display: grid; gap: 6px;
+    }
+    .msg-item {
+      font-size: 12px; color: #1e293b; border-bottom: 1px dashed #e2e8f0;
+      padding-bottom: 5px; display: flex; align-items: flex-start; gap: 8px;
+    }
+    .msg-item:last-child { border-bottom: none; padding-bottom: 0; }
+    @media (max-width: 900px) {
+      #branchShell { grid-template-columns: 1fr; }
+      #branchNav {
+        position: static; height: auto; flex-direction: row; flex-wrap: wrap;
+        border-right: none; border-bottom: 1px solid var(--border);
+      }
+      #branchNav button { width: auto; }
+      main { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="brand-bar">
+    <span class="brand-mark">NB</span>
+    <div>
+      <strong style="font-size:14.5px;letter-spacing:-0.01em">NurTech Branch Console</strong>
+      <span id="hdrBranchBadge" class="branch-pill hidden">Branch</span>
+    </div>
+  </div>
+  <div class="row">
+    <img id="hdrManagerAvatar" class="mgr-avatar hidden" alt="Manager" referrerpolicy="no-referrer" />
+    <span id="hdrManagerName" class="mono" style="color:#cbd5e1;font-size:11.5px">Connecting to Firebase...</span>
+    <button id="btnBranchLogout" type="button" class="btn sm danger hidden">Sign Out</button>
+  </div>
+</header>
+
+<section id="loginView" class="login-shell">
+  <div class="login-card">
+    <span class="badge teal" style="margin-bottom:10px">Firebase Live Branch Desk</span>
+    <h1>Sign In to Your Branch</h1>
+    <p class="sub">Sign in with the Branch Login ID (or staff email) and Password provisioned by Head Office. Session stays active automatically via Firebase Auth.</p>
+
+    <form id="branchLoginForm" style="display:grid;gap:14px">
+      <div>
+        <label for="inpLoginId">Branch Login ID or Staff Email</label>
+        <input id="inpLoginId" type="text" required autocomplete="username" placeholder="e.g. dhaka_branch01 or dhaka_branch01@nurtech.com" />
+      </div>
+      <div>
+        <label for="inpPassword">Password</label>
+        <div class="pw-wrap">
+          <input id="inpPassword" type="password" required autocomplete="current-password" placeholder="Enter your password" />
+          <button id="btnTogglePw" type="button" class="pw-toggle" aria-label="Show password">Show</button>
+        </div>
+      </div>
+
+      <div id="loginErrorBox" class="hidden" style="padding:10px 12px;border-radius:8px;background:#fee2e2;color:#991b1b;font-size:12px;font-weight:600"></div>
+
+      <button id="btnLoginSubmit" type="submit" class="btn teal" style="width:100%;padding:11px">Sign In to Branch Desk</button>
+    </form>
+  </div>
+</section>
+
+<div id="branchShell" class="hidden">
+  <nav id="branchNav">
+    <div class="nav-label">Branch Desk</div>
+    <button type="button" data-page="overview" class="active"><span>Overview</span></button>
+    <button type="button" data-page="orders"><span>Pending &amp; Orders</span> <span id="navPendingBadge" class="badge warn hidden">0</span></button>
+    <button type="button" data-page="inventory"><span>Stock &amp; Add Product</span></button>
+    <button type="button" data-page="locator"><span>Find Stock &amp; Transfers</span> <span id="navTransferBadge" class="badge info hidden">0</span></button>
+    <button type="button" data-page="sales"><span>Branch Sales Report</span></button>
+    <button type="button" data-page="settings"><span>Branch Info &amp; Pickup</span></button>
+  </nav>
+
+  <main>
+    <!-- OVERVIEW PAGE -->
+    <section id="page-overview" class="page active">
+      <div class="row" style="justify-content:space-between;margin-bottom:14px">
+        <div>
+          <h1 id="ovBranchTitle">Branch Overview</h1>
+          <p id="ovBranchSubtitle" class="sub">Real-time Firestore sync — branch orders, local inventory, stock locator &amp; transfers.</p>
+        </div>
+      </div>
+
+      <div class="grid g4" style="margin-bottom:18px">
+        <div class="kpi">
+          <div class="label">Branch Orders</div>
+          <div id="kpiTotalOrders" class="val">0</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Pending Receipt Queue</div>
+          <div id="kpiActiveOrders" class="val" style="color:#d97706">0</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Branch Revenue</div>
+          <div id="kpiBranchRevenue" class="val" style="color:#059669">৳0</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Branch Pickup Fee</div>
+          <div id="kpiPickupFee" class="val" style="color:#0f766e">৳0</div>
+        </div>
+      </div>
+
+      <div class="grid g2">
+        <div class="card">
+          <h2>Branch &amp; Manager Identity</h2>
+          <div id="ovBranchDetails" style="font-size:13px;color:#334155;display:grid;gap:6px"></div>
+        </div>
+        <div class="card">
+          <h2>Open Pending Pool &amp; Recent Orders</h2>
+          <div id="ovLatestOrders"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PENDING & ORDERS DESK -->
+    <section id="page-orders" class="page">
+      <div class="card" id="openPendingPoolCard">
+        <div class="row" style="justify-content:space-between;margin-bottom:10px">
+          <div>
+            <h2>Open Pending Order Pool (Awaiting Receipt)</h2>
+            <p class="sub" style="margin-bottom:0">Receive unassigned courier orders or this branch's pending pickup orders. Receiving deducts local branch stock and credits revenue to this branch.</p>
+          </div>
+          <span id="poolCountBadge" class="badge warn">0 Waiting</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Order #</th>
+                <th>Customer &amp; Mode</th>
+                <th>Items &amp; Local Availability</th>
+                <th>Total</th>
+                <th>Receive Action</th>
+              </tr>
+            </thead>
+            <tbody id="openPoolTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row" style="justify-content:space-between;margin-bottom:12px">
+          <div>
+            <h2>Assigned &amp; Received Branch Orders</h2>
+            <p class="sub" style="margin-bottom:0">Store Pickup stages: Received &rarr; Collecting Product &rarr; In Transit &rarr; Ready for Store Pickup &rarr; Finished / Delivered. Syncs live to Storefront Order Tracking.</p>
+          </div>
+          <div class="row">
+            <input id="inpOrderSearch" type="text" placeholder="Search Order # or Phone..." style="width:210px" />
+            <select id="selOrderStatusFilter" style="width:190px">
+              <option value="all">All Statuses</option>
+              <option value="pending">Pending Receipt</option>
+              <option value="confirmed">Received (Confirmed)</option>
+              <option value="assembling">Collecting Product / QA</option>
+              <option value="in_transit">In Transit</option>
+              <option value="shipped">Ready for Store Pickup</option>
+              <option value="delivered">Finished / Delivered</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Order #</th>
+                <th>Customer</th>
+                <th>Items &amp; Shortages</th>
+                <th>Payable</th>
+                <th>Status &amp; Note</th>
+                <th>Fulfillment Actions</th>
+              </tr>
+            </thead>
+            <tbody id="branchOrdersTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- BRANCH STOCK & ADD PRODUCT -->
+    <section id="page-inventory" class="page">
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <h2>Add or Edit Branch Hardware Product</h2>
+            <p class="sub" style="margin-bottom:0">Products created here credit stock strictly to <strong>this branch</strong> (other locations stay at 0). Storefront total stock is computed across all locations.</p>
+          </div>
+          <button id="btnToggleAddProd" type="button" class="btn teal">+ Add New Product</button>
+        </div>
+
+        <form id="branchAddProductForm" class="hidden" style="margin-top:16px;padding-top:16px;border-top:1px solid #e2e8f0">
+          <input id="bp_editId" type="hidden" value="" />
+          <div class="grid g3">
+            <div>
+              <label for="bp_title">Product Title *</label>
+              <input id="bp_title" required placeholder="e.g. Keychron K8 Pro Mechanical Keyboard" />
+            </div>
+            <div>
+              <label for="bp_sku">SKU *</label>
+              <input id="bp_sku" required placeholder="e.g. NT-KC-K8PRO" />
+            </div>
+            <div>
+              <label for="bp_brand">Brand *</label>
+              <input id="bp_brand" required value="NurTech" />
+            </div>
+            <div>
+              <label for="bp_category">Category *</label>
+              <select id="bp_category"></select>
+            </div>
+            <div>
+              <label for="bp_department">Department</label>
+              <select id="bp_department"></select>
+            </div>
+            <div>
+              <label for="bp_platform">Platform</label>
+              <select id="bp_platform"></select>
+            </div>
+            <div>
+              <label for="bp_regPrice">Regular Price (BDT ৳) *</label>
+              <input id="bp_regPrice" type="number" min="1" required value="5500" />
+            </div>
+            <div>
+              <label for="bp_discount">Discount (%)</label>
+              <input id="bp_discount" type="number" min="0" max="95" value="0" />
+            </div>
+            <div>
+              <label for="bp_weight">Weight (kg)</label>
+              <input id="bp_weight" type="number" step="0.05" min="0" value="0.6" />
+            </div>
+            <div>
+              <label for="bp_stock">Branch Stock Qty</label>
+              <input id="bp_stock" type="number" min="0" max="100000" value="5" />
+            </div>
+            <div style="grid-column:span 2">
+              <label for="bp_imageUrl">Primary Image URL (https://...)</label>
+              <input id="bp_imageUrl" type="url" placeholder="https://..." />
+            </div>
+          </div>
+          <div style="margin-top:12px">
+            <label for="bp_summary">Short Summary</label>
+            <input id="bp_summary" placeholder="Official Distributor Warranty, Hot-swappable Switches, Wireless Bluetooth 5.1" />
+          </div>
+
+          <div style="margin-top:14px;padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px">
+            <div class="row" style="justify-content:space-between;margin-bottom:8px">
+              <strong>Optional Product Variants (Stock per Variant at This Branch)</strong>
+              <button id="btnBpAddVariant" type="button" class="btn sm light">+ Add Variant</button>
+            </div>
+            <div id="bp_variantRows" style="display:grid;gap:8px"></div>
+          </div>
+
+          <div class="row" style="margin-top:14px">
+            <button id="btnBpSubmit" type="submit" class="btn teal">Save Product &amp; Sync Branch Stock</button>
+            <button id="btnBpCancel" type="button" class="btn light">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="row" style="justify-content:space-between;margin-bottom:12px">
+          <div>
+            <h2>Per-Branch &amp; Per-Variant Stock Ledger</h2>
+            <p class="sub" style="margin-bottom:0">Use <strong>+ Add Qty</strong> to restock incoming units or <strong>Set Exact</strong> to update physical shelf count at this branch without altering other locations.</p>
+          </div>
+          <input id="inpStockSearch" type="text" placeholder="Filter product name or SKU..." style="width:260px" />
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>SKU / Product</th>
+                <th>Category &amp; Price</th>
+                <th>Total Store</th>
+                <th>All Locations Stock</th>
+                <th>This Branch Stock (Variant / Base)</th>
+              </tr>
+            </thead>
+            <tbody id="branchStockTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Recent Stock Actions (This Session)</h3>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Product &amp; Variant</th>
+                <th>Change</th>
+                <th>Branch Qty (After)</th>
+                <th>Total Store</th>
+                <th>Reason / Actor</th>
+              </tr>
+            </thead>
+            <tbody id="branchStockLogsTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- STOCK FINDER & INTER-BRANCH TRANSFERS -->
+    <section id="page-locator" class="page">
+      <div class="card">
+        <div class="row" style="justify-content:space-between;margin-bottom:12px">
+          <div>
+            <h2>Global Stock Finder Across Branches &amp; Head Office</h2>
+            <p class="sub" style="margin-bottom:0">Locate exact branch or Head Office inventory (with variant breakdown), check showroom contacts, and send live stock transfer requests.</p>
+          </div>
+          <div class="row">
+            <input id="inpLocatorSearch" type="text" placeholder="Search product, SKU, or variant..." style="width:260px" />
+            <button id="btnLocatorSearch" type="button" class="btn teal">Search Stock</button>
+          </div>
+        </div>
+        <div id="locatorTransferCtxBanner" class="hidden" style="margin-bottom:12px;padding:10px 12px;border-radius:8px;background:#fef3c7;border:1px solid #fcd34d;color:#92400e;font-size:12px;display:flex;justify-content:space-between;align-items:center">
+          <span id="locatorTransferCtxText"></span>
+          <button id="btnClearLocatorCtx" type="button" class="btn sm light">Clear Order Link</button>
+        </div>
+        <div id="locatorResultsBox" style="display:grid;gap:12px"></div>
+      </div>
+
+      <div class="card">
+        <h2>Inter-Branch &amp; HQ Stock Transfers &amp; Real-Time Chat</h2>
+        <p class="sub">Approve incoming dispatch requests (deducts source stock), confirm arrival (adds destination stock), and message HQ or peer branches directly.</p>
+        <div id="branchTransfersBox" style="display:grid;gap:12px"></div>
+      </div>
+    </section>
+
+    <!-- BRANCH SALES REPORT -->
+    <section id="page-sales" class="page">
+      <div class="grid g3" style="margin-bottom:18px">
+        <div class="kpi">
+          <div class="label">Orders Received by Branch</div>
+          <div id="srOrdersCount" class="val">0</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Total Units Sold</div>
+          <div id="srUnitsSold" class="val" style="color:#2563eb">0</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Attributed Revenue (BDT)</div>
+          <div id="srRevenueBdt" class="val" style="color:#059669">৳0</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Product &amp; Variant Sales Breakdown (This Branch)</h2>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Variant</th>
+                <th>Units Sold</th>
+                <th>Revenue (BDT)</th>
+              </tr>
+            </thead>
+            <tbody id="salesBreakdownTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Recent Received Order Revenue Ledger</h3>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Order #</th>
+                <th>Item &amp; Variant</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Line Total</th>
+              </tr>
+            </thead>
+            <tbody id="salesEntriesTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- BRANCH SETTINGS -->
+    <section id="page-settings" class="page">
+      <div class="card">
+        <h2>Branch Contact &amp; Checkout Pickup Configuration</h2>
+        <p class="sub">Changes saved here update Firestore immediately and reflect live on the Storefront Contact page and Checkout Branch Pickup selector.</p>
+        <form id="branchSettingsForm" class="grid g2" style="margin-top:12px">
+          <div>
+            <label for="stPhone">Branch Phone</label>
+            <input id="stPhone" type="text" required />
+          </div>
+          <div>
+            <label for="stEmail">Branch Email</label>
+            <input id="stEmail" type="email" />
+          </div>
+          <div style="grid-column:1 / -1">
+            <label for="stAddress">Full Branch Address</label>
+            <input id="stAddress" type="text" required />
+          </div>
+          <div>
+            <label for="stHours">Opening Hours</label>
+            <input id="stHours" type="text" required placeholder="Sat - Thu · 10:00 AM - 08:00 PM" />
+          </div>
+          <div>
+            <label for="stMapUrl">Google Map Link (https://...)</label>
+            <input id="stMapUrl" type="url" placeholder="https://maps.google.com/?q=..." />
+          </div>
+          <div>
+            <label for="stPickupEnabled">Customer Branch Pickup</label>
+            <select id="stPickupEnabled">
+              <option value="true">Enabled (Customers can select at Checkout)</option>
+              <option value="false">Paused (Contact Only)</option>
+            </select>
+          </div>
+          <div>
+            <label for="stPickupFee">Pickup Charge (BDT ৳)</label>
+            <input id="stPickupFee" type="number" min="0" max="50000" required />
+          </div>
+          <div>
+            <label for="stFreeMin">Free Pickup Min Order (BDT ৳, 0 = none)</label>
+            <input id="stFreeMin" type="number" min="0" max="10000000" />
+          </div>
+          <div>
+            <label for="stReadyHours">Pickup Ready Time Label</label>
+            <input id="stReadyHours" type="text" required placeholder="Ready in 2–4 hours" />
+          </div>
+          <div style="grid-column:1 / -1">
+            <label for="stInstructions">Customer Pickup Instructions</label>
+            <textarea id="stInstructions" rows="2" placeholder="Counter number, ID requirement, parking info..."></textarea>
+          </div>
+          <div style="grid-column:1 / -1" class="row">
+            <button id="btnSaveSettings" type="submit" class="btn teal">Save Branch Contact &amp; Pickup Settings</button>
+            <span id="settingsSavedHint" class="mono" style="color:#059669"></span>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="toastBox" class="toast hidden"></div>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+  import { initializeFirestore, getFirestore, collection, doc, getDoc, setDoc, updateDoc, onSnapshot, query, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+
+  const firebaseConfig = {
+  "apiKey": "AIzaSyBHAKOedStIoujkdD3o-dH1OvU3E6eIE-o",
+  "authDomain": "nurtech-bd.firebaseapp.com",
+  "projectId": "nurtech-bd",
+  "storageBucket": "nurtech-bd.firebasestorage.app",
+  "messagingSenderId": "1022912213159",
+  "appId": "1:1022912213159:web:fdf11116b2bbd69981eb82",
+  "measurementId": "G-6VLZTDDZ1F"
+};
+  const DEFAULT_APP_ORIGIN = "https://admin24.vercel.app";
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  let db;
+  try {
+    db = initializeFirestore(app, {
+      experimentalAutoDetectLongPolling: true,
+      experimentalLongPollingOptions: { timeoutSeconds: 8 }
+    });
+  } catch {
+    db = getFirestore(app);
+  }
+
+  const state = {
+    user: null,
+    manager: null,
+    branchId: '',
+    siteBase: { siteName: 'NurTech Head Office (HQ)', phone: '', email: '', address: '', supportHours: '' },
+    branches: [],
+    branch: null,
+    categories: [],
+    departments: [],
+    platforms: [],
+    products: [],
+    allOrders: [],
+    orders: [],
+    openPendingPool: [],
+    transfers: [],
+    transferMsgs: {},
+    localStockLogs: [],
+    unsubs: [],
+    transferMsgUnsubs: {}
+  };
+  let pendingTransferOrderCtx = null;
+
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  const fmtBdt = (n) => '৳' + Math.round(Number(n || 0)).toLocaleString('en-US');
+  const cleanObj = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
+  const slug = (s, p = 'nt-br') => {
+    const c = String(s || '').trim().toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '');
+    return c.length >= 2 ? c.slice(0, 80) : p + '-' + Date.now().toString(36);
+  };
+
+  function toast(msg, isErr) {
+    const box = $('toastBox');
+    box.textContent = msg;
+    box.style.background = isErr ? '#991b1b' : '#0f172a';
+    box.classList.remove('hidden');
+    window.clearTimeout(toast._t);
+    toast._t = window.setTimeout(() => box.classList.add('hidden'), 3600);
+  }
+
+  $('btnTogglePw').addEventListener('click', () => {
+    const inp = $('inpPassword');
+    const isPw = inp.type === 'password';
+    inp.type = isPw ? 'text' : 'password';
+    $('btnTogglePw').textContent = isPw ? 'Hide' : 'Show';
+  });
+
+  function clearAllListeners() {
+    state.unsubs.forEach((fn) => { try { fn(); } catch {} });
+    state.unsubs = [];
+    Object.values(state.transferMsgUnsubs).forEach((fn) => { try { fn(); } catch {} });
+    state.transferMsgUnsubs = {};
+  }
+
+  function resetUiSignedOut(errMsg) {
+    clearAllListeners();
+    state.user = null;
+    state.manager = null;
+    state.branchId = '';
+    state.branch = null;
+    state.orders = [];
+    state.openPendingPool = [];
+    state.transfers = [];
+    state.transferMsgs = {};
+    $('branchShell').classList.add('hidden');
+    $('loginView').classList.remove('hidden');
+    $('hdrBranchBadge').classList.add('hidden');
+    $('hdrManagerAvatar').classList.add('hidden');
+    $('btnBranchLogout').classList.add('hidden');
+    $('hdrManagerName').textContent = 'Signed out';
+    $('inpPassword').value = '';
+    if (errMsg) {
+      $('loginErrorBox').textContent = errMsg;
+      $('loginErrorBox').classList.remove('hidden');
+    } else {
+      $('loginErrorBox').classList.add('hidden');
+    }
+  }
+
+  $('btnBranchLogout').addEventListener('click', async () => {
+    await signOut(auth).catch(() => {});
+  });
+
+  $('branchLoginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const rawId = ($('inpLoginId').value || '').trim();
+    const password = $('inpPassword').value;
+    $('loginErrorBox').classList.add('hidden');
+    if (!rawId || !password) return;
+    const email = rawId.includes('@')
+      ? rawId.toLowerCase()
+      : (rawId.toLowerCase().replace(/[^a-z0-9._-]/g, '') + '@nurtech.com');
+    const btn = $('btnLoginSubmit');
+    btn.disabled = true;
+    btn.textContent = 'Signing in...';
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      const code = err?.code || '';
+      const msg = code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found'
+        ? 'Invalid Branch Login ID or Password.'
+        : (err?.message || 'Sign in failed.');
+      $('loginErrorBox').textContent = msg;
+      $('loginErrorBox').classList.remove('hidden');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Sign In to Branch Desk';
+    }
+  });
+
+  onAuthStateChanged(auth, async (u) => {
+    clearAllListeners();
+    if (!u) {
+      resetUiSignedOut('');
+      return;
+    }
+    try {
+      const mgrSnap = await getDoc(doc(db, 'branch_managers', u.uid));
+      if (!mgrSnap.exists()) {
+        await signOut(auth);
+        resetUiSignedOut('This account (' + (u.email || u.uid) + ') is not registered as a Branch Manager.');
+        return;
+      }
+      const mgr = mgrSnap.data() || {};
+      if (mgr.active === false) {
+        await signOut(auth);
+        resetUiSignedOut('This Branch Manager account has been disabled by Head Office.');
+        return;
+      }
+      if (!mgr.branchId) {
+        await signOut(auth);
+        resetUiSignedOut('Branch assignment is missing on this manager profile.');
+        return;
+      }
+      state.user = u;
+      state.manager = { ...mgr, uid: u.uid };
+      state.branchId = mgr.branchId;
+
+      $('loginErrorBox').classList.add('hidden');
+      $('loginView').classList.add('hidden');
+      $('branchShell').classList.remove('hidden');
+      startBranchListeners();
+      toast('Signed in as ' + (mgr.name || mgr.loginId || 'Branch Manager'));
+    } catch (err) {
+      await signOut(auth).catch(() => {});
+      resetUiSignedOut('Verification error: ' + (err?.message || 'Unable to verify branch access.'));
+    }
+  });
+
+  function startBranchListeners() {
+    const sub = (refOrQ, fn) => {
+      state.unsubs.push(onSnapshot(refOrQ, fn, (err) => toast('Sync error: ' + err.message, true)));
+    };
+
+    sub(doc(db, 'setting', 'site_base'), (s) => {
+      if (s.exists()) state.siteBase = { ...state.siteBase, ...s.data() };
+      renderLocatorResults();
+      renderTransfersBox();
+    });
+
+    sub(collection(db, 'branches'), (s) => {
+      state.branches = s.docs.map((d) => ({ ...d.data(), id: d.id }));
+      state.branch = state.branches.find((b) => b.id === state.branchId) || {
+        id: state.branchId,
+        code: state.manager?.branchCode || 'BR',
+        name: state.manager?.branchName || 'Branch'
+      };
+      renderAll();
+    });
+
+    sub(collection(db, 'control_products'), (s) => {
+      s.docs.forEach((d) => {
+        if (d.id === 'chatagory' && Array.isArray(d.data().items)) state.categories = d.data().items;
+        if (d.id === 'department' && Array.isArray(d.data().items)) state.departments = d.data().items;
+        if (d.id === 'platform' && Array.isArray(d.data().items)) state.platforms = d.data().items;
+      });
+      renderTaxonomySelects();
+    });
+
+    sub(collection(db, 'products'), (s) => {
+      state.products = s.docs.map((d) => ({ ...d.data(), id: d.id }));
+      renderAll();
+      renderLocatorResults();
+    });
+
+    sub(query(collection(db, 'orders'), orderBy('createdAt', 'desc')), (s) => {
+      state.allOrders = s.docs.map((d) => ({ ...d.data(), id: d.id }));
+      const myId = state.branchId;
+      state.orders = state.allOrders.filter((o) =>
+        o.branchId === myId || o.receivedByLocationId === myId
+      );
+      state.openPendingPool = state.allOrders.filter((o) =>
+        o.status === 'pending' &&
+        (o.branchId === myId || o.receivedByLocationId === myId || (!o.branchId && !o.receivedByLocationId && o.fulfillmentMode !== 'pickup'))
+      );
+      renderAll();
+    });
+
+    sub(query(collection(db, 'branch_transfers'), orderBy('createdAt', 'desc')), (s) => {
+      const all = s.docs.map((d) => ({ ...d.data(), id: d.id }));
+      const myId = state.branchId;
+      state.transfers = all.filter((t) => t.fromLocationId === myId || t.toLocationId === myId);
+      ensureTransferMsgListeners(state.transfers);
+      renderAll();
+    });
+  }
+
+  function ensureTransferMsgListeners(transfers) {
+    const keepIds = new Set((transfers || []).slice(0, 30).map((t) => t.id));
+    Object.keys(state.transferMsgUnsubs).forEach((tid) => {
+      if (!keepIds.has(tid)) {
+        try { state.transferMsgUnsubs[tid](); } catch {}
+        delete state.transferMsgUnsubs[tid];
+        delete state.transferMsgs[tid];
+      }
+    });
+    keepIds.forEach((tid) => {
+      if (state.transferMsgUnsubs[tid]) return;
+      const qRef = query(collection(db, 'branch_transfers', tid, 'messages'), orderBy('createdAtMs', 'asc'));
+      state.transferMsgUnsubs[tid] = onSnapshot(qRef, (snap) => {
+        state.transferMsgs[tid] = snap.docs.map((d) => ({ ...d.data(), id: d.id }));
+        renderTransfersBox();
+      });
+    });
+  }
+
+  function getHqMeta() {
+    const sb = state.siteBase || {};
+    return {
+      id: 'head_office',
+      code: 'HQ',
+      name: String(sb.siteName || 'NurTech Head Office (HQ)').trim(),
+      phone: String(sb.phone || '').trim(),
+      email: String(sb.email || '').trim(),
+      address: String(sb.address || '').trim(),
+      hours: String(sb.supportHours || '').trim()
+    };
+  }
+
+  function getLocationCode(locId) {
+    if (!locId || locId === 'head_office') return 'HQ';
+    const br = state.branches.find((b) => b.id === locId);
+    return br?.code || (locId === state.branchId ? (state.manager?.branchCode || 'BR') : locId.toUpperCase().slice(0, 10));
+  }
+
+  function getLocationName(locId) {
+    if (!locId || locId === 'head_office') return getHqMeta().name;
+    const br = state.branches.find((b) => b.id === locId);
+    return br?.name || (locId === state.branchId ? (state.manager?.branchName || 'Branch') : locId);
+  }
+
+  function getStockAtLocation(prod, locId, variantId = '') {
+    if (!prod) return 0;
+    const bs = prod.branchStocks;
+    if (bs && bs[locId]) {
+      const vMap = bs[locId].variants || bs[locId].variantStock;
+      if (variantId && vMap && typeof vMap[variantId] === 'number') {
+        return Math.max(0, Math.round(Number(vMap[variantId] || 0)));
+      }
+      return Math.max(0, Math.round(Number(bs[locId].stock || 0)));
+    }
+    if (locId === 'head_office' && (!bs || Object.keys(bs).length === 0)) {
+      if (variantId && Array.isArray(prod.variants)) {
+        const v = prod.variants.find((x) => x.id === variantId);
+        return Math.max(0, Math.round(Number(v?.stock || 0)));
+      }
+      return Math.max(0, Math.round(Number(prod.stock || 0)));
+    }
+    return 0;
+  }
+
+  function computeNewBranchStocksOnDelta(prod, locationId, delta, variantId = '', mode = 'add') {
+    const locKey = String(locationId || state.branchId).trim();
+    const rawBs = (prod && typeof prod.branchStocks === 'object' && prod.branchStocks) ? prod.branchStocks : {};
+    const nextBs = {};
+    Object.entries(rawBs).forEach(([k, v]) => {
+      if (v && typeof v === 'object') {
+        const vMap = v.variants || v.variantStock;
+        nextBs[k] = {
+          stock: Math.max(0, Math.round(Number(v.stock || 0))),
+          ...(vMap && typeof vMap === 'object' ? { variants: { ...vMap } } : {})
+        };
+      }
+    });
+    if (!nextBs.head_office && Object.keys(nextBs).length === 0) {
+      const initVars = {};
+      (Array.isArray(prod?.variants) ? prod.variants : []).forEach((v) => {
+        if (v?.id) initVars[v.id] = Math.max(0, Math.round(Number(v.stock || 0)));
+      });
+      nextBs.head_office = {
+        stock: Math.max(0, Math.round(Number(prod?.stock || 0))),
+        ...(Object.keys(initVars).length ? { variants: initVars } : {})
+      };
+    }
+    if (!nextBs[locKey]) nextBs[locKey] = { stock: 0 };
+    const curEntry = nextBs[locKey];
+    const nextVariants = Array.isArray(prod?.variants) ? prod.variants.map((v) => ({ ...v })) : [];
+
+    if (variantId && nextVariants.length) {
+      curEntry.variants = { ...(curEntry.variants || {}) };
+      const prevVarQty = Number(curEntry.variants[variantId] ?? 0);
+      curEntry.variants[variantId] = mode === 'set'
+        ? Math.max(0, Math.round(delta))
+        : Math.max(0, Math.round(prevVarQty + delta));
+      curEntry.stock = Object.values(curEntry.variants).reduce((a, b) => a + Math.max(0, Number(b || 0)), 0);
+      nextVariants.forEach((v) => {
+        v.stock = Object.values(nextBs).reduce((sum, loc) => {
+          const locVars = loc?.variants || {};
+          return sum + Math.max(0, Math.round(Number(locVars[v.id] || 0)));
+        }, 0);
+      });
+    } else if (nextVariants.length && !variantId && mode === 'add') {
+      // fallback if order item had no variantId on a product with variants
+      curEntry.stock = Math.max(0, Math.round(Number(curEntry.stock || 0) + delta));
+    } else {
+      curEntry.stock = mode === 'set'
+        ? Math.max(0, Math.round(delta))
+        : Math.max(0, Math.round(Number(curEntry.stock || 0) + delta));
+    }
+
+    const totalStock = nextVariants.length
+      ? nextVariants.reduce((sum, v) => sum + Math.max(0, Math.round(Number(v.stock || 0))), 0)
+      : Object.values(nextBs).reduce((sum, loc) => sum + Math.max(0, Math.round(Number(loc?.stock || 0))), 0);
+
+    return { branchStocks: nextBs, totalStock, variants: nextVariants };
+  }
+
+  function computeSalesReport() {
+    const active = (state.orders || []).filter((o) => o.status !== 'cancelled');
+    let totalRevenueBdt = 0;
+    let totalUnitsSold = 0;
+    const prodMap = {};
+    const recentEntries = [];
+
+    active.forEach((o) => {
+      totalRevenueBdt += Number(o.total || 0);
+      const items = Array.isArray(o.itemsDetailed) && o.itemsDetailed.length
+        ? o.itemsDetailed
+        : (Array.isArray(o.itemIds) ? o.itemIds.map((pid) => ({ productId: pid, productName: pid, quantity: 1, unitPrice: 0 })) : []);
+      items.forEach((it) => {
+        const qty = Math.max(1, Math.round(Number(it.quantity || it.qty || 1)));
+        const price = Number(it.unitPrice || it.price || 0);
+        const lineTotal = Number(it.lineTotal || (price * qty) || (items.length === 1 ? Number(o.subtotal || o.total || 0) : 0));
+        totalUnitsSold += qty;
+        const key = (it.productId || it.pid || 'item') + '::' + (it.variantId || '');
+        if (!prodMap[key]) {
+          prodMap[key] = {
+            productId: it.productId || it.pid || '',
+            productName: it.productName || it.title || it.productId || 'Item',
+            variantLabel: it.variantLabel || it.variantName || '',
+            unitsSold: 0,
+            revenueBdt: 0
+          };
+        }
+        prodMap[key].unitsSold += qty;
+        prodMap[key].revenueBdt += lineTotal;
+        if (recentEntries.length < 30) {
+          recentEntries.push({
+            soldAtIso: o.receivedAtIso || '',
+            orderNumber: o.orderNumber || o.id,
+            productName: prodMap[key].productName,
+            variantLabel: prodMap[key].variantLabel,
+            qty,
+            unitPrice: price || Math.round(lineTotal / qty),
+            lineTotal
+          });
+        }
+      });
+    });
+
+    return {
+      totalOrdersReceived: active.length,
+      totalUnitsSold,
+      totalRevenueBdt,
+      productBreakdown: Object.values(prodMap).sort((a, b) => b.revenueBdt - a.revenueBdt),
+      recentEntries
+    };
+  }
+
+  function switchPage(pageKey) {
+    document.querySelectorAll('#branchNav button').forEach((b) => {
+      b.classList.toggle('active', b.getAttribute('data-page') === pageKey);
+    });
+    document.querySelectorAll('main .page').forEach((p) => {
+      p.classList.toggle('active', p.id === 'page-' + pageKey);
+    });
+  }
+
+  document.querySelectorAll('#branchNav button[data-page]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const target = btn.getAttribute('data-page');
+      switchPage(target);
+      if (target === 'locator') renderLocatorResults();
+    });
+  });
+
+  function getStatusMeta(o) {
+    const isPickup = o && o.fulfillmentMode === 'pickup';
+    const map = {
+      pending: { label: 'Pending Receipt', cls: 'warn' },
+      confirmed: { label: isPickup ? 'Received' : 'Order Confirmed', cls: 'info' },
+      assembling: { label: isPickup ? 'Collecting Product' : 'Bench QA & Assembly', cls: 'warn' },
+      in_transit: { label: 'In Transit', cls: 'info' },
+      shipped: { label: isPickup ? 'Ready for Store Pickup' : 'Dispatched / Courier', cls: 'teal' },
+      delivered: { label: isPickup ? 'Finished / Delivered' : 'Delivered', cls: 'ok' },
+      cancelled: { label: 'Cancelled', cls: 'err' }
+    };
+    return map[o?.status] || { label: o?.status || 'Unknown', cls: 'slate' };
+  }
+
+  function renderAll() {
+    if (!state.manager) return;
+    const b = state.branch || {};
+    const m = state.manager || {};
+    const orders = Array.isArray(state.orders) ? state.orders : [];
+    const pool = Array.isArray(state.openPendingPool) ? state.openPendingPool : [];
+    const sr = computeSalesReport();
+
+    $('hdrBranchBadge').textContent = (b.code || m.branchCode || 'BR') + ' · ' + (b.name || m.branchName || 'Branch');
+    $('hdrBranchBadge').classList.remove('hidden');
+    $('btnBranchLogout').classList.remove('hidden');
+    $('hdrManagerName').textContent = (m.name || 'Manager') + ' (' + (m.loginId || m.email || '') + ')';
+    if (m.photoUrl) {
+      $('hdrManagerAvatar').src = m.photoUrl;
+      $('hdrManagerAvatar').classList.remove('hidden');
+    } else {
+      $('hdrManagerAvatar').classList.add('hidden');
+    }
+
+    $('ovBranchTitle').textContent = (b.name || m.branchName || 'Branch') + ' (' + (b.code || m.branchCode || '') + ')';
+    $('ovBranchSubtitle').textContent = (b.address || '') + (b.hours ? ' · ' + b.hours : '');
+
+    const activeAssigned = orders.filter((o) => o.status !== 'delivered' && o.status !== 'cancelled').length;
+    const pendingTotal = pool.length;
+    $('kpiTotalOrders').textContent = String(orders.length);
+    $('kpiActiveOrders').textContent = String(pendingTotal);
+    $('kpiBranchRevenue').textContent = fmtBdt(sr.totalRevenueBdt || 0);
+    $('kpiPickupFee').textContent = b.pickupEnabled === false ? 'Paused' : (Number(b.pickupFeeBdt || 0) === 0 ? 'FREE' : fmtBdt(b.pickupFeeBdt));
+
+    if (pendingTotal > 0 || activeAssigned > 0) {
+      $('navPendingBadge').textContent = String(pendingTotal > 0 ? pendingTotal : activeAssigned);
+      $('navPendingBadge').classList.remove('hidden');
+    } else {
+      $('navPendingBadge').classList.add('hidden');
+    }
+
+    const activeTrfs = (state.transfers || []).filter((t) => t.status === 'requested' || t.status === 'approved_in_transit').length;
+    if (activeTrfs > 0) {
+      $('navTransferBadge').textContent = String(activeTrfs);
+      $('navTransferBadge').classList.remove('hidden');
+    } else {
+      $('navTransferBadge').classList.add('hidden');
+    }
+
+    const mgrAvatarHtml = m.photoUrl
+      ? '<img src="' + esc(m.photoUrl) + '" referrerpolicy="no-referrer" style="width:44px;height:44px;border-radius:999px;object-fit:cover;border:2px solid #0f766e" />'
+      : '<div style="width:44px;height:44px;border-radius:999px;background:#ccfbf1;color:#0f766e;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px">' + esc((m.name || 'M')[0]) + '</div>';
+
+    $('ovBranchDetails').innerHTML = [
+      '<div class="row" style="gap:10px;padding-bottom:8px;border-bottom:1px solid #f1f5f9">' + mgrAvatarHtml +
+        '<div><strong>' + esc(m.name || 'Branch Manager') + '</strong><div style="font-size:11.5px;color:#64748b">' + esc(m.email || '') + (m.phone ? ' · ' + esc(m.phone) : '') + (m.district ? ' · ' + esc(m.district) : '') + '</div></div></div>',
+      '<div><strong>Branch District:</strong> ' + esc(b.district || '-') + '</div>',
+      '<div><strong>Branch Phone:</strong> <span class="mono">' + esc(b.phone || '-') + '</span></div>',
+      '<div><strong>Branch Email:</strong> ' + esc(b.email || '-') + '</div>',
+      '<div><strong>Pickup Status:</strong> ' + (b.pickupEnabled !== false ? '<span class="badge ok">Pickup Active</span>' : '<span class="badge warn">Pickup Paused</span>') + '</div>',
+      '<div><strong>Ready Estimate:</strong> ' + esc(b.pickupReadyHours || '-') + '</div>',
+      (Number(b.pickupFreeMinOrder || 0) > 0 ? '<div><strong>Free Pickup Over:</strong> ' + fmtBdt(b.pickupFreeMinOrder) + '</div>' : ''),
+      (b.pickupInstructions ? '<div><strong>Counter Note:</strong> ' + esc(b.pickupInstructions) + '</div>' : '')
+    ].join('');
+
+    const combinedLatest = [...pool.slice(0, 3), ...orders.filter((o) => o.status !== 'pending')].slice(0, 5);
+    $('ovLatestOrders').innerHTML = combinedLatest.length === 0
+      ? '<p class="sub">No customer orders queued or assigned yet.</p>'
+      : combinedLatest.map((o) => {
+          const st = getStatusMeta(o);
+          return '<div style="padding:10px 0;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;gap:10px">' +
+            '<div><strong class="mono">#' + esc(o.orderNumber) + '</strong> · ' + esc(o.customerName) +
+            '<div style="font-size:11.5px;color:#64748b">' + esc(o.itemSummary || '') + '</div></div>' +
+            '<div style="text-align:right"><span class="badge ' + st.cls + '">' + esc(st.label) + '</span><div class="mono" style="margin-top:4px">' + fmtBdt(o.total) + '</div></div>' +
+          '</div>';
+        }).join('');
+
+    renderOpenPoolTable();
+    renderOrdersTable();
+    renderTaxonomySelects();
+    renderStockTable();
+    renderStockLogsTable();
+    renderTransfersBox();
+    renderSalesReport(sr);
+    fillSettingsForm();
+  }
+
+  function getOrderItems(o) {
+    if (Array.isArray(o?.itemsDetailed) && o.itemsDetailed.length) {
+      return o.itemsDetailed.map((it) => ({
+        productId: String(it.productId || it.pid || it.id || '').trim(),
+        productName: String(it.productName || it.title || it.productId || 'Item'),
+        variantId: String(it.variantId || '').trim(),
+        variantLabel: String(it.variantLabel || it.variantName || ''),
+        quantity: Math.max(1, Math.round(Number(it.quantity || it.qty || 1)))
+      }));
+    }
+    return (Array.isArray(o?.itemIds) ? o.itemIds : []).map((pid) => ({
+      productId: String(pid || '').trim(),
+      productName: String(pid || 'Item'),
+      variantId: '',
+      variantLabel: '',
+      quantity: 1
+    }));
+  }
+
+  function getLocalQtyForOrderItem(it) {
+    const prod = state.products.find((p) => p.id === it.productId || p.pid === it.productId);
+    if (!prod) return 0;
+    return getStockAtLocation(prod, state.branchId, it.variantId || '');
+  }
+
+  function renderOpenPoolTable() {
+    const list = Array.isArray(state.openPendingPool) ? state.openPendingPool : [];
+    $('poolCountBadge').textContent = list.length + ' Waiting';
+    if (list.length === 0) {
+      $('openPoolTbody').innerHTML = '<tr><td colspan="5" style="text-align:center;color:#64748b;padding:18px">All incoming pending orders have been received.</td></tr>';
+      return;
+    }
+
+    $('openPoolTbody').innerHTML = list.map((o) => {
+      const items = getOrderItems(o);
+      const itemsHtml = items.length
+        ? items.map((it) => {
+            const avail = getLocalQtyForOrderItem(it);
+            const ok = avail >= it.quantity;
+            return '<div style="margin-bottom:3px">' + esc(it.quantity) + 'x <strong>' + esc(it.productName) + '</strong>' +
+              (it.variantLabel ? ' (' + esc(it.variantLabel) + ')' : '') +
+              ' <span class="badge ' + (ok ? 'ok' : 'warn') + '">Here: ' + avail + ' pcs</span></div>';
+          }).join('')
+        : '<div>' + esc(o.itemSummary || '') + '</div>';
+      const modeBadge = o.fulfillmentMode === 'pickup'
+        ? '<span class="badge teal">Store Pickup</span>'
+        : '<span class="badge info">Courier Delivery</span>';
+      return '<tr data-pool-oid="' + esc(o.id) + '">' +
+        '<td><div class="mono"><strong>#' + esc(o.orderNumber) + '</strong></div><div style="margin-top:4px">' + modeBadge + '</div></td>' +
+        '<td><strong>' + esc(o.customerName) + '</strong><div class="mono" style="color:#64748b">' + esc(o.customerPhone || '') + '</div><div style="font-size:11px;color:#64748b">' + esc(o.district || '') + '</div></td>' +
+        '<td>' + itemsHtml + '</td>' +
+        '<td><strong class="mono">' + fmtBdt(o.total) + '</strong><div style="font-size:11px;color:#64748b;text-transform:uppercase">' + esc(o.paymentMethod) + '</div></td>' +
+        '<td><button type="button" class="btn sm green btn-receive-ord">Receive Order (-Stock)</button></td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  $('openPoolTbody').addEventListener('click', async (e) => {
+    const btn = e.target.closest('button.btn-receive-ord');
+    if (!btn) return;
+    const tr = btn.closest('tr[data-pool-oid]');
+    if (!tr) return;
+    await handleReceiveOrder(tr.getAttribute('data-pool-oid'), '', btn);
+  });
+
+  async function handleReceiveOrder(orderId, branchNote, btnEl) {
+    const ord = state.allOrders.find((o) => o.id === orderId);
+    if (!ord) return toast('Order not found.', true);
+    if (btnEl) btnEl.disabled = true;
+    try {
+      const myId = state.branchId;
+      const br = state.branch || {};
+      const mgr = state.manager || {};
+      const nowMs = Math.floor(Date.now());
+      const items = getOrderItems(ord);
+      const shortages = [];
+
+      for (const it of items) {
+        const prod = state.products.find((p) => p.id === it.productId || p.pid === it.productId);
+        if (!prod) continue;
+        const curQty = getStockAtLocation(prod, myId, it.variantId);
+        if (curQty < it.quantity) {
+          shortages.push((prod.title || prod.name || it.productId) + ' (need ' + (it.quantity - curQty) + ')');
+        }
+        const stk = computeNewBranchStocksOnDelta(prod, myId, -it.quantity, it.variantId, 'add');
+        await updateDoc(doc(db, 'products', prod.id), cleanObj({
+          stock: stk.totalStock,
+          branchStocks: stk.branchStocks,
+          ...(stk.variants.length ? { variants: stk.variants } : {}),
+          updatedAt: serverTimestamp()
+        }));
+        state.localStockLogs.unshift({
+          createdAtIso: new Date(nowMs).toISOString(),
+          productName: prod.title || prod.name || prod.id,
+          variantLabel: it.variantLabel,
+          delta: -it.quantity,
+          newQty: getStockAtLocation({ ...prod, branchStocks: stk.branchStocks }, myId, it.variantId),
+          totalStoreStock: stk.totalStock,
+          reason: 'Order #' + (ord.orderNumber || ord.id) + ' Received',
+          actorName: mgr.name || mgr.loginId
+        });
+      }
+
+      await updateDoc(doc(db, 'orders', orderId), cleanObj({
+        status: 'confirmed',
+        branchId: myId,
+        branchName: String(br.name || mgr.branchName || '').slice(0, 100),
+        branchCode: String(br.code || mgr.branchCode || '').slice(0, 24),
+        ...(br.address ? { branchAddress: String(br.address).slice(0, 260) } : {}),
+        ...(br.phone ? { branchPhone: String(br.phone).slice(0, 40) } : {}),
+        ...(branchNote ? { branchNote: branchNote.slice(0, 240) } : {}),
+        receivedByLocationId: myId,
+        receivedByLocationName: String(br.name || mgr.branchName || '').slice(0, 100),
+        receivedByCode: String(br.code || mgr.branchCode || '').slice(0, 24),
+        receivedByActor: String(mgr.name || mgr.loginId || 'Branch Manager').slice(0, 120),
+        receivedAtIso: new Date(nowMs).toISOString(),
+        branchStatusUpdatedAtMs: nowMs,
+        updatedAt: serverTimestamp()
+      }));
+
+      toast(shortages.length
+        ? 'Order Received with shortage: ' + shortages.join(', ') + ' — use Find Stock to request transfer!'
+        : 'Order Received & Branch Stock updated!', shortages.length > 0);
+    } catch (err) {
+      toast(err.message || 'Receive failed', true);
+      if (btnEl) btnEl.disabled = false;
+    }
+  }
+
+  function renderOrdersTable() {
+    const q = ($('inpOrderSearch').value || '').trim().toLowerCase();
+    const flt = $('selOrderStatusFilter').value;
+    const rows = (state.orders || []).filter((o) => {
+      if (flt !== 'all' && o.status !== flt) return false;
+      if (q) {
+        const hay = [o.orderNumber, o.id, o.customerName, o.customerPhone, o.itemSummary].join(' ').toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+
+    if (rows.length === 0) {
+      $('branchOrdersTbody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#64748b;padding:24px">No matching branch orders found.</td></tr>';
+      return;
+    }
+
+    $('branchOrdersTbody').innerHTML = rows.map((o) => {
+      const st = getStatusMeta(o);
+      const isPickup = o.fulfillmentMode === 'pickup';
+      const locked = o.status === 'delivered' || o.status === 'cancelled';
+      const modeBadge = isPickup
+        ? '<span class="badge teal">Store Pickup</span>'
+        : '<span class="badge info">Delivery</span>';
+
+      // Detect shortage against current branch stock while still pending/collecting
+      const items = getOrderItems(o);
+      const shortages = (o.status === 'pending' || o.status === 'confirmed' || o.status === 'assembling')
+        ? items.map((it) => {
+            const avail = getLocalQtyForOrderItem(it);
+            return avail < it.quantity ? { ...it, shortageQty: it.quantity - avail } : null;
+          }).filter(Boolean)
+        : [];
+      const shortageHtml = shortages.length > 0
+        ? '<div style="margin-top:6px;padding:6px 8px;border-radius:6px;background:#fef3c7;border:1px solid #fcd34d;font-size:11px;color:#92400e">' +
+            shortages.map((sh) => '<div><strong>Low/Need:</strong> ' + esc(sh.productName) + (sh.variantLabel ? ' (' + esc(sh.variantLabel) + ')' : '') + ' — need ' + esc(sh.shortageQty) + ' <button type="button" class="btn sm light btn-find-shortage" data-q="' + esc(sh.productName) + '" data-oid="' + esc(o.id) + '" data-onum="' + esc(o.orderNumber) + '" style="margin-left:4px;padding:2px 6px;font-size:10.5px">Find Stock</button></div>').join('') +
+          '</div>'
+        : '';
+
+      const actionButtons = locked
+        ? '<span style="font-size:11.5px;color:#64748b">' + esc(st.label) + ' (Locked)</span>'
+        : o.status === 'pending'
+          ? '<button type="button" class="btn sm green btn-receive-inline">Receive Order (-Stock)</button> ' +
+            '<button type="button" class="btn sm danger btn-st" data-st="cancelled">Cancel</button>'
+          : isPickup
+            ? '<button type="button" class="btn sm light btn-st" data-st="assembling">Collecting Product</button>' +
+              '<button type="button" class="btn sm light btn-st" data-st="in_transit">In Transit</button>' +
+              '<button type="button" class="btn sm teal btn-st" data-st="shipped">Ready for Store Pickup</button>' +
+              '<button type="button" class="btn sm blue btn-st" data-st="delivered">Finished / Delivered</button>' +
+              '<button type="button" class="btn sm danger btn-st" data-st="cancelled">Cancel</button>'
+            : '<button type="button" class="btn sm light btn-st" data-st="assembling">Bench QA / Packing</button>' +
+              '<button type="button" class="btn sm light btn-st" data-st="in_transit">In Transit</button>' +
+              '<button type="button" class="btn sm teal btn-st" data-st="shipped">Dispatched (Courier)</button>' +
+              '<button type="button" class="btn sm blue btn-st" data-st="delivered">Delivered</button>' +
+              '<button type="button" class="btn sm danger btn-st" data-st="cancelled">Cancel</button>';
+
+      return '<tr data-oid="' + esc(o.id) + '">' +
+        '<td><div class="mono"><strong>#' + esc(o.orderNumber) + '</strong></div><div style="margin-top:4px">' + modeBadge + '</div>' +
+          (o.receivedByLocationName ? '<div style="font-size:10.5px;color:#0f766e;margin-top:3px">Received: ' + esc(o.receivedByLocationName) + '</div>' : '') +
+        '</td>' +
+        '<td><strong>' + esc(o.customerName) + '</strong><div class="mono" style="color:#64748b">' + esc(o.customerPhone || '') + '</div></td>' +
+        '<td style="max-width:270px"><div>' + esc(o.itemSummary) + '</div>' + shortageHtml + '</td>' +
+        '<td><strong class="mono">' + fmtBdt(o.total) + '</strong><div style="font-size:11px;color:#64748b;text-transform:uppercase">' + esc(o.paymentMethod) + '</div></td>' +
+        '<td><span class="badge ' + st.cls + '">' + esc(st.label) + '</span>' +
+          '<input class="inp-branch-note" type="text" value="' + esc(o.branchNote || '') + '" placeholder="Branch desk note..." style="margin-top:6px;padding:5px 8px;font-size:11.5px"' + (locked ? ' disabled' : '') + ' />' +
+        '</td>' +
+        '<td><div class="row" style="gap:5px">' + actionButtons + '</div></td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  $('branchOrdersTbody').addEventListener('click', async (e) => {
+    const shortageBtn = e.target.closest('button.btn-find-shortage');
+    if (shortageBtn) {
+      const q = shortageBtn.getAttribute('data-q') || '';
+      const oid = shortageBtn.getAttribute('data-oid') || '';
+      const onum = shortageBtn.getAttribute('data-onum') || '';
+      pendingTransferOrderCtx = oid ? { orderId: oid, orderNumber: onum } : null;
+      if (pendingTransferOrderCtx) {
+        $('locatorTransferCtxText').textContent = 'Linked to Order #' + pendingTransferOrderCtx.orderNumber + ' — transfer requests sent below carry this order reference.';
+        $('locatorTransferCtxBanner').classList.remove('hidden');
+      }
+      $('inpLocatorSearch').value = q;
+      switchPage('locator');
+      renderLocatorResults();
+      return;
+    }
+
+    const rcvBtn = e.target.closest('button.btn-receive-inline');
+    if (rcvBtn) {
+      const tr = rcvBtn.closest('tr[data-oid]');
+      if (!tr) return;
+      const noteInput = tr.querySelector('.inp-branch-note');
+      await handleReceiveOrder(tr.getAttribute('data-oid'), noteInput ? noteInput.value.trim() : '', rcvBtn);
+      return;
+    }
+
+    const btn = e.target.closest('button.btn-st');
+    if (!btn) return;
+    const tr = btn.closest('tr[data-oid]');
+    if (!tr) return;
+    const orderId = tr.getAttribute('data-oid');
+    const nextStatus = btn.getAttribute('data-st');
+    const noteInput = tr.querySelector('.inp-branch-note');
+    const branchNote = noteInput ? noteInput.value.trim().slice(0, 240) : '';
+    const nowMs = Math.floor(Date.now());
+    btn.disabled = true;
+    try {
+      await updateDoc(doc(db, 'orders', orderId), cleanObj({
+        status: nextStatus,
+        branchNote,
+        branchStatusUpdatedAtMs: nowMs,
+        ...(nextStatus === 'delivered' ? { deliveredAtMs: nowMs } : {}),
+        updatedAt: serverTimestamp()
+      }));
+      toast('Status updated & synced to customer tracker!');
+    } catch (err) {
+      toast(err.message || 'Status update failed', true);
+      btn.disabled = false;
+    }
+  });
+
+  // --- ADD / EDIT PRODUCT FROM BRANCH ---
+  function renderTaxonomySelects() {
+    const cats = (state.categories && state.categories.length) ? state.categories : [{ slug: 'mouse', label: 'Mouse' }, { slug: 'keyboard', label: 'Keyboard' }, { slug: 'cpu', label: 'Processors' }, { slug: 'gpu', label: 'Graphics Cards' }];
+    const deps = (state.departments && state.departments.length) ? state.departments : [{ slug: 'Desktop Core', label: 'Desktop Core' }, { slug: 'Accessories', label: 'Accessories' }];
+    const plats = (state.platforms && state.platforms.length) ? state.platforms : [{ slug: 'universal', label: 'Universal' }, { slug: 'desktop', label: 'Desktop' }, { slug: 'laptop', label: 'Laptop' }, { slug: 'mac', label: 'Mac' }];
+
+    if ($('bp_category') && $('bp_category').options.length === 0) {
+      $('bp_category').innerHTML = cats.map((c) => '<option value="' + esc(c.slug || c.label) + '">' + esc(c.label || c.slug) + '</option>').join('');
+    }
+    if ($('bp_department') && $('bp_department').options.length === 0) {
+      $('bp_department').innerHTML = deps.map((d) => '<option value="' + esc(d.slug || d.label) + '">' + esc(d.label || d.slug) + '</option>').join('');
+    }
+    if ($('bp_platform') && $('bp_platform').options.length === 0) {
+      $('bp_platform').innerHTML = plats.map((p) => '<option value="' + esc(p.slug || p.label) + '">' + esc(p.label || p.slug) + '</option>').join('');
+    }
+  }
+
+  function addBpVariantRow(v) {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.style.gap = '6px';
+    row.dataset.vid = v?.id || '';
+    row.innerHTML =
+      '<input class="bp-v-name" placeholder="Variant name (e.g. Black · Tactile)" value="' + esc(v?.name || '') + '" style="flex:2;min-width:160px" />' +
+      '<input class="bp-v-delta" type="number" placeholder="Price +/-" value="' + esc(v?.priceDelta ?? 0) + '" style="width:100px" />' +
+      '<input class="bp-v-stock" type="number" min="0" placeholder="Branch Qty" value="' + esc(v?.stock ?? 5) + '" style="width:100px" />' +
+      '<button type="button" class="btn sm danger" onclick="this.parentElement.remove()">Remove</button>';
+    $('bp_variantRows').appendChild(row);
+  }
+
+  $('btnToggleAddProd').addEventListener('click', () => {
+    $('bp_editId').value = '';
+    $('branchAddProductForm').reset();
+    $('bp_variantRows').innerHTML = '';
+    $('branchAddProductForm').classList.toggle('hidden');
+  });
+  $('btnBpCancel').addEventListener('click', () => {
+    $('bp_editId').value = '';
+    $('branchAddProductForm').classList.add('hidden');
+  });
+  $('btnBpAddVariant').addEventListener('click', () => addBpVariantRow());
+
+  $('branchAddProductForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const rawImg = ($('bp_imageUrl').value || '').trim();
+    if (rawImg && !/^https?:\/\//i.test(rawImg)) {
+      return toast('Image URL must start with https:// or http://', true);
+    }
+    const editId = ($('bp_editId').value || '').trim();
+    const existing = editId ? state.products.find((x) => x.id === editId) : null;
+    const pid = existing ? existing.id : slug($('bp_title').value, 'nt-br');
+    const myId = state.branchId;
+    const brName = String(state.branch?.name || state.manager?.branchName || myId).slice(0, 100);
+
+    const variants = [...$('bp_variantRows').children].map((r, i) => {
+      const name = r.querySelector('.bp-v-name').value.trim();
+      if (!name) return null;
+      const vid = r.dataset.vid || ('var_' + (i + 1));
+      return {
+        id: vid,
+        name,
+        attributes: { Option: name },
+        priceDelta: Math.round(Number(r.querySelector('.bp-v-delta').value || 0)),
+        stock: Math.max(0, Math.floor(Number(r.querySelector('.bp-v-stock').value || 0)))
+      };
+    }).filter(Boolean);
+
+    const reg = Math.max(1, Number($('bp_regPrice').value || 1));
+    const disc = Math.min(95, Math.max(0, Number($('bp_discount').value || 0)));
+    const price = Math.max(1, Math.round(reg * (1 - disc / 100)));
+    const baseBranchQty = Math.max(0, Math.floor(Number($('bp_stock').value || 0)));
+    const plat = String($('bp_platform').value || 'universal').trim();
+    const deviceGroup = (plat === 'desktop' || plat === 'laptop' || plat === 'mac') ? plat : 'universal';
+    const titleStr = ($('bp_title').value || '').trim().slice(0, 140);
+    const skuStr = ($('bp_sku').value.trim() || pid.toUpperCase()).slice(0, 40);
+    const summaryRaw = ($('bp_summary').value || '').trim();
+    const summary = (summaryRaw.length >= 4 ? summaryRaw : (titleStr + ' available at ' + brName)).slice(0, 800);
+
+    // Update this branch's entry inside branchStocks without wiping any other branch stock
+    const nextBs = existing && existing.branchStocks ? JSON.parse(JSON.stringify(existing.branchStocks)) : {};
+    if (variants.length) {
+      const vMap = {};
+      variants.forEach((v) => { vMap[v.id] = v.stock; });
+      nextBs[myId] = {
+        stock: variants.reduce((sum, v) => sum + v.stock, 0),
+        variants: vMap
+      };
+      variants.forEach((v) => {
+        v.stock = Object.values(nextBs).reduce((sum, loc) => sum + Math.max(0, Math.round(Number(loc?.variants?.[v.id] || 0))), 0);
+      });
+    } else {
+      nextBs[myId] = { stock: baseBranchQty };
+    }
+    const totalStock = variants.length
+      ? variants.reduce((sum, v) => sum + Math.max(0, Math.round(Number(v.stock || 0))), 0)
+      : Object.values(nextBs).reduce((sum, loc) => sum + Math.max(0, Math.round(Number(loc?.stock || 0))), 0);
+
+    const btn = $('btnBpSubmit');
+    btn.disabled = true;
+    try {
+      const payload = cleanObj({
+        id: pid,
+        pid,
+        sku: skuStr,
+        name: titleStr,
+        title: titleStr,
+        brand: ($('bp_brand').value.trim() || 'NurTech').slice(0, 60),
+        category: String($('bp_category').value || 'mouse').slice(0, 40),
+        department: String($('bp_department').value || 'Accessories').slice(0, 60),
+        platform: plat.slice(0, 40),
+        deviceGroup,
+        regularPrice: reg,
+        discountPercent: disc,
+        price,
+        weightKg: Math.max(0, Math.min(500, Number($('bp_weight').value || 0.6))),
+        stock: Math.round(totalStock),
+        imageKey: existing?.imageKey || 'gpu_cpu',
+        ...(rawImg ? { imageUrl: rawImg.slice(0, 500) } : {}),
+        ...(variants.length ? { variants } : {}),
+        summary,
+        description: existing?.description || summary,
+        specsSummary: existing?.specsSummary || (titleStr + ' · ' + skuStr).slice(0, 180),
+        rating: existing?.rating ?? 4.8,
+        featured: existing?.featured ?? false,
+        createdByBranchId: existing?.createdByBranchId || myId,
+        createdByBranchName: existing?.createdByBranchName || brName,
+        branchStocks: nextBs,
+        updatedAt: serverTimestamp()
+      });
+
+      if (existing) {
+        await updateDoc(doc(db, 'products', pid), payload);
+        toast('Updated branch product ' + titleStr);
+      } else {
+        await setDoc(doc(db, 'products', pid), payload);
+        toast('New product added to catalog & credited to this branch!');
+      }
+      $('bp_editId').value = '';
+      $('branchAddProductForm').reset();
+      $('bp_variantRows').innerHTML = '';
+      $('branchAddProductForm').classList.add('hidden');
+    } catch (err) {
+      toast(err.message || 'Product save failed', true);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // --- STOCK & VARIANT LEDGER TABLE ---
+  function renderStockTable() {
+    const q = ($('inpStockSearch').value || '').trim().toLowerCase();
+    const list = (state.products || []).filter((p) => {
+      if (!q) return true;
+      return [p.name, p.title, p.sku, p.category, p.brand].join(' ').toLowerCase().includes(q);
+    });
+    if (list.length === 0) {
+      $('branchStockTbody').innerHTML = '<tr><td colspan="5" style="text-align:center;color:#64748b;padding:24px">No products matched.</td></tr>';
+      return;
+    }
+    const myBranchId = state.branchId;
+    $('branchStockTbody').innerHTML = list.map((p) => {
+      const bsEntries = Object.entries(p.branchStocks || {});
+      const locChips = bsEntries.length
+        ? bsEntries.map(([locKey, locVal]) =>
+            '<span class="chip ' + (locKey === myBranchId ? 'hi' : '') + '">' +
+            esc(locVal?.locationCode || getLocationCode(locKey)) + ': <strong>' + Number(locVal?.stock || 0) + '</strong></span>'
+          ).join('')
+        : '<span class="chip">HQ: <strong>' + Number(p.stock || 0) + '</strong></span>';
+
+      const hasVariants = Array.isArray(p.variants) && p.variants.length > 0;
+      let myControlHtml = '';
+      if (hasVariants) {
+        myControlHtml = '<div style="display:grid;gap:6px">' + p.variants.map((v) => {
+          const curVarQty = getStockAtLocation(p, myBranchId, v.id);
+          return '<div class="row" style="gap:5px;justify-content:space-between;background:#f8fafc;padding:4px 6px;border-radius:6px;border:1px solid #e2e8f0" data-vid="' + esc(v.id) + '">' +
+            '<span style="font-size:11.5px"><strong>' + esc(v.name) + '</strong> <small class="mono">(' + curVarQty + ' pcs)</small></span>' +
+            '<div class="row" style="gap:4px">' +
+              '<input class="inp-var-qty" type="number" min="0" value="' + curVarQty + '" style="width:72px;padding:4px 6px" />' +
+              '<button type="button" class="btn sm light btn-var-add">+ Add</button>' +
+              '<button type="button" class="btn sm teal btn-var-set">Set</button>' +
+            '</div>' +
+          '</div>';
+        }).join('') + '</div>';
+      } else {
+        const myVal = getStockAtLocation(p, myBranchId, '');
+        myControlHtml = '<div class="row" style="gap:5px">' +
+          '<input class="inp-br-stock" type="number" min="0" max="100000" value="' + myVal + '" style="width:82px" />' +
+          '<button type="button" class="btn sm light btn-add-stock">+ Add Qty</button>' +
+          '<button type="button" class="btn sm teal btn-set-stock">Set Exact</button>' +
+        '</div>';
+      }
+
+      const canEditOwn = p.createdByBranchId === myBranchId;
+      const creatorTag = p.createdByBranchName
+        ? '<div style="margin-top:3px"><span class="badge slate">By ' + esc(p.createdByBranchName) + '</span>' +
+          (canEditOwn ? ' <button type="button" class="btn sm light btn-edit-br-prod" style="padding:2px 6px;font-size:10.5px">Edit Product</button>' : '') +
+          '</div>'
+        : '';
+
+      return '<tr data-pid="' + esc(p.id) + '">' +
+        '<td><strong>' + esc(p.title || p.name) + '</strong><div class="mono" style="color:#64748b">' + esc(p.sku || p.id) + '</div>' + creatorTag + '</td>' +
+        '<td>' + esc(p.category) + '<div class="mono" style="margin-top:2px">' + fmtBdt(p.price) + '</div></td>' +
+        '<td><strong class="mono">' + Number(p.stock || 0) + ' pcs</strong></td>' +
+        '<td style="max-width:250px">' + locChips + '</td>' +
+        '<td style="min-width:260px">' + myControlHtml + '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  $('branchStockTbody').addEventListener('click', async (e) => {
+    const tr = e.target.closest('tr[data-pid]');
+    if (!tr) return;
+    const productId = tr.getAttribute('data-pid');
+    const prod = state.products.find((p) => p.id === productId || p.pid === productId);
+    if (!prod) return;
+    const myId = state.branchId;
+
+    const editBtn = e.target.closest('button.btn-edit-br-prod');
+    if (editBtn) {
+      $('bp_editId').value = prod.id;
+      $('bp_title').value = prod.title || prod.name || '';
+      $('bp_sku').value = prod.sku || '';
+      $('bp_brand').value = prod.brand || 'NurTech';
+      $('bp_category').value = prod.category || '';
+      $('bp_department').value = prod.department || '';
+      $('bp_platform').value = prod.platform || 'universal';
+      $('bp_regPrice').value = prod.regularPrice || prod.price || 0;
+      $('bp_discount').value = prod.discountPercent || 0;
+      $('bp_weight').value = prod.weightKg || 0.6;
+      $('bp_stock').value = getStockAtLocation(prod, myId, '');
+      $('bp_imageUrl').value = prod.imageUrl || '';
+      $('bp_summary').value = prod.summary || '';
+      $('bp_variantRows').innerHTML = '';
+      (prod.variants || []).forEach((v) => {
+        addBpVariantRow({ ...v, stock: getStockAtLocation(prod, myId, v.id) });
+      });
+      $('branchAddProductForm').classList.remove('hidden');
+      $('branchAddProductForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+
+    const varAddBtn = e.target.closest('button.btn-var-add');
+    const varSetBtn = e.target.closest('button.btn-var-set');
+    if (varAddBtn || varSetBtn) {
+      const btn = varAddBtn || varSetBtn;
+      const vRow = btn.closest('[data-vid]');
+      const vid = vRow.getAttribute('data-vid');
+      const vObj = (prod.variants || []).find((v) => v.id === vid);
+      const qty = Math.max(0, Math.floor(Number(vRow.querySelector('.inp-var-qty').value || 0)));
+      const mode = varAddBtn ? 'add' : 'set';
+      btn.disabled = true;
+      try {
+        const prevQty = getStockAtLocation(prod, myId, vid);
+        const calc = computeNewBranchStocksOnDelta(prod, myId, qty, vid, mode);
+        await updateDoc(doc(db, 'products', prod.id), cleanObj({
+          stock: calc.totalStock,
+          branchStocks: calc.branchStocks,
+          ...(calc.variants.length ? { variants: calc.variants } : {}),
+          updatedAt: serverTimestamp()
+        }));
+        const nextQty = getStockAtLocation({ ...prod, branchStocks: calc.branchStocks }, myId, vid);
+        state.localStockLogs.unshift({
+          createdAtIso: new Date().toISOString(),
+          productName: prod.title || prod.name,
+          variantLabel: vObj?.name || vid,
+          delta: nextQty - prevQty,
+          newQty: nextQty,
+          totalStoreStock: calc.totalStock,
+          reason: mode === 'add' ? 'Branch Variant Restock' : 'Branch Variant Exact Set',
+          actorName: state.manager?.name || state.manager?.loginId
+        });
+        toast((mode === 'add' ? 'Added +' + qty : 'Set ' + qty) + ' variant units at this branch.');
+      } catch (err) {
+        toast(err.message || 'Stock update failed', true);
+      } finally {
+        btn.disabled = false;
+      }
+      return;
+    }
+
+    const addBtn = e.target.closest('button.btn-add-stock');
+    const setBtn = e.target.closest('button.btn-set-stock');
+    if (!addBtn && !setBtn) return;
+    const btn = addBtn || setBtn;
+    const mode = addBtn ? 'add' : 'set';
+    const qty = Math.max(0, Math.floor(Number(tr.querySelector('.inp-br-stock').value || 0)));
+    btn.disabled = true;
+    try {
+      const prevQty = getStockAtLocation(prod, myId, '');
+      const calc = computeNewBranchStocksOnDelta(prod, myId, qty, '', mode);
+      await updateDoc(doc(db, 'products', prod.id), cleanObj({
+        stock: calc.totalStock,
+        branchStocks: calc.branchStocks,
+        ...(calc.variants.length ? { variants: calc.variants } : {}),
+        updatedAt: serverTimestamp()
+      }));
+      const nextQty = getStockAtLocation({ ...prod, branchStocks: calc.branchStocks }, myId, '');
+      state.localStockLogs.unshift({
+        createdAtIso: new Date().toISOString(),
+        productName: prod.title || prod.name,
+        variantLabel: '',
+        delta: nextQty - prevQty,
+        newQty: nextQty,
+        totalStoreStock: calc.totalStock,
+        reason: mode === 'add' ? 'Branch Restock' : 'Branch Exact Set',
+        actorName: state.manager?.name || state.manager?.loginId
+      });
+      toast((mode === 'add' ? 'Added +' + qty : 'Set ' + qty) + ' pcs at this branch.');
+    } catch (err) {
+      toast(err.message || 'Stock update failed', true);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  function renderStockLogsTable() {
+    const logs = Array.isArray(state.localStockLogs) ? state.localStockLogs : [];
+    if (logs.length === 0) {
+      $('branchStockLogsTbody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#64748b;padding:16px">No stock changes recorded in this session yet.</td></tr>';
+      return;
+    }
+    $('branchStockLogsTbody').innerHTML = logs.slice(0, 30).map((l) => {
+      const sign = Number(l.delta || 0) >= 0 ? ('+' + l.delta) : String(l.delta);
+      const cls = Number(l.delta || 0) >= 0 ? 'ok' : 'warn';
+      return '<tr>' +
+        '<td class="mono" style="font-size:11px;color:#64748b">' + esc((l.createdAtIso || '').replace('T', ' ').slice(0, 19)) + '</td>' +
+        '<td><strong>' + esc(l.productName) + '</strong>' + (l.variantLabel ? '<div style="font-size:11px;color:#475569">' + esc(l.variantLabel) + '</div>' : '') + '</td>' +
+        '<td><span class="badge ' + cls + '">' + esc(sign) + '</span></td>' +
+        '<td class="mono">' + Number(l.newQty || 0) + ' pcs</td>' +
+        '<td class="mono">' + Number(l.totalStoreStock || 0) + ' pcs</td>' +
+        '<td style="font-size:11.5px">' + esc(l.reason) + '<div style="color:#64748b">' + esc(l.actorName) + '</div></td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  // --- GLOBAL STOCK FINDER & INTER-BRANCH TRANSFERS ---
+  function renderLocatorResults() {
+    const q = ($('inpLocatorSearch').value || '').trim().toLowerCase();
+    const matched = (state.products || []).filter((p) => {
+      if (!q) return true;
+      const hay = [p.title, p.name, p.sku, p.brand, p.category, ...(p.variants || []).map((v) => v.name)].join(' ').toLowerCase();
+      return hay.includes(q);
+    }).slice(0, 40);
+
+    if (matched.length === 0) {
+      $('locatorResultsBox').innerHTML = '<div style="padding:20px;text-align:center;color:#64748b;border:1px dashed #cbd5e1;border-radius:10px">No matching products found across branches.</div>';
+      return;
+    }
+
+    const hq = getHqMeta();
+    const allLocs = [
+      { id: 'head_office', name: hq.name, code: 'HQ', phone: hq.phone, email: hq.email, district: 'Head Office', address: hq.address },
+      ...state.branches.filter((b) => !b.isHeadOffice && b.id !== 'head_office').map((b) => ({
+        id: b.id, name: b.name, code: b.code, phone: b.phone, email: b.email || '', district: b.district || '', address: b.address || ''
+      }))
+    ];
+
+    $('locatorResultsBox').innerHTML = matched.map((p) => {
+      const variants = Array.isArray(p.variants) ? p.variants : [];
+      const variantOptions = variants.map((v) => '<option value="' + esc(v.id) + '">' + esc(v.name) + '</option>').join('');
+      const locsMapped = allLocs.map((loc) => {
+        const stock = getStockAtLocation(p, loc.id, '');
+        const variantBreakdown = variants.map((v) => ({
+          variantId: v.id,
+          variantName: v.name,
+          stock: getStockAtLocation(p, loc.id, v.id)
+        }));
+        return { ...loc, stock, variantBreakdown, isSelf: loc.id === state.branchId };
+      });
+      const locsWithStock = locsMapped.filter((l) => l.stock > 0 || l.isSelf);
+      const shownLocs = locsWithStock.length > 0 ? locsWithStock : locsMapped.slice(0, 3);
+
+      return '<div class="card" style="margin:0;padding:14px">' +
+        '<div class="row" style="justify-content:space-between;margin-bottom:8px">' +
+          '<div><strong>' + esc(p.title || p.name) + '</strong> <span class="mono" style="color:#64748b">(' + esc(p.sku || p.id) + ')</span></div>' +
+          '<span class="badge info">Total Network Stock: ' + Number(p.stock || 0) + ' pcs</span>' +
+        '</div>' +
+        '<div style="display:grid;gap:8px">' + shownLocs.map((loc) => {
+          const varChips = (loc.variantBreakdown || []).filter((vb) => vb.stock > 0).map((vb) =>
+            '<span class="chip">' + esc(vb.variantName) + ': <strong>' + vb.stock + '</strong></span>'
+          ).join('');
+          const canRequest = !loc.isSelf && loc.stock > 0;
+          return '<div style="padding:10px;border-radius:8px;background:' + (loc.isSelf ? '#f0fdfa' : '#f8fafc') + ';border:1px solid #e2e8f0;display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center" data-loc-pid="' + esc(p.id) + '" data-from-loc="' + esc(loc.id) + '">' +
+            '<div>' +
+              '<div><strong>' + esc(loc.name) + ' (' + esc(loc.code) + ')</strong> ' +
+              (loc.isSelf ? '<span class="badge teal">This Branch</span>' : '') +
+              ' <span class="badge ' + (loc.stock > 0 ? 'ok' : 'slate') + '">' + Number(loc.stock || 0) + ' pcs</span></div>' +
+              '<div style="font-size:11.5px;color:#475569;margin-top:2px">' +
+                (loc.phone ? '<span class="mono">' + esc(loc.phone) + '</span>' : 'No phone') +
+                (loc.email ? ' · ' + esc(loc.email) : '') +
+                (loc.district ? ' · ' + esc(loc.district) : '') +
+              '</div>' +
+              (varChips ? '<div style="margin-top:4px">' + varChips + '</div>' : '') +
+            '</div>' +
+            (canRequest
+              ? '<div class="row" style="gap:6px">' +
+                  (variantOptions ? '<select class="trf-var-sel" style="width:150px">' + variantOptions + '</select>' : '') +
+                  '<input class="trf-qty-inp" type="number" min="1" max="' + Number(loc.stock || 1) + '" value="1" style="width:70px" />' +
+                  '<input class="trf-msg-inp" type="text" placeholder="Note for ' + esc(loc.code) + '..." style="width:160px" />' +
+                  '<button type="button" class="btn sm teal btn-req-transfer">Request Transfer</button>' +
+                '</div>'
+              : '<span style="font-size:11.5px;color:#64748b">' + (loc.isSelf ? 'Your Branch' : 'Out of stock here') + '</span>') +
+          '</div>';
+        }).join('') + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  $('locatorResultsBox').addEventListener('click', async (e) => {
+    const btn = e.target.closest('button.btn-req-transfer');
+    if (!btn) return;
+    const row = btn.closest('[data-loc-pid]');
+    if (!row) return;
+    const productId = row.getAttribute('data-loc-pid');
+    const fromLocationId = row.getAttribute('data-from-loc');
+    const varSel = row.querySelector('.trf-var-sel');
+    const qtyInp = row.querySelector('.trf-qty-inp');
+    const msgInp = row.querySelector('.trf-msg-inp');
+
+    const prod = state.products.find((p) => p.id === productId);
+    if (!prod) return;
+    const variantId = varSel ? varSel.value : '';
+    const variantObj = variantId ? (prod.variants || []).find((v) => v.id === variantId) : null;
+    const qty = Math.max(1, Math.min(10000, Math.floor(Number(qtyInp?.value || 1))));
+    const avail = getStockAtLocation(prod, fromLocationId, variantId);
+    if (avail < qty) {
+      return toast('Source location only has ' + avail + ' pcs available.', true);
+    }
+
+    const trId = 'tr_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6);
+    const mgr = state.manager || {};
+    const myId = state.branchId;
+    const note = msgInp ? msgInp.value.trim().slice(0, 400) : '';
+    btn.disabled = true;
+    try {
+      await setDoc(doc(db, 'branch_transfers', trId), cleanObj({
+        id: trId,
+        productId: prod.id,
+        productName: String(prod.title || prod.name || prod.id).slice(0, 140),
+        productSku: String(prod.sku || '').slice(0, 40) || undefined,
+        variantId: variantObj ? variantObj.id : undefined,
+        variantName: variantObj ? String(variantObj.name || '').slice(0, 100) : undefined,
+        fromLocationId,
+        fromLocationName: getLocationName(fromLocationId).slice(0, 100),
+        fromLocationCode: getLocationCode(fromLocationId).slice(0, 24),
+        toLocationId: myId,
+        toLocationName: getLocationName(myId).slice(0, 100),
+        toLocationCode: getLocationCode(myId).slice(0, 24),
+        qty,
+        status: 'requested',
+        ...(pendingTransferOrderCtx ? { orderId: pendingTransferOrderCtx.orderId, orderNumber: pendingTransferOrderCtx.orderNumber } : {}),
+        ...(note ? { note, lastMessage: note.slice(0, 300), lastSenderName: String(mgr.name || mgr.loginId).slice(0, 80) } : {}),
+        requestedByUid: state.user.uid,
+        requestedByName: String(mgr.name || mgr.loginId || 'Branch Manager').slice(0, 80),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      }));
+
+      if (note) {
+        const nowMs = Math.floor(Date.now());
+        const msgId = 'tm_' + nowMs + '_' + Math.random().toString(36).slice(2, 6);
+        await setDoc(doc(db, 'branch_transfers', trId, 'messages', msgId), cleanObj({
+          id: msgId,
+          transferId: trId,
+          senderUid: state.user.uid,
+          senderName: String(mgr.name || mgr.loginId || 'Branch Manager').slice(0, 80),
+          senderRole: 'branch',
+          ...(mgr.photoUrl ? { senderPhotoUrl: String(mgr.photoUrl).slice(0, 500) } : {}),
+          senderLocationId: myId,
+          senderLocationName: getLocationName(myId).slice(0, 100),
+          text: note,
+          createdAtMs: nowMs,
+          createdAt: serverTimestamp()
+        }));
+      }
+      if (msgInp) msgInp.value = '';
+      toast('Stock transfer request sent in real time!');
+    } catch (err) {
+      toast(err.message || 'Transfer request failed', true);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  $('btnLocatorSearch').addEventListener('click', renderLocatorResults);
+  $('inpLocatorSearch').addEventListener('input', renderLocatorResults);
+  $('btnClearLocatorCtx').addEventListener('click', () => {
+    pendingTransferOrderCtx = null;
+    $('locatorTransferCtxBanner').classList.add('hidden');
+  });
+
+  function renderTransfersBox() {
+    const trfs = Array.isArray(state.transfers) ? state.transfers : [];
+    const myId = state.branchId;
+    if (trfs.length === 0) {
+      $('branchTransfersBox').innerHTML = '<div style="padding:18px;text-align:center;color:#64748b;border:1px dashed #cbd5e1;border-radius:10px">No inter-branch or HQ stock transfers yet. Search stock above to request inventory.</div>';
+      return;
+    }
+
+    const stClass = { requested: 'warn', approved_in_transit: 'info', received: 'ok', declined: 'err', cancelled: 'err' };
+    $('branchTransfersBox').innerHTML = trfs.map((t) => {
+      const isSource = t.fromLocationId === myId;
+      const isTarget = t.toLocationId === myId;
+      let buttonsHtml = '';
+      if (t.status === 'requested' && isSource) {
+        buttonsHtml = '<button type="button" class="btn sm green btn-trf-st" data-st="approved_in_transit">Approve &amp; Dispatch (-Stock)</button> ' +
+          '<button type="button" class="btn sm danger btn-trf-st" data-st="declined">Decline</button>';
+      } else if (t.status === 'requested' && isTarget) {
+        buttonsHtml = '<button type="button" class="btn sm light btn-trf-st" data-st="cancelled">Cancel Request</button>';
+      } else if (t.status === 'approved_in_transit' && isTarget) {
+        buttonsHtml = '<button type="button" class="btn sm teal btn-trf-st" data-st="received">Confirm Received (+Stock)</button>';
+      }
+
+      const msgs = state.transferMsgs[t.id] || [];
+      const msgsHtml = msgs.length
+        ? '<div class="msg-box">' + msgs.map((m) => {
+            const avatar = m.senderPhotoUrl
+              ? '<img src="' + esc(m.senderPhotoUrl) + '" referrerpolicy="no-referrer" style="width:22px;height:22px;border-radius:999px;object-fit:cover;flex-shrink:0" />'
+              : '<div style="width:22px;height:22px;border-radius:999px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;flex-shrink:0">' + esc((m.senderName || 'U')[0]) + '</div>';
+            return '<div class="msg-item">' + avatar +
+              '<div style="flex:1"><strong>' + esc(m.senderName) + '</strong> <small style="color:#64748b">(' + esc(m.senderLocationName || m.senderLocationId) + ' · ' + (m.createdAtMs ? new Date(m.createdAtMs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '') + ')</small><div>' + esc(m.text) + '</div></div></div>';
+          }).join('') + '</div>'
+        : '';
+
+      return '<div class="card" style="margin:0;padding:14px" data-trf-id="' + esc(t.id) + '">' +
+        '<div class="row" style="justify-content:space-between">' +
+          '<div>' +
+            '<strong>' + esc(t.productName) + '</strong>' + (t.variantName ? ' (' + esc(t.variantName) + ')' : '') +
+            ' · <span class="mono"><strong>' + Number(t.qty || 1) + ' pcs</strong></span>' +
+            (t.orderNumber ? ' · <span class="badge warn">Order #' + esc(t.orderNumber) + '</span>' : '') +
+            '<div style="font-size:12px;color:#475569;margin-top:2px">' +
+              'From <strong>' + esc(t.fromLocationName) + ' (' + esc(t.fromLocationCode || getLocationCode(t.fromLocationId)) + ')</strong> &rarr; To <strong>' + esc(t.toLocationName) + ' (' + esc(t.toLocationCode || getLocationCode(t.toLocationId)) + ')</strong>' +
+            '</div>' +
+          '</div>' +
+          '<div class="row">' +
+            '<span class="badge ' + (stClass[t.status] || 'slate') + '">' + esc(t.status) + '</span>' +
+            buttonsHtml +
+          '</div>' +
+        '</div>' +
+        msgsHtml +
+        '<div class="row" style="margin-top:8px">' +
+          '<input class="trf-chat-inp" type="text" placeholder="Message ' + esc(isSource ? (t.toLocationCode || 'Destination') : (t.fromLocationCode || 'Source')) + ' manager..." style="flex:1" />' +
+          '<button type="button" class="btn sm light btn-trf-msg">Send Message</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  $('branchTransfersBox').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.target.classList.contains('trf-chat-inp')) {
+      e.preventDefault();
+      const card = e.target.closest('[data-trf-id]');
+      const btn = card?.querySelector('button.btn-trf-msg');
+      if (btn) btn.click();
+    }
+  });
+
+  $('branchTransfersBox').addEventListener('click', async (e) => {
+    const card = e.target.closest('[data-trf-id]');
+    if (!card) return;
+    const transferId = card.getAttribute('data-trf-id');
+    const trf = state.transfers.find((x) => x.id === transferId);
+    if (!trf) return;
+
+    const stBtn = e.target.closest('button.btn-trf-st');
+    if (stBtn) {
+      const nextStatus = stBtn.getAttribute('data-st');
+      stBtn.disabled = true;
+      try {
+        const nowMs = Math.floor(Date.now());
+        const prod = state.products.find((p) => p.id === trf.productId || p.pid === trf.productId);
+        const qty = Math.max(1, Math.round(Number(trf.qty || 1)));
+        const variantId = trf.variantId || '';
+
+        if (nextStatus === 'approved_in_transit' && trf.status === 'requested' && prod) {
+          const stk = computeNewBranchStocksOnDelta(prod, trf.fromLocationId, -qty, variantId, 'add');
+          await updateDoc(doc(db, 'products', prod.id), cleanObj({
+            stock: stk.totalStock,
+            branchStocks: stk.branchStocks,
+            ...(stk.variants.length ? { variants: stk.variants } : {}),
+            updatedAt: serverTimestamp()
+          }));
+        } else if (nextStatus === 'received' && trf.status === 'approved_in_transit' && prod) {
+          const stk = computeNewBranchStocksOnDelta(prod, trf.toLocationId, qty, variantId, 'add');
+          await updateDoc(doc(db, 'products', prod.id), cleanObj({
+            stock: stk.totalStock,
+            branchStocks: stk.branchStocks,
+            ...(stk.variants.length ? { variants: stk.variants } : {}),
+            updatedAt: serverTimestamp()
+          }));
+        }
+
+        await updateDoc(doc(db, 'branch_transfers', transferId), cleanObj({
+          status: nextStatus,
+          ...(nextStatus === 'approved_in_transit' ? { approvedByName: String(state.manager?.name || 'Branch Manager').slice(0, 80), dispatchedAtMs: nowMs } : {}),
+          ...(nextStatus === 'received' ? { receivedAtMs: nowMs } : {}),
+          updatedAt: serverTimestamp()
+        }));
+        toast('Transfer marked ' + nextStatus + ' & stock synced!');
+      } catch (err) {
+        toast(err.message || 'Transfer action failed', true);
+      } finally {
+        stBtn.disabled = false;
+      }
+      return;
+    }
+
+    const msgBtn = e.target.closest('button.btn-trf-msg');
+    if (msgBtn) {
+      const inp = card.querySelector('.trf-chat-inp');
+      const text = inp ? inp.value.trim().slice(0, 1500) : '';
+      if (!text) return;
+      msgBtn.disabled = true;
+      try {
+        const mgr = state.manager || {};
+        const nowMs = Math.floor(Date.now());
+        const msgId = 'tm_' + nowMs + '_' + Math.random().toString(36).slice(2, 6);
+        await setDoc(doc(db, 'branch_transfers', transferId, 'messages', msgId), cleanObj({
+          id: msgId,
+          transferId,
+          senderUid: state.user.uid,
+          senderName: String(mgr.name || mgr.loginId || 'Branch Manager').slice(0, 80),
+          senderRole: 'branch',
+          ...(mgr.photoUrl ? { senderPhotoUrl: String(mgr.photoUrl).slice(0, 500) } : {}),
+          senderLocationId: state.branchId,
+          senderLocationName: getLocationName(state.branchId).slice(0, 100),
+          text,
+          createdAtMs: nowMs,
+          createdAt: serverTimestamp()
+        }));
+        await updateDoc(doc(db, 'branch_transfers', transferId), {
+          lastMessage: text.slice(0, 300),
+          lastSenderName: String(mgr.name || mgr.loginId || 'Branch Manager').slice(0, 80),
+          updatedAt: serverTimestamp()
+        });
+        inp.value = '';
+      } catch (err) {
+        toast(err.message || 'Message failed', true);
+      } finally {
+        msgBtn.disabled = false;
+      }
+    }
+  });
+
+  // --- BRANCH SALES REPORT ---
+  function renderSalesReport(sr) {
+    sr = sr || computeSalesReport();
+    $('srOrdersCount').textContent = String(Number(sr.totalOrdersReceived || 0));
+    $('srUnitsSold').textContent = String(Number(sr.totalUnitsSold || 0));
+    $('srRevenueBdt').textContent = fmtBdt(sr.totalRevenueBdt || 0);
+
+    const breakdown = Array.isArray(sr.productBreakdown) ? sr.productBreakdown : [];
+    $('salesBreakdownTbody').innerHTML = breakdown.length === 0
+      ? '<tr><td colspan="4" style="text-align:center;color:#64748b;padding:18px">No received order sales attributed to this branch yet.</td></tr>'
+      : breakdown.map((b) =>
+          '<tr><td><strong>' + esc(b.productName) + '</strong><div class="mono" style="color:#64748b">' + esc(b.productId) + '</div></td>' +
+          '<td>' + esc(b.variantLabel || 'Base Unit') + '</td>' +
+          '<td class="mono">' + Number(b.unitsSold || 0) + ' pcs</td>' +
+          '<td class="mono"><strong>' + fmtBdt(b.revenueBdt) + '</strong></td></tr>'
+        ).join('');
+
+    const recent = Array.isArray(sr.recentEntries) ? sr.recentEntries : [];
+    $('salesEntriesTbody').innerHTML = recent.length === 0
+      ? '<tr><td colspan="6" style="text-align:center;color:#64748b;padding:16px">No ledger entries yet.</td></tr>'
+      : recent.map((r) =>
+          '<tr><td class="mono" style="font-size:11px;color:#64748b">' + esc((r.soldAtIso || '').replace('T', ' ').slice(0, 19)) + '</td>' +
+          '<td class="mono">#' + esc(r.orderNumber) + '</td>' +
+          '<td>' + esc(r.productName) + (r.variantLabel ? ' (' + esc(r.variantLabel) + ')' : '') + '</td>' +
+          '<td class="mono">' + Number(r.qty || 0) + '</td>' +
+          '<td class="mono">' + fmtBdt(r.unitPrice) + '</td>' +
+          '<td class="mono"><strong>' + fmtBdt(r.lineTotal) + '</strong></td></tr>'
+        ).join('');
+  }
+
+  function fillSettingsForm() {
+    const b = state.branch || {};
+    $('stPhone').value = b.phone || '';
+    $('stEmail').value = b.email || '';
+    $('stAddress').value = b.address || '';
+    $('stHours').value = b.hours || '';
+    $('stMapUrl').value = b.mapUrl || '';
+    $('stPickupEnabled').value = b.pickupEnabled === false ? 'false' : 'true';
+    $('stPickupFee').value = String(Number(b.pickupFeeBdt || 0));
+    $('stFreeMin').value = String(Number(b.pickupFreeMinOrder || 0));
+    $('stReadyHours').value = b.pickupReadyHours || '';
+    $('stInstructions').value = b.pickupInstructions || '';
+  }
+
+  $('branchSettingsForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const rawMap = $('stMapUrl').value.trim();
+    if (rawMap && !/^https?:\/\//i.test(rawMap)) {
+      return toast('Google Map Link must start with https:// or http://', true);
+    }
+    const btn = $('btnSaveSettings');
+    btn.disabled = true;
+    $('settingsSavedHint').textContent = '';
+    try {
+      await updateDoc(doc(db, 'branches', state.branchId), {
+        phone: $('stPhone').value.trim().slice(0, 40),
+        email: $('stEmail').value.trim().slice(0, 120),
+        address: $('stAddress').value.trim().slice(0, 260),
+        hours: $('stHours').value.trim().slice(0, 120),
+        mapUrl: rawMap.slice(0, 400),
+        pickupEnabled: $('stPickupEnabled').value === 'true',
+        pickupFeeBdt: Math.max(0, Math.min(50000, Number($('stPickupFee').value || 0))),
+        pickupFreeMinOrder: Math.max(0, Math.min(10000000, Number($('stFreeMin').value || 0))),
+        pickupReadyHours: $('stReadyHours').value.trim().slice(0, 100),
+        pickupInstructions: $('stInstructions').value.trim().slice(0, 300),
+        updatedAt: serverTimestamp()
+      });
+      $('settingsSavedHint').textContent = 'Synced live to Storefront!';
+      toast('Branch contact & pickup settings updated');
+    } catch (err) {
+      toast(err.message || 'Failed to save branch settings', true);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  $('inpOrderSearch').addEventListener('input', renderOrdersTable);
+  $('selOrderStatusFilter').addEventListener('change', renderOrdersTable);
+  $('inpStockSearch').addEventListener('input', renderStockTable);
+</script>
+</body>
+</html>
