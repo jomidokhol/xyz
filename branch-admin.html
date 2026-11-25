@@ -242,6 +242,25 @@
       background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
       padding: 8px 10px; margin-top: 8px; display: grid; gap: 6px;
     }
+    .notice-banner {
+      border-radius: 12px;
+      padding: 14px 16px;
+      border: 1px solid #bfdbfe;
+      background: #eff6ff;
+      color: #1e3a8a;
+      display: grid;
+      gap: 6px;
+    }
+    .notice-banner.warning {
+      border-color: #fde68a;
+      background: #fffbeb;
+      color: #92400e;
+    }
+    .notice-banner.urgent {
+      border-color: #fecaca;
+      background: #fef2f2;
+      color: #991b1b;
+    }
     .msg-item {
       font-size: 12px; color: #1e293b; border-bottom: 1px dashed #e2e8f0;
       padding-bottom: 5px; display: flex; align-items: flex-start; gap: 8px;
@@ -305,7 +324,7 @@
     <div class="nav-label">Branch Desk</div>
     <button type="button" data-page="overview" class="active"><span>Overview</span></button>
     <button type="button" data-page="orders"><span>Pending &amp; Orders</span> <span id="navPendingBadge" class="badge warn hidden">0</span></button>
-    <button type="button" data-page="inventory"><span>Stock &amp; Add Product</span></button>
+    <button type="button" data-page="inventory"><span>Branch Stock Ledger</span></button>
     <button type="button" data-page="locator"><span>Find Stock &amp; Transfers</span> <span id="navTransferBadge" class="badge info hidden">0</span></button>
     <button type="button" data-page="sales"><span>Branch Sales Report</span></button>
     <button type="button" data-page="settings"><span>Branch Info &amp; Pickup</span></button>
@@ -320,6 +339,8 @@
           <p id="ovBranchSubtitle" class="sub">Real-time Firestore sync — branch orders, local inventory, stock locator &amp; transfers.</p>
         </div>
       </div>
+
+      <div id="ovBranchNoticeBanner" class="hidden" style="margin-bottom:16px"></div>
 
       <div class="grid g4" style="margin-bottom:18px">
         <div class="kpi">
@@ -358,7 +379,7 @@
         <div class="row" style="justify-content:space-between;margin-bottom:10px">
           <div>
             <h2>Open Pending Order Pool (Awaiting Receipt)</h2>
-            <p class="sub" style="margin-bottom:0">Receive unassigned courier orders or this branch's pending pickup orders. Receiving deducts local branch stock and credits revenue to this branch.</p>
+            <p class="sub" style="margin-bottom:0">Receive this branch&apos;s pending pickup or assigned orders. Matching courier orders from your district auto-transfer here when stock is available.</p>
           </div>
           <span id="poolCountBadge" class="badge warn">0 Waiting</span>
         </div>
@@ -416,85 +437,8 @@
       </div>
     </section>
 
-    <!-- BRANCH STOCK & ADD PRODUCT -->
+    <!-- BRANCH STOCK LEDGER -->
     <section id="page-inventory" class="page">
-      <div class="card">
-        <div class="row" style="justify-content:space-between">
-          <div>
-            <h2>Add or Edit Branch Hardware Product</h2>
-            <p class="sub" style="margin-bottom:0">Products created here credit stock strictly to <strong>this branch</strong> (other locations stay at 0). Storefront total stock is computed across all locations.</p>
-          </div>
-          <button id="btnToggleAddProd" type="button" class="btn teal">+ Add New Product</button>
-        </div>
-
-        <form id="branchAddProductForm" class="hidden" style="margin-top:16px;padding-top:16px;border-top:1px solid #e2e8f0">
-          <input id="bp_editId" type="hidden" value="" />
-          <div class="grid g3">
-            <div>
-              <label for="bp_title">Product Title *</label>
-              <input id="bp_title" required placeholder="e.g. Keychron K8 Pro Mechanical Keyboard" />
-            </div>
-            <div>
-              <label for="bp_sku">SKU *</label>
-              <input id="bp_sku" required placeholder="e.g. NT-KC-K8PRO" />
-            </div>
-            <div>
-              <label for="bp_brand">Brand *</label>
-              <input id="bp_brand" required value="NurTech" />
-            </div>
-            <div>
-              <label for="bp_category">Category *</label>
-              <select id="bp_category"></select>
-            </div>
-            <div>
-              <label for="bp_department">Department</label>
-              <select id="bp_department"></select>
-            </div>
-            <div>
-              <label for="bp_platform">Platform</label>
-              <select id="bp_platform"></select>
-            </div>
-            <div>
-              <label for="bp_regPrice">Regular Price (BDT ৳) *</label>
-              <input id="bp_regPrice" type="number" min="1" required value="5500" />
-            </div>
-            <div>
-              <label for="bp_discount">Discount (%)</label>
-              <input id="bp_discount" type="number" min="0" max="95" value="0" />
-            </div>
-            <div>
-              <label for="bp_weight">Weight (kg)</label>
-              <input id="bp_weight" type="number" step="0.05" min="0" value="0.6" />
-            </div>
-            <div>
-              <label for="bp_stock">Branch Stock Qty</label>
-              <input id="bp_stock" type="number" min="0" max="100000" value="5" />
-            </div>
-            <div style="grid-column:span 2">
-              <label for="bp_imageUrl">Primary Image URL (https://...)</label>
-              <input id="bp_imageUrl" type="url" placeholder="https://..." />
-            </div>
-          </div>
-          <div style="margin-top:12px">
-            <label for="bp_summary">Short Summary</label>
-            <input id="bp_summary" placeholder="Official Distributor Warranty, Hot-swappable Switches, Wireless Bluetooth 5.1" />
-          </div>
-
-          <div style="margin-top:14px;padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px">
-            <div class="row" style="justify-content:space-between;margin-bottom:8px">
-              <strong>Optional Product Variants (Stock per Variant at This Branch)</strong>
-              <button id="btnBpAddVariant" type="button" class="btn sm light">+ Add Variant</button>
-            </div>
-            <div id="bp_variantRows" style="display:grid;gap:8px"></div>
-          </div>
-
-          <div class="row" style="margin-top:14px">
-            <button id="btnBpSubmit" type="submit" class="btn teal">Save Product &amp; Sync Branch Stock</button>
-            <button id="btnBpCancel" type="button" class="btn light">Cancel</button>
-          </div>
-        </form>
-      </div>
-
       <div class="card">
         <div class="row" style="justify-content:space-between;margin-bottom:12px">
           <div>
@@ -864,6 +808,7 @@
 
     sub(doc(db, 'setting', 'site_base'), (s) => {
       if (s.exists()) state.siteBase = { ...state.siteBase, ...s.data() };
+      renderBranchNoticeBanner();
       renderLocatorResults();
       renderTransfersBox();
     });
@@ -876,15 +821,6 @@
         name: state.manager?.branchName || 'Branch'
       };
       renderAll();
-    });
-
-    sub(collection(db, 'control_products'), (s) => {
-      s.docs.forEach((d) => {
-        if (d.id === 'chatagory' && Array.isArray(d.data().items)) state.categories = d.data().items;
-        if (d.id === 'department' && Array.isArray(d.data().items)) state.departments = d.data().items;
-        if (d.id === 'platform' && Array.isArray(d.data().items)) state.platforms = d.data().items;
-      });
-      renderTaxonomySelects();
     });
 
     sub(collection(db, 'products'), (s) => {
@@ -901,7 +837,7 @@
       );
       state.openPendingPool = state.allOrders.filter((o) =>
         o.status === 'pending' &&
-        (o.branchId === myId || o.receivedByLocationId === myId || (!o.branchId && !o.receivedByLocationId && o.fulfillmentMode !== 'pickup'))
+        (o.branchId === myId || o.receivedByLocationId === myId)
       );
       renderAll();
     });
@@ -1190,14 +1126,37 @@
           '</div>';
         }).join('');
 
+    renderBranchNoticeBanner();
     renderOpenPoolTable();
     renderOrdersTable();
-    renderTaxonomySelects();
     renderStockTable();
     renderStockLogsTable();
     renderTransfersBox();
     renderSalesReport(sr);
     fillSettingsForm();
+  }
+
+  function renderBranchNoticeBanner() {
+    const box = $('ovBranchNoticeBanner');
+    if (!box) return;
+    const bn = state.siteBase?.branchNotice;
+    if (!bn || !bn.enabled || !String(bn.message || '').trim()) {
+      box.className = 'hidden';
+      box.innerHTML = '';
+      return;
+    }
+    const tone = bn.tone === 'urgent' || bn.tone === 'warning' ? bn.tone : 'info';
+    const badgeCls = tone === 'urgent' ? 'err' : (tone === 'warning' ? 'warn' : 'info');
+    const toneLabel = tone === 'urgent' ? 'Urgent Notice from Head Office' : (tone === 'warning' ? 'Important Head Office Warning' : 'Head Office Notice');
+    const timeStr = bn.updatedAtMs ? new Date(bn.updatedAtMs).toLocaleString() : '';
+    box.className = 'notice-banner ' + tone;
+    box.innerHTML =
+      '<div class="row" style="justify-content:space-between;gap:8px">' +
+        '<div class="row" style="gap:8px"><span class="badge ' + badgeCls + '">' + esc(toneLabel) + '</span>' +
+        '<strong>' + esc(bn.title || 'Announcement') + '</strong></div>' +
+        (timeStr ? '<span class="mono" style="font-size:11px;opacity:0.8">' + esc(timeStr) + '</span>' : '') +
+      '</div>' +
+      '<div style="font-size:13px;white-space:pre-wrap;line-height:1.55">' + esc(bn.message) + '</div>';
   }
 
   function getOrderItems(o) {
@@ -1451,153 +1410,7 @@
     }
   });
 
-  // --- ADD / EDIT PRODUCT FROM BRANCH ---
-  function renderTaxonomySelects() {
-    const cats = (state.categories && state.categories.length) ? state.categories : [{ slug: 'mouse', label: 'Mouse' }, { slug: 'keyboard', label: 'Keyboard' }, { slug: 'cpu', label: 'Processors' }, { slug: 'gpu', label: 'Graphics Cards' }];
-    const deps = (state.departments && state.departments.length) ? state.departments : [{ slug: 'Desktop Core', label: 'Desktop Core' }, { slug: 'Accessories', label: 'Accessories' }];
-    const plats = (state.platforms && state.platforms.length) ? state.platforms : [{ slug: 'universal', label: 'Universal' }, { slug: 'desktop', label: 'Desktop' }, { slug: 'laptop', label: 'Laptop' }, { slug: 'mac', label: 'Mac' }];
-
-    if ($('bp_category') && $('bp_category').options.length === 0) {
-      $('bp_category').innerHTML = cats.map((c) => '<option value="' + esc(c.slug || c.label) + '">' + esc(c.label || c.slug) + '</option>').join('');
-    }
-    if ($('bp_department') && $('bp_department').options.length === 0) {
-      $('bp_department').innerHTML = deps.map((d) => '<option value="' + esc(d.slug || d.label) + '">' + esc(d.label || d.slug) + '</option>').join('');
-    }
-    if ($('bp_platform') && $('bp_platform').options.length === 0) {
-      $('bp_platform').innerHTML = plats.map((p) => '<option value="' + esc(p.slug || p.label) + '">' + esc(p.label || p.slug) + '</option>').join('');
-    }
-  }
-
-  function addBpVariantRow(v) {
-    const row = document.createElement('div');
-    row.className = 'row';
-    row.style.gap = '6px';
-    row.dataset.vid = v?.id || '';
-    row.innerHTML =
-      '<input class="bp-v-name" placeholder="Variant name (e.g. Black · Tactile)" value="' + esc(v?.name || '') + '" style="flex:2;min-width:160px" />' +
-      '<input class="bp-v-delta" type="number" placeholder="Price +/-" value="' + esc(v?.priceDelta ?? 0) + '" style="width:100px" />' +
-      '<input class="bp-v-stock" type="number" min="0" placeholder="Branch Qty" value="' + esc(v?.stock ?? 5) + '" style="width:100px" />' +
-      '<button type="button" class="btn sm danger" onclick="this.parentElement.remove()">Remove</button>';
-    $('bp_variantRows').appendChild(row);
-  }
-
-  $('btnToggleAddProd').addEventListener('click', () => {
-    $('bp_editId').value = '';
-    $('branchAddProductForm').reset();
-    $('bp_variantRows').innerHTML = '';
-    $('branchAddProductForm').classList.toggle('hidden');
-  });
-  $('btnBpCancel').addEventListener('click', () => {
-    $('bp_editId').value = '';
-    $('branchAddProductForm').classList.add('hidden');
-  });
-  $('btnBpAddVariant').addEventListener('click', () => addBpVariantRow());
-
-  $('branchAddProductForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const rawImg = ($('bp_imageUrl').value || '').trim();
-    if (rawImg && !/^https?:\/\//i.test(rawImg)) {
-      return toast('Image URL must start with https:// or http://', true);
-    }
-    const editId = ($('bp_editId').value || '').trim();
-    const existing = editId ? state.products.find((x) => x.id === editId) : null;
-    const pid = existing ? existing.id : slug($('bp_title').value, 'nt-br');
-    const myId = state.branchId;
-    const brName = String(state.branch?.name || state.manager?.branchName || myId).slice(0, 100);
-
-    const variants = [...$('bp_variantRows').children].map((r, i) => {
-      const name = r.querySelector('.bp-v-name').value.trim();
-      if (!name) return null;
-      const vid = r.dataset.vid || ('var_' + (i + 1));
-      return {
-        id: vid,
-        name,
-        attributes: { Option: name },
-        priceDelta: Math.round(Number(r.querySelector('.bp-v-delta').value || 0)),
-        stock: Math.max(0, Math.floor(Number(r.querySelector('.bp-v-stock').value || 0)))
-      };
-    }).filter(Boolean);
-
-    const reg = Math.max(1, Number($('bp_regPrice').value || 1));
-    const disc = Math.min(95, Math.max(0, Number($('bp_discount').value || 0)));
-    const price = Math.max(1, Math.round(reg * (1 - disc / 100)));
-    const baseBranchQty = Math.max(0, Math.floor(Number($('bp_stock').value || 0)));
-    const plat = String($('bp_platform').value || 'universal').trim();
-    const deviceGroup = (plat === 'desktop' || plat === 'laptop' || plat === 'mac') ? plat : 'universal';
-    const titleStr = ($('bp_title').value || '').trim().slice(0, 140);
-    const skuStr = ($('bp_sku').value.trim() || pid.toUpperCase()).slice(0, 40);
-    const summaryRaw = ($('bp_summary').value || '').trim();
-    const summary = (summaryRaw.length >= 4 ? summaryRaw : (titleStr + ' available at ' + brName)).slice(0, 800);
-
-    // Update this branch's entry inside branchStocks without wiping any other branch stock
-    const nextBs = existing && existing.branchStocks ? JSON.parse(JSON.stringify(existing.branchStocks)) : {};
-    if (variants.length) {
-      const vMap = {};
-      variants.forEach((v) => { vMap[v.id] = v.stock; });
-      nextBs[myId] = {
-        stock: variants.reduce((sum, v) => sum + v.stock, 0),
-        variants: vMap
-      };
-      variants.forEach((v) => {
-        v.stock = Object.values(nextBs).reduce((sum, loc) => sum + Math.max(0, Math.round(Number(loc?.variants?.[v.id] || 0))), 0);
-      });
-    } else {
-      nextBs[myId] = { stock: baseBranchQty };
-    }
-    const totalStock = variants.length
-      ? variants.reduce((sum, v) => sum + Math.max(0, Math.round(Number(v.stock || 0))), 0)
-      : Object.values(nextBs).reduce((sum, loc) => sum + Math.max(0, Math.round(Number(loc?.stock || 0))), 0);
-
-    const btn = $('btnBpSubmit');
-    btn.disabled = true;
-    try {
-      const payload = cleanObj({
-        id: pid,
-        pid,
-        sku: skuStr,
-        name: titleStr,
-        title: titleStr,
-        brand: ($('bp_brand').value.trim() || 'NurTech').slice(0, 60),
-        category: String($('bp_category').value || 'mouse').slice(0, 40),
-        department: String($('bp_department').value || 'Accessories').slice(0, 60),
-        platform: plat.slice(0, 40),
-        deviceGroup,
-        regularPrice: reg,
-        discountPercent: disc,
-        price,
-        weightKg: Math.max(0, Math.min(500, Number($('bp_weight').value || 0.6))),
-        stock: Math.round(totalStock),
-        imageKey: existing?.imageKey || 'gpu_cpu',
-        ...(rawImg ? { imageUrl: rawImg.slice(0, 500) } : {}),
-        ...(variants.length ? { variants } : {}),
-        summary,
-        description: existing?.description || summary,
-        specsSummary: existing?.specsSummary || (titleStr + ' · ' + skuStr).slice(0, 180),
-        rating: existing?.rating ?? 4.8,
-        featured: existing?.featured ?? false,
-        createdByBranchId: existing?.createdByBranchId || myId,
-        createdByBranchName: existing?.createdByBranchName || brName,
-        branchStocks: nextBs,
-        updatedAt: serverTimestamp()
-      });
-
-      if (existing) {
-        await updateDoc(doc(db, 'products', pid), payload);
-        toast('Updated branch product ' + titleStr);
-      } else {
-        await setDoc(doc(db, 'products', pid), payload);
-        toast('New product added to catalog & credited to this branch!');
-      }
-      $('bp_editId').value = '';
-      $('branchAddProductForm').reset();
-      $('bp_variantRows').innerHTML = '';
-      $('branchAddProductForm').classList.add('hidden');
-    } catch (err) {
-      toast(err.message || 'Product save failed', true);
-    } finally {
-      btn.disabled = false;
-    }
-  });
+  // --- STOCK & VARIANT LEDGER TABLE (Head Office manages catalog creation) ---
 
   // --- STOCK & VARIANT LEDGER TABLE ---
   function renderStockTable() {
@@ -1643,15 +1456,8 @@
         '</div>';
       }
 
-      const canEditOwn = p.createdByBranchId === myBranchId;
-      const creatorTag = p.createdByBranchName
-        ? '<div style="margin-top:3px"><span class="badge slate">By ' + esc(p.createdByBranchName) + '</span>' +
-          (canEditOwn ? ' <button type="button" class="btn sm light btn-edit-br-prod" style="padding:2px 6px;font-size:10.5px">Edit Product</button>' : '') +
-          '</div>'
-        : '';
-
       return '<tr data-pid="' + esc(p.id) + '">' +
-        '<td><strong>' + esc(p.title || p.name) + '</strong><div class="mono" style="color:#64748b">' + esc(p.sku || p.id) + '</div>' + creatorTag + '</td>' +
+        '<td><strong>' + esc(p.title || p.name) + '</strong><div class="mono" style="color:#64748b">' + esc(p.sku || p.id) + '</div></td>' +
         '<td>' + esc(p.category) + '<div class="mono" style="margin-top:2px">' + fmtBdt(p.price) + '</div></td>' +
         '<td><strong class="mono">' + Number(p.stock || 0) + ' pcs</strong></td>' +
         '<td style="max-width:250px">' + locChips + '</td>' +
@@ -1667,30 +1473,6 @@
     const prod = state.products.find((p) => p.id === productId || p.pid === productId);
     if (!prod) return;
     const myId = state.branchId;
-
-    const editBtn = e.target.closest('button.btn-edit-br-prod');
-    if (editBtn) {
-      $('bp_editId').value = prod.id;
-      $('bp_title').value = prod.title || prod.name || '';
-      $('bp_sku').value = prod.sku || '';
-      $('bp_brand').value = prod.brand || 'NurTech';
-      $('bp_category').value = prod.category || '';
-      $('bp_department').value = prod.department || '';
-      $('bp_platform').value = prod.platform || 'universal';
-      $('bp_regPrice').value = prod.regularPrice || prod.price || 0;
-      $('bp_discount').value = prod.discountPercent || 0;
-      $('bp_weight').value = prod.weightKg || 0.6;
-      $('bp_stock').value = getStockAtLocation(prod, myId, '');
-      $('bp_imageUrl').value = prod.imageUrl || '';
-      $('bp_summary').value = prod.summary || '';
-      $('bp_variantRows').innerHTML = '';
-      (prod.variants || []).forEach((v) => {
-        addBpVariantRow({ ...v, stock: getStockAtLocation(prod, myId, v.id) });
-      });
-      $('branchAddProductForm').classList.remove('hidden');
-      $('branchAddProductForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      return;
-    }
 
     const varAddBtn = e.target.closest('button.btn-var-add');
     const varSetBtn = e.target.closest('button.btn-var-set');
