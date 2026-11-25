@@ -49,45 +49,51 @@
       background: #0f172a;
       color: #fff;
       padding: 0 20px;
-      min-height: 58px;
+      min-height: 56px;
       display: flex;
-      flex-wrap: wrap;
       gap: 12px;
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid #1e293b;
     }
-    .brand-bar { display: flex; align-items: center; gap: 10px; }
+    .brand-bar { display: flex; align-items: center; gap: 10px; min-width: 0; }
     .brand-mark {
-      width: 30px; height: 30px; border-radius: 8px;
+      width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
       background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
       display: inline-flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 14px; color: #fff;
+      font-weight: 800; font-size: 13px; color: #fff;
+    }
+    .hdr-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+    .hdr-page-crumb {
+      font-size: 12px; color: #94a3b8; font-weight: 600;
+      padding-left: 8px; border-left: 1px solid #334155;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .branch-pill {
       display: inline-block;
       padding: 2px 9px;
-      border-radius: 999px;
-      background: rgba(20, 184, 166, 0.18);
+      border-radius: 6px;
+      background: rgba(20, 184, 166, 0.16);
       border: 1px solid rgba(45, 212, 191, 0.35);
       color: #99f6e4;
       font-size: 11px;
       font-weight: 700;
+      white-space: nowrap;
     }
     .mgr-avatar {
       width: 28px; height: 28px; border-radius: 999px;
-      object-fit: cover; border: 1.5px solid #2dd4bf; background: #1e293b;
+      object-fit: cover; border: 1.5px solid #2dd4bf; background: #1e293b; flex-shrink: 0;
     }
     #branchShell {
       display: grid;
-      grid-template-columns: 248px minmax(0, 1fr);
-      min-height: calc(100vh - 58px);
+      grid-template-columns: 252px minmax(0, 1fr);
+      min-height: calc(100vh - 56px);
       align-items: start;
     }
     #branchNav {
       position: sticky;
-      top: 58px;
-      height: calc(100vh - 58px);
+      top: 56px;
+      height: calc(100vh - 56px);
       overflow-y: auto;
       background: #fff;
       border-right: 1px solid var(--border);
@@ -105,11 +111,12 @@
       padding: 10px 10px 4px;
     }
     #branchNav button {
-      border: none;
+      border: 1px solid transparent;
       background: transparent;
       color: var(--ink-secondary);
-      padding: 9px 12px;
+      padding: 9px 11px;
       border-radius: 8px;
+      font-family: inherit;
       font-weight: 600;
       font-size: 13px;
       cursor: pointer;
@@ -117,11 +124,21 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 8px;
       width: 100%;
+      transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
     }
+    .nav-btn-left { display: inline-flex; align-items: center; gap: 9px; min-width: 0; }
+    .nav-ico { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.85; }
     #branchNav button:hover { background: var(--bg-muted); color: var(--ink); }
-    #branchNav button.active { background: var(--accent); color: #fff; }
-    main { max-width: 1280px; width: 100%; margin: 0 auto; padding: 24px 26px 56px; }
+    #branchNav button.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-color: #99f6e4;
+      font-weight: 700;
+    }
+    #branchNav button.active .nav-ico { opacity: 1; }
+    main { max-width: 1280px; width: 100%; margin: 0 auto; padding: 24px 26px 56px; min-width: 0; }
     .card {
       background: #fff;
       border: 1px solid var(--border);
@@ -130,15 +147,21 @@
       margin-bottom: 18px;
       box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
     }
+    .table-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
     h1, h2, h3 { margin: 0 0 10px; letter-spacing: -0.02em; }
     h1 { font-size: 20px; font-weight: 800; }
-    h2 { font-size: 16px; font-weight: 700; }
+    h2 { font-size: 15.5px; font-weight: 700; }
     h3 { font-size: 14px; font-weight: 700; }
     .sub { color: var(--ink-muted); font-size: 12.5px; margin: 0 0 14px; }
     .grid { display: grid; gap: 14px; }
-    .g2 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-    .g3 { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
-    .g4 { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+    .g2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
+    .g3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
+    .g4 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 175px), 1fr)); }
     label { display: block; font-size: 11px; font-weight: 700; color: var(--ink-secondary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.04em; }
     input, select, textarea {
       width: 100%;
@@ -161,6 +184,7 @@
       border-radius: 8px;
       background: var(--ink);
       color: #fff;
+      font-family: inherit;
       font-weight: 600;
       font-size: 12.5px;
       cursor: pointer;
@@ -169,8 +193,10 @@
       justify-content: center;
       gap: 6px;
       white-space: nowrap;
+      transition: background 0.14s ease, transform 0.1s ease;
     }
     .btn:hover { background: #1e293b; }
+    .btn:active { transform: scale(0.99); }
     .btn.teal { background: var(--accent); }
     .btn.teal:hover { background: var(--accent-hover); }
     .btn.blue { background: var(--blue); }
@@ -180,19 +206,22 @@
     .btn.light { background: #fff; color: var(--ink); border: 1px solid var(--border-strong); }
     .btn.light:hover { background: var(--bg-muted); }
     .btn.danger { background: #dc2626; color: #fff; }
+    .btn.danger:hover { background: #b91c1c; }
     .btn.sm { padding: 5px 10px; font-size: 11.5px; }
     .btn:disabled { opacity: 0.55; cursor: not-allowed; }
     .kpi {
       background: #fff;
       border: 1px solid var(--border);
+      border-top: 2px solid var(--accent);
       border-radius: 12px;
       padding: 16px;
+      font-variant-numeric: tabular-nums;
     }
     .kpi .label { font-size: 11px; color: var(--ink-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
     .kpi .val { font-size: 24px; font-weight: 800; font-family: 'JetBrains Mono', monospace; margin-top: 6px; }
     .badge {
       display: inline-flex; align-items: center; padding: 2px 8px;
-      border-radius: 999px; font-size: 11px; font-weight: 700;
+      border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap;
     }
     .badge.ok { background: var(--success-bg); color: var(--success-fg); }
     .badge.warn { background: var(--warn-bg); color: var(--warn-fg); }
@@ -200,14 +229,19 @@
     .badge.info { background: #dbeafe; color: #1e40af; }
     .badge.teal { background: #ccfbf1; color: #0f766e; }
     .badge.slate { background: #f1f5f9; color: #334155; }
-    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; font-variant-numeric: tabular-nums; }
     th, td { padding: 10px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
     th { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-muted); background: #f8fafc; }
+    tbody tr:hover { background: #f8fafc; }
     .hidden { display: none !important; }
-    .page { display: none; }
+    .page { display: none; animation: fadeInPage 0.16s ease; }
     .page.active { display: block; }
+    @keyframes fadeInPage {
+      from { opacity: 0; transform: translateY(3px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
     .toast {
-      position: fixed; bottom: 20px; right: 20px; z-index: 90;
+      position: fixed; bottom: 20px; right: 20px; z-index: 120;
       background: #0f172a; color: #fff; padding: 10px 16px;
       border-radius: 10px; font-size: 12.5px; font-weight: 600;
       box-shadow: 0 12px 28px rgba(15, 23, 42, 0.25);
@@ -220,7 +254,7 @@
       font-size: 11px; font-weight: 700; cursor: pointer; padding: 4px 6px;
     }
     .login-shell {
-      min-height: calc(100vh - 58px);
+      min-height: calc(100vh - 56px);
       display: flex; align-items: center; justify-content: center;
       padding: 28px 16px;
     }
@@ -266,14 +300,125 @@
       padding-bottom: 5px; display: flex; align-items: flex-start; gap: 8px;
     }
     .msg-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+    /* Mobile-only Bottom Navigation & Sheet (hidden on desktop) */
+    #mobileBottomNav { display: none; }
+    #mobileMoreOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.48);
+      z-index: 80;
+    }
+    #mobileMoreOverlay.open { display: block; }
+    #mobileMoreSheet {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 62px;
+      z-index: 85;
+      background: #fff;
+      border-top: 1px solid var(--border);
+      border-radius: 18px 18px 0 0;
+      padding: 14px 16px 18px;
+      box-shadow: 0 -14px 36px rgba(15, 23, 42, 0.18);
+      transform: translateY(115%);
+      transition: transform 0.2s ease;
+      display: none;
+    }
+    #mobileMoreSheet.open {
+      display: block;
+      transform: translateY(0);
+    }
+    .sheet-handle {
+      width: 38px; height: 4px; border-radius: 999px;
+      background: #cbd5e1; margin: 0 auto 12px;
+    }
+    .sheet-nav-btn {
+      width: 100%; min-height: 46px; padding: 10px 14px;
+      border: 1px solid var(--border); background: #fff; color: var(--ink);
+      border-radius: 10px; font-family: inherit; font-weight: 600; font-size: 13.5px;
+      display: flex; align-items: center; justify-content: space-between; cursor: pointer;
+    }
+    .sheet-nav-btn.active {
+      background: var(--accent-soft); border-color: #99f6e4; color: var(--accent);
+    }
+
     @media (max-width: 900px) {
+      header { padding: 8px 14px; min-height: 54px; }
+      .hdr-page-crumb { display: none; }
+      #hdrManagerName { display: none; }
       #branchShell { grid-template-columns: 1fr; }
-      #branchNav {
-        position: static; height: auto; flex-direction: row; flex-wrap: wrap;
-        border-right: none; border-bottom: 1px solid var(--border);
+      #branchNav { display: none; }
+      main { padding: 14px 12px 88px; }
+      .card { padding: 15px 14px; border-radius: 12px; }
+      .g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+      .kpi { padding: 13px; }
+      .kpi .val { font-size: 20px; }
+      .filter-toolbar { width: 100%; }
+      .filter-toolbar input,
+      .filter-toolbar select,
+      .filter-toolbar .btn { width: 100% !important; min-height: 42px; }
+      .btn { min-height: 40px; }
+      .btn.sm { min-height: 36px; }
+      input, select, textarea { min-height: 42px; font-size: 14px; }
+      textarea { min-height: 76px; }
+      .trf-req-controls { width: 100%; }
+      .trf-req-controls select,
+      .trf-req-controls input[type="text"],
+      .trf-req-controls .btn { width: 100% !important; }
+      .toast { bottom: 76px; right: 12px; left: 12px; text-align: center; }
+      #mobileBottomNav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 62px;
+        z-index: 90;
+        background: #fff;
+        border-top: 1px solid var(--border);
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        padding: 4px 4px calc(4px + env(safe-area-inset-bottom, 0px));
+        box-shadow: 0 -4px 18px rgba(15, 23, 42, 0.08);
       }
-      #branchNav button { width: auto; }
-      main { padding: 16px; }
+      #mobileBottomNav button {
+        border: none;
+        background: transparent;
+        color: var(--ink-muted);
+        font-family: inherit;
+        font-size: 10.5px;
+        font-weight: 600;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        padding: 4px 2px;
+        border-radius: 8px;
+        cursor: pointer;
+        position: relative;
+        min-width: 0;
+      }
+      #mobileBottomNav button.active {
+        color: var(--accent);
+        background: var(--accent-soft);
+        font-weight: 700;
+      }
+      #mobileBottomNav .mob-tab-badge {
+        position: absolute;
+        top: 3px;
+        right: 14%;
+        min-width: 17px;
+        height: 17px;
+        padding: 0 4px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
     }
   </style>
 </head>
@@ -281,12 +426,13 @@
 <header>
   <div class="brand-bar">
     <span class="brand-mark">NB</span>
-    <div>
-      <strong style="font-size:14.5px;letter-spacing:-0.01em">NurTech Branch Console</strong>
+    <div class="hdr-meta">
+      <strong style="font-size:14.5px;letter-spacing:-0.01em">NurTech Branch</strong>
       <span id="hdrBranchBadge" class="branch-pill hidden">Branch</span>
+      <span id="hdrActivePageTitle" class="hdr-page-crumb">Overview</span>
     </div>
   </div>
-  <div class="row">
+  <div class="row" style="flex-wrap:nowrap">
     <img id="hdrManagerAvatar" class="mgr-avatar hidden" alt="Manager" referrerpolicy="no-referrer" />
     <span id="hdrManagerName" class="mono" style="color:#cbd5e1;font-size:11.5px">Connecting to Firebase...</span>
     <button id="btnBranchLogout" type="button" class="btn sm danger hidden">Sign Out</button>
@@ -320,14 +466,47 @@
 </section>
 
 <div id="branchShell" class="hidden">
-  <nav id="branchNav">
+  <nav id="branchNav" aria-label="Branch Navigation">
     <div class="nav-label">Branch Desk</div>
-    <button type="button" data-page="overview" class="active"><span>Overview</span></button>
-    <button type="button" data-page="orders"><span>Pending &amp; Orders</span> <span id="navPendingBadge" class="badge warn hidden">0</span></button>
-    <button type="button" data-page="inventory"><span>Branch Stock Ledger</span></button>
-    <button type="button" data-page="locator"><span>Find Stock &amp; Transfers</span> <span id="navTransferBadge" class="badge info hidden">0</span></button>
-    <button type="button" data-page="sales"><span>Branch Sales Report</span></button>
-    <button type="button" data-page="settings"><span>Branch Info &amp; Pickup</span></button>
+    <button type="button" data-page="overview" class="active">
+      <span class="nav-btn-left">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+        <span>Overview</span>
+      </span>
+    </button>
+    <button type="button" data-page="orders">
+      <span class="nav-btn-left">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6"/><path d="M9 16h4"/></svg>
+        <span>Pending &amp; Orders</span>
+      </span>
+      <span id="navPendingBadge" class="badge warn hidden">0</span>
+    </button>
+    <button type="button" data-page="inventory">
+      <span class="nav-btn-left">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+        <span>Branch Stock Ledger</span>
+      </span>
+    </button>
+    <button type="button" data-page="locator">
+      <span class="nav-btn-left">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>
+        <span>Find Stock &amp; Transfers</span>
+      </span>
+      <span id="navTransferBadge" class="badge info hidden">0</span>
+    </button>
+    <div class="nav-label">Reports &amp; Settings</div>
+    <button type="button" data-page="sales">
+      <span class="nav-btn-left">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+        <span>Branch Sales Report</span>
+      </span>
+    </button>
+    <button type="button" data-page="settings">
+      <span class="nav-btn-left">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.08a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.08a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        <span>Branch Info &amp; Pickup</span>
+      </span>
+    </button>
   </nav>
 
   <main>
@@ -383,7 +562,7 @@
           </div>
           <span id="poolCountBadge" class="badge warn">0 Waiting</span>
         </div>
-        <div style="overflow-x:auto">
+        <div class="table-scroll">
           <table>
             <thead>
               <tr>
@@ -405,7 +584,7 @@
             <h2>Assigned &amp; Received Branch Orders</h2>
             <p class="sub" style="margin-bottom:0">Store Pickup stages: Received &rarr; Collecting Product &rarr; In Transit &rarr; Ready for Store Pickup &rarr; Finished / Delivered. Syncs live to Storefront Order Tracking.</p>
           </div>
-          <div class="row">
+          <div class="row filter-toolbar">
             <input id="inpOrderSearch" type="text" placeholder="Search Order # or Phone..." style="width:210px" />
             <select id="selOrderStatusFilter" style="width:190px">
               <option value="all">All Statuses</option>
@@ -419,7 +598,7 @@
             </select>
           </div>
         </div>
-        <div style="overflow-x:auto">
+        <div class="table-scroll">
           <table>
             <thead>
               <tr>
@@ -445,9 +624,11 @@
             <h2>Per-Branch &amp; Per-Variant Stock Ledger</h2>
             <p class="sub" style="margin-bottom:0">Use <strong>+ Add Qty</strong> to restock incoming units or <strong>Set Exact</strong> to update physical shelf count at this branch without altering other locations.</p>
           </div>
-          <input id="inpStockSearch" type="text" placeholder="Filter product name or SKU..." style="width:260px" />
+          <div class="filter-toolbar">
+            <input id="inpStockSearch" type="text" placeholder="Filter product name or SKU..." style="width:260px" />
+          </div>
         </div>
-        <div style="overflow-x:auto">
+        <div class="table-scroll">
           <table>
             <thead>
               <tr>
@@ -491,7 +672,7 @@
             <h2>Global Stock Finder Across Branches &amp; Head Office</h2>
             <p class="sub" style="margin-bottom:0">Locate exact branch or Head Office inventory (with variant breakdown), check showroom contacts, and send live stock transfer requests.</p>
           </div>
-          <div class="row">
+          <div class="row filter-toolbar">
             <input id="inpLocatorSearch" type="text" placeholder="Search product, SKU, or variant..." style="width:260px" />
             <button id="btnLocatorSearch" type="button" class="btn teal">Search Stock</button>
           </div>
@@ -623,6 +804,48 @@
   </main>
 </div>
 
+<!-- Mobile Bottom Navigation + Slide-up More Sheet -->
+<nav id="mobileBottomNav" class="hidden" aria-label="Mobile Branch Navigation">
+  <button type="button" data-page="overview" class="active">
+    <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+    <span>Overview</span>
+  </button>
+  <button type="button" data-page="orders">
+    <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6"/><path d="M9 16h4"/></svg>
+    <span>Orders</span>
+    <span id="navPendingBadgeMob" class="mob-tab-badge badge warn hidden">0</span>
+  </button>
+  <button type="button" data-page="inventory">
+    <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+    <span>Stock</span>
+  </button>
+  <button type="button" data-page="locator">
+    <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>
+    <span>Transfers</span>
+    <span id="navTransferBadgeMob" class="mob-tab-badge badge info hidden">0</span>
+  </button>
+  <button type="button" id="btnMobileMoreTab">
+    <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+    <span>More</span>
+  </button>
+</nav>
+
+<div id="mobileMoreOverlay"></div>
+<div id="mobileMoreSheet" aria-label="More Branch Options">
+  <div class="sheet-handle"></div>
+  <div id="mobileMgrSummary" style="padding:10px 12px;background:#f8fafc;border:1px solid var(--border);border-radius:10px;margin-bottom:12px;font-size:12.5px"></div>
+  <div style="display:grid;gap:8px">
+    <button type="button" class="sheet-nav-btn" data-page="sales">
+      <span>Branch Sales Report</span>
+      <span class="mono" style="color:#64748b">&rarr;</span>
+    </button>
+    <button type="button" class="sheet-nav-btn" data-page="settings">
+      <span>Branch Info &amp; Pickup Settings</span>
+      <span class="mono" style="color:#64748b">&rarr;</span>
+    </button>
+  </div>
+</div>
+
 <div id="toastBox" class="toast hidden"></div>
 
 <script type="module">
@@ -717,6 +940,8 @@
     state.transfers = [];
     state.transferMsgs = {};
     $('branchShell').classList.add('hidden');
+    $('mobileBottomNav')?.classList.add('hidden');
+    closeMobileMoreSheet();
     $('loginView').classList.remove('hidden');
     $('hdrBranchBadge').classList.add('hidden');
     $('hdrManagerAvatar').classList.add('hidden');
@@ -793,6 +1018,7 @@
       $('loginErrorBox').classList.add('hidden');
       $('loginView').classList.add('hidden');
       $('branchShell').classList.remove('hidden');
+      $('mobileBottomNav')?.classList.remove('hidden');
       startBranchListeners();
       toast('Signed in as ' + (mgr.name || mgr.loginId || 'Branch Manager'));
     } catch (err) {
@@ -1023,22 +1249,63 @@
     };
   }
 
+  const BRANCH_PAGE_TITLES = {
+    overview: 'Overview',
+    orders: 'Pending & Orders',
+    inventory: 'Branch Stock Ledger',
+    locator: 'Find Stock & Transfers',
+    sales: 'Branch Sales Report',
+    settings: 'Branch Info & Pickup'
+  };
+
+  function openMobileMoreSheet() {
+    $('mobileMoreOverlay')?.classList.add('open');
+    $('mobileMoreSheet')?.classList.add('open');
+  }
+  function closeMobileMoreSheet() {
+    $('mobileMoreOverlay')?.classList.remove('open');
+    $('mobileMoreSheet')?.classList.remove('open');
+  }
+
   function switchPage(pageKey) {
-    document.querySelectorAll('#branchNav button').forEach((b) => {
+    document.querySelectorAll('#branchNav button[data-page]').forEach((b) => {
       b.classList.toggle('active', b.getAttribute('data-page') === pageKey);
     });
+    document.querySelectorAll('#mobileBottomNav button[data-page]').forEach((b) => {
+      b.classList.toggle('active', b.getAttribute('data-page') === pageKey);
+    });
+    document.querySelectorAll('#mobileMoreSheet .sheet-nav-btn[data-page]').forEach((b) => {
+      b.classList.toggle('active', b.getAttribute('data-page') === pageKey);
+    });
+    const moreBtn = $('btnMobileMoreTab');
+    if (moreBtn) moreBtn.classList.toggle('active', pageKey === 'sales' || pageKey === 'settings');
+    if ($('hdrActivePageTitle')) {
+      $('hdrActivePageTitle').textContent = BRANCH_PAGE_TITLES[pageKey] || 'Branch Desk';
+    }
     document.querySelectorAll('main .page').forEach((p) => {
       p.classList.toggle('active', p.id === 'page-' + pageKey);
     });
+    closeMobileMoreSheet();
   }
 
-  document.querySelectorAll('#branchNav button[data-page]').forEach((btn) => {
+  document.querySelectorAll('#branchNav button[data-page], #mobileBottomNav button[data-page], #mobileMoreSheet .sheet-nav-btn[data-page]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const target = btn.getAttribute('data-page');
       switchPage(target);
       if (target === 'locator') renderLocatorResults();
     });
   });
+
+  if ($('btnMobileMoreTab')) {
+    $('btnMobileMoreTab').addEventListener('click', () => {
+      const isOpen = $('mobileMoreSheet')?.classList.contains('open');
+      if (isOpen) closeMobileMoreSheet();
+      else openMobileMoreSheet();
+    });
+  }
+  if ($('mobileMoreOverlay')) {
+    $('mobileMoreOverlay').addEventListener('click', closeMobileMoreSheet);
+  }
 
   function getStatusMeta(o) {
     const isPickup = o && o.fulfillmentMode === 'pickup';
@@ -1066,6 +1333,9 @@
     $('hdrBranchBadge').classList.remove('hidden');
     $('btnBranchLogout').classList.remove('hidden');
     $('hdrManagerName').textContent = (m.name || 'Manager') + ' (' + (m.loginId || m.email || '') + ')';
+    if ($('mobileMgrSummary')) {
+      $('mobileMgrSummary').innerHTML = '<strong>' + esc(m.name || 'Branch Manager') + '</strong><div style="color:#64748b;font-size:11.5px">' + esc(b.name || m.branchName || 'Branch') + ' · ' + esc(m.loginId || m.email || '') + '</div>';
+    }
     if (m.photoUrl) {
       $('hdrManagerAvatar').src = m.photoUrl;
       $('hdrManagerAvatar').classList.remove('hidden');
@@ -1083,19 +1353,30 @@
     $('kpiBranchRevenue').textContent = fmtBdt(sr.totalRevenueBdt || 0);
     $('kpiPickupFee').textContent = b.pickupEnabled === false ? 'Paused' : (Number(b.pickupFeeBdt || 0) === 0 ? 'FREE' : fmtBdt(b.pickupFeeBdt));
 
+    const pendingCount = pendingTotal > 0 ? pendingTotal : activeAssigned;
     if (pendingTotal > 0 || activeAssigned > 0) {
-      $('navPendingBadge').textContent = String(pendingTotal > 0 ? pendingTotal : activeAssigned);
+      $('navPendingBadge').textContent = String(pendingCount);
       $('navPendingBadge').classList.remove('hidden');
+      if ($('navPendingBadgeMob')) {
+        $('navPendingBadgeMob').textContent = String(pendingCount);
+        $('navPendingBadgeMob').classList.remove('hidden');
+      }
     } else {
       $('navPendingBadge').classList.add('hidden');
+      $('navPendingBadgeMob')?.classList.add('hidden');
     }
 
     const activeTrfs = (state.transfers || []).filter((t) => t.status === 'requested' || t.status === 'approved_in_transit').length;
     if (activeTrfs > 0) {
       $('navTransferBadge').textContent = String(activeTrfs);
       $('navTransferBadge').classList.remove('hidden');
+      if ($('navTransferBadgeMob')) {
+        $('navTransferBadgeMob').textContent = String(activeTrfs);
+        $('navTransferBadgeMob').classList.remove('hidden');
+      }
     } else {
       $('navTransferBadge').classList.add('hidden');
+      $('navTransferBadgeMob')?.classList.add('hidden');
     }
 
     const mgrAvatarHtml = m.photoUrl
@@ -1628,7 +1909,7 @@
               (varChips ? '<div style="margin-top:4px">' + varChips + '</div>' : '') +
             '</div>' +
             (canRequest
-              ? '<div class="row" style="gap:6px">' +
+              ? '<div class="row trf-req-controls" style="gap:6px">' +
                   (variantOptions ? '<select class="trf-var-sel" style="width:150px">' + variantOptions + '</select>' : '') +
                   '<input class="trf-qty-inp" type="number" min="1" max="' + Number(loc.stock || 1) + '" value="1" style="width:70px" />' +
                   '<input class="trf-msg-inp" type="text" placeholder="Note for ' + esc(loc.code) + '..." style="width:160px" />' +
